@@ -6670,14 +6670,15 @@ function submitEmgInspection() {
 // 检查配置
 let emg2Checklists = [
   { id: 1, name: '应急物资日常检查清单', items: [
-    { text: '外观完好，无破损、锈蚀', type: '单选框', options: ['正常', '异常'], blank: '', suffix: '', needPhoto: true, needContent: true },
-    { text: '数量核对：实存', type: '填空题', options: [], blank: '实际数量', suffix: '与台账一致', needPhoto: false, needContent: false },
-    { text: '在有效期内', type: '复选框', options: ['未过期', '临近有效期', '已过期'], blank: '', suffix: '', needPhoto: false, needContent: true }
-  ], desc: '适用于应急物资日常巡查，覆盖外观、数量及有效期。', operator: '管理员', opTime: '2026-10-15 10:00' },
+    { text: '外观完好，无破损、锈蚀', type: '单选框', options: ['正常', '异常'], needPhoto: true, needContent: true },
+    { text: '重量核对（KG）', type: '填空题', options: [], parts: [{ text: '初始重量' }, { blank: '填写' }, { text: 'KG；目前重量' }, { blank: '填写' }, { text: 'KG；未来重量' }, { blank: '填写' }, { text: 'KG' }], needPhoto: false, needContent: false },
+    { text: '数量核对：实存', type: '填空题', options: [], parts: [{ text: '实存' }, { blank: '实际数量' }, { text: '，与台账一致' }], needPhoto: false, needContent: false },
+    { text: '在有效期内', type: '复选框', options: ['未过期', '临近有效期', '已过期'], needPhoto: false, needContent: true }
+  ], desc: '适用于应急物资日常巡查，覆盖外观、重量/数量及有效期。', operator: '管理员', opTime: '2026-10-15 10:00' },
   { id: 2, name: '应急设备月度检查清单', items: [
-    { text: '设备运行正常，无异响', type: '单选框', options: ['正常', '异常'], blank: '', suffix: '', needPhoto: true, needContent: true },
-    { text: '仪表指示', type: '填空题', options: [], blank: '指示状态', suffix: '正常', needPhoto: false, needContent: false },
-    { text: '接地、绝缘良好', type: '单选框', options: ['合格', '不合格'], blank: '', suffix: '', needPhoto: false, needContent: false }
+    { text: '设备运行正常，无异响', type: '单选框', options: ['正常', '异常'], needPhoto: true, needContent: true },
+    { text: '仪表指示', type: '填空题', options: [], parts: [{ text: '仪表指示' }, { blank: '指示状态' }, { text: '，正常' }], needPhoto: false, needContent: false },
+    { text: '接地、绝缘良好', type: '单选框', options: ['合格', '不合格'], needPhoto: false, needContent: false }
   ], desc: '适用于应急发电机、消防泵等设备月度检查。', operator: '管理员', opTime: '2026-10-20 14:30' }
 ];
 let emg2ClSeq = 3;
@@ -6978,7 +6979,7 @@ function openEmg2Detail(kind, id) {
           <td style="text-align:center;">${i + 1}</td>
           <td>${it.text}</td>
           <td>${it.type}</td>
-          <td>${it.type === '复选框' ? (it.value || []).join('、') : (it.value || '—')}</td>
+          <td>${it.type === '复选框' ? (it.value || []).join('、') : it.type === '填空题' ? emg2BlankSentence(it.parts, it.value) : (it.value || '—')}</td>
           <td>${it.photo ? '📷 ' + it.photo : '—'}</td>
           <td>${it.content || '—'}</td>
         </tr>`).join('')}
@@ -7126,9 +7127,17 @@ function renderC2Items() {
   const optCell = (it, i) => {
     if (it.type === '填空题') {
       return `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-        <input type="text" class="c2-blank" data-i="${i}" value="${it.blank || ''}" placeholder="填空提示" ${dis} style="width:100px;border:1px solid #d9d9d9;border-radius:4px;padding:4px 6px;font-size:12px;">
-        <span style="color:#999;letter-spacing:2px;">＿＿＿</span>
-        <input type="text" class="c2-suffix" data-i="${i}" value="${it.suffix || ''}" placeholder="后面内容" ${dis} style="width:100px;border:1px solid #d9d9d9;border-radius:4px;padding:4px 6px;font-size:12px;">
+        ${(it.parts || []).map((p, j) => p.blank != null
+          ? `<span style="display:inline-flex;align-items:center;gap:3px;">
+              <input type="text" class="c2-part-blank" data-i="${i}" data-j="${j}" value="${p.blank}" placeholder="填空提示" ${dis} style="width:88px;border:none;border-bottom:1px dashed #1890ff;border-radius:0;padding:4px 2px;font-size:12px;text-align:center;background:transparent;">
+              ${c2ViewMode ? '' : `<span class="link" style="font-size:12px;" onclick="removeC2Part(${i},${j})">✕</span>`}
+            </span>`
+          : `<span style="display:inline-flex;align-items:center;gap:3px;">
+              <input type="text" class="c2-part-text" data-i="${i}" data-j="${j}" value="${p.text}" placeholder="文字内容" ${dis} style="width:110px;border:1px solid #d9d9d9;border-radius:4px;padding:4px 6px;font-size:12px;">
+              ${c2ViewMode ? '' : `<span class="link" style="font-size:12px;" onclick="removeC2Part(${i},${j})">✕</span>`}
+            </span>`).join('')}
+        ${c2ViewMode ? '' : `<span class="link" style="font-size:12px;white-space:nowrap;" onclick="addC2Part(${i},'text')">＋文字</span>
+        <span class="link" style="font-size:12px;white-space:nowrap;" onclick="addC2Part(${i},'blank')">＋填空</span>`}
       </div>`;
     }
     return `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
@@ -7166,16 +7175,17 @@ function renderC2Items() {
     const it = c2Items[Number(this.dataset.i)];
     it.type = this.value;
     if (it.type !== '填空题' && !it.options.length) it.options = ['选项1', '选项2'];
+    if (it.type === '填空题' && !it.parts) it.parts = [{ blank: '' }];
     renderC2Items();
   }));
   document.querySelectorAll('#c2ItemList .c2-opt').forEach(el => el.addEventListener('input', function () {
     c2Items[Number(this.dataset.i)].options[Number(this.dataset.j)] = this.value;
   }));
-  document.querySelectorAll('#c2ItemList .c2-blank').forEach(el => el.addEventListener('input', function () {
-    c2Items[Number(this.dataset.i)].blank = this.value;
+  document.querySelectorAll('#c2ItemList .c2-part-text').forEach(el => el.addEventListener('input', function () {
+    c2Items[Number(this.dataset.i)].parts[Number(this.dataset.j)].text = this.value;
   }));
-  document.querySelectorAll('#c2ItemList .c2-suffix').forEach(el => el.addEventListener('input', function () {
-    c2Items[Number(this.dataset.i)].suffix = this.value;
+  document.querySelectorAll('#c2ItemList .c2-part-blank').forEach(el => el.addEventListener('input', function () {
+    c2Items[Number(this.dataset.i)].parts[Number(this.dataset.j)].blank = this.value;
   }));
   document.querySelectorAll('#c2ItemList .c2-photo').forEach(el => el.addEventListener('change', function () {
     c2Items[Number(this.dataset.i)].needPhoto = this.value === '1';
@@ -7185,7 +7195,7 @@ function renderC2Items() {
   }));
 }
 function addC2Item(at) {
-  const row = { text: '', type: '单选框', options: ['正常', '异常'], blank: '', suffix: '', needPhoto: false, needContent: false };
+  const row = { text: '', type: '单选框', options: ['正常', '异常'], parts: [], needPhoto: false, needContent: false };
   if (typeof at === 'number') c2Items.splice(at, 0, row);
   else c2Items.push(row);
   renderC2Items();
@@ -7193,6 +7203,20 @@ function addC2Item(at) {
 function removeC2Item(i) { c2Items.splice(i, 1); renderC2Items(); }
 function addC2Option(i) { c2Items[i].options.push(''); renderC2Items(); }
 function removeC2Option(i, j) { c2Items[i].options.splice(j, 1); renderC2Items(); }
+function addC2Part(i, kind) {
+  const it = c2Items[i];
+  if (!it.parts) it.parts = [];
+  it.parts.push(kind === 'blank' ? { blank: '' } : { text: '' });
+  renderC2Items();
+}
+function removeC2Part(i, j) { c2Items[i].parts.splice(j, 1); renderC2Items(); }
+// 填空题整句展示：文字段原样输出，填空段按答案（或未填的＿＿）输出
+function emg2BlankSentence(parts, value) {
+  let bi = 0;
+  return (parts || []).map(p => p.blank != null
+    ? ' ＿' + (value && value[bi] !== undefined && value[bi] !== '' ? value[bi++] : (bi++, '＿＿')) + '＿ '
+    : p.text).join('');
+}
 
 function openEmg2Cl2Modal(id, viewMode) {
   c2EditId = id || null;
@@ -7201,13 +7225,24 @@ function openEmg2Cl2Modal(id, viewMode) {
   document.getElementById('emg2Cl2ModalTitle').textContent = c2ViewMode ? '检查配置详情' : (c ? '编辑检查配置' : '新增检查配置');
   document.getElementById('c2Name').value = c ? c.name : '';
   document.getElementById('c2Desc').value = c ? (c.desc || '') : '';
-  c2Items = c ? c.items.map(it => ({
-    text: it.text,
-    type: it.type === '输入框' ? '填空题' : it.type,
-    options: (it.options || []).slice(),
-    blank: it.blank || '', suffix: it.suffix || '',
-    needPhoto: !!it.needPhoto, needContent: !!it.needContent
-  })) : [{ text: '', type: '单选框', options: ['正常', '异常'], blank: '', suffix: '', needPhoto: false, needContent: false }];
+  c2Items = c ? c.items.map(it => {
+    const type = it.type === '输入框' ? '填空题' : it.type;
+    let parts = [];
+    if (type === '填空题') {
+      parts = it.parts ? it.parts.map(p => p.blank != null ? { blank: p.blank } : { text: p.text || '' }) : [];
+      if (!parts.length && (it.blank || it.suffix)) {
+        parts = [{ blank: it.blank || '' }];
+        if (it.suffix) parts.push({ text: it.suffix });
+      }
+      if (!parts.length) parts = [{ blank: '' }];
+    }
+    return {
+      text: it.text, type,
+      options: (it.options || []).slice(),
+      parts,
+      needPhoto: !!it.needPhoto, needContent: !!it.needContent
+    };
+  }) : [{ text: '', type: '单选框', options: ['正常', '异常'], parts: [], needPhoto: false, needContent: false }];
   const scope = c ? emg2ScopeOf(c.id) : { mats: [], devs: [] };
   c2ScopePicks = { mats: scope.mats.map(m => m.id), devs: scope.devs.map(d => d.id) };
   document.getElementById('c2Scope').value = c ? `应急物资 ${scope.mats.length} 项，应急设备 ${scope.devs.length} 项` : '';
@@ -7284,9 +7319,11 @@ function saveEmg2Cl2() {
     if (it.type !== '填空题') {
       const opts = it.options.map(o => o.trim()).filter(Boolean);
       if (!opts.length) { alert('检查项「' + text + '」为' + it.type + '，请至少设置一个选项'); return; }
-      items.push({ text, type: it.type, options: opts, blank: '', suffix: '', needPhoto: !!it.needPhoto, needContent: !!it.needContent });
+      items.push({ text, type: it.type, options: opts, needPhoto: !!it.needPhoto, needContent: !!it.needContent });
     } else {
-      items.push({ text, type: '填空题', options: [], blank: (it.blank || '').trim(), suffix: (it.suffix || '').trim(), needPhoto: !!it.needPhoto, needContent: !!it.needContent });
+      const parts = (it.parts || []).map(p => p.blank != null ? { blank: (p.blank || '').trim() } : { text: (p.text || '').trim() }).filter(p => p.blank != null || p.text);
+      if (!parts.some(p => p.blank != null)) { alert('检查项「' + text + '」为填空题，请至少添加一个填空（＋填空）'); return; }
+      items.push({ text, type: '填空题', options: [], parts, needPhoto: !!it.needPhoto, needContent: !!it.needContent });
     }
   }
   if (!name) { alert('请输入检查清单名称'); return; }
@@ -7349,7 +7386,9 @@ function openEmg2ItemsView(id) {
       <div style="font-size:13px;font-weight:600;line-height:2;">${i + 1}. ${it.text} <span style="color:#999;font-weight:400;">（${it.type}）</span></div>
       <div style="font-size:13px;color:#666;padding-left:18px;line-height:2.2;">
         ${it.type === '填空题'
-          ? `<span style="display:inline-flex;align-items:center;gap:6px;">填空：<input type="text" disabled placeholder="${it.blank || '填写内容'}" style="border:1px solid #e8e8e8;border-radius:4px;padding:4px 8px;width:160px;background:#fafafa;">${it.suffix ? ' ' + it.suffix : ''}</span>`
+          ? `<span style="line-height:2.2;">${(it.parts || []).map((p, j) => p.blank != null
+              ? `<input type="text" disabled placeholder="${p.blank || '填写'}" style="border:none;border-bottom:1px solid #d9d9d9;padding:2px 4px;width:110px;text-align:center;background:transparent;font-size:13px;">`
+              : `<span>${p.text}</span>`).join('')}</span>`
           : it.options.map(op => it.type === '单选框'
             ? `<label style="margin-right:16px;"><input type="radio" disabled name="c2v-${i}"> ${op}</label>`
             : `<label style="margin-right:16px;"><input type="checkbox" disabled> ${op}</label>`).join('')}
@@ -7409,7 +7448,7 @@ let emg2Records = [
     desc: '外观有一处轻微划痕，其余正常。',
     results: [
       { text: '外观完好，无破损、锈蚀', type: '单选框', value: '正常', photo: '外观照片.jpg', content: '整体完好，背带卡扣无锈蚀。' },
-      { text: '数量核对：实存', type: '填空题', value: '12台' },
+      { text: '数量核对：实存', type: '填空题', parts: [{ text: '实存' }, { blank: '实际数量' }, { text: '，与台账一致' }], value: ['12台'] },
       { text: '在有效期内', type: '复选框', value: ['未过期'], content: '限用日期至2027-06-30。' }
     ] }
 ];
@@ -7488,10 +7527,10 @@ function openEmg2Check(kind, targetId) {
     <div class="phone-item" data-i="${i}">
       <div class="pi-title">${i + 1}. ${it.text} <span style="color:#999;font-weight:400;font-size:12px;">（${it.type}）</span></div>
       ${it.type === '填空题'
-        ? `<div class="pi-row" style="align-items:center;flex-wrap:wrap;">
-            <span style="color:#666;">${it.text}　</span><span style="color:#999;letter-spacing:2px;">＿</span>
-            <input type="text" id="eq-blank-${i}" placeholder="${it.blank || '填写'}" style="width:130px;border:none;border-bottom:1px solid #d9d9d9;padding:4px 6px;font-size:13px;text-align:center;">
-            <span style="color:#999;letter-spacing:2px;">＿</span>${it.suffix ? `<span style="color:#666;">　${it.suffix}</span>` : ''}
+        ? `<div class="pi-row" style="align-items:center;flex-wrap:wrap;gap:4px;line-height:2;">
+            ${(it.parts || []).map((p, j) => p.blank != null
+              ? `<input type="text" id="eq-blank-${i}-${j}" placeholder="${p.blank || '填写'}" style="width:110px;border:none;border-bottom:1px solid #1890ff;padding:2px 4px;font-size:13px;text-align:center;background:transparent;">`
+              : `<span style="color:#666;">${p.text}</span>`).join('')}
           </div>`
         : `<div class="pi-row" style="flex-wrap:wrap;">
             ${it.options.map(op => it.type === '单选框'
@@ -7536,9 +7575,15 @@ function submitEmg2Check() {
   let errMsg = '';
   c.items.forEach((it, i) => {
     let value;
+    let partsSnap = null;
     if (it.type === '填空题') {
-      value = document.getElementById('eq-blank-' + i).value.trim();
-      if (!value) { valid = false; if (!errMsg) errMsg = '请填写「' + it.text + '」的填空内容'; }
+      const answers = [];
+      (it.parts || []).forEach((p, j) => {
+        if (p.blank != null) answers.push(document.getElementById(`eq-blank-${i}-${j}`).value.trim());
+      });
+      value = answers;
+      partsSnap = it.parts;
+      if (answers.some(a => !a)) { valid = false; if (!errMsg) errMsg = '请完整填写「' + it.text + '」中的所有填空'; }
     } else if (it.type === '单选框') {
       const sel = document.querySelector(`input[name="eq-res-${i}"]:checked`);
       value = sel ? sel.value : '';
@@ -7548,6 +7593,7 @@ function submitEmg2Check() {
       if (!value.length) { valid = false; if (!errMsg) errMsg = '请勾选「' + it.text + '」至少一项'; }
     }
     const res = { text: it.text, type: it.type, value };
+    if (partsSnap) res.parts = partsSnap;
     if (it.needPhoto) {
       res.photo = eqItemPhotoMap[i] || '';
       if (!res.photo) { valid = false; if (!errMsg) errMsg = '请上传「' + it.text + '」的图片'; }
@@ -7636,7 +7682,7 @@ function renderEmg2RecBody() {
           <div style="font-size:13px;font-weight:600;line-height:2;">${i + 1}. ${it.text} <span style="color:#999;font-weight:400;font-size:12px;">（${it.type}）</span></div>
           <div style="font-size:13px;padding-left:18px;line-height:2;">
             ${it.type === '填空题'
-              ? `<span>${it.value || '—'}</span>`
+              ? `<span>${emg2BlankSentence(it.parts, it.value)}</span>`
               : it.type === '单选框'
                 ? `<span class="tag ${it.value === '正常' || it.value === '合格' ? 'tag-green' : 'tag-red'}">${it.value || '—'}</span>`
                 : (it.value || []).map(v => `<span class="tag ${v === '未过期' || v === '正常' ? 'tag-green' : 'tag-orange'}" style="margin-right:6px;">${v}</span>`).join('')}
