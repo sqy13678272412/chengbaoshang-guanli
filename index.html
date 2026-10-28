@@ -6568,8 +6568,16 @@ function submitEmgInspection() {
 // ===== 应急检查2 =====
 // 检查配置
 let emg2Checklists = [
-  { id: 1, name: '应急物资日常检查清单', items: ['外观完好，无破损、锈蚀', '数量与台账一致', '在有效期内'], desc: '适用于应急物资日常巡查，覆盖外观、数量及有效期。', operator: '管理员', opTime: '2026-10-15 10:00' },
-  { id: 2, name: '应急设备月度检查清单', items: ['设备运行正常，无异响', '仪表指示正常', '接地、绝缘良好'], desc: '适用于应急发电机、消防泵等设备月度检查。', operator: '管理员', opTime: '2026-10-20 14:30' }
+  { id: 1, name: '应急物资日常检查清单', items: [
+    { text: '外观完好，无破损、锈蚀', type: '单选框', options: ['正常', '异常'] },
+    { text: '数量与台账一致', type: '输入框', options: [] },
+    { text: '在有效期内', type: '复选框', options: ['未过期', '临近有效期', '已过期'] }
+  ], desc: '适用于应急物资日常巡查，覆盖外观、数量及有效期。', operator: '管理员', opTime: '2026-10-15 10:00' },
+  { id: 2, name: '应急设备月度检查清单', items: [
+    { text: '设备运行正常，无异响', type: '单选框', options: ['正常', '异常'] },
+    { text: '仪表指示正常', type: '复选框', options: ['电压正常', '油位正常', '水温正常'] },
+    { text: '接地、绝缘良好', type: '单选框', options: ['合格', '不合格'] }
+  ], desc: '适用于应急发电机、消防泵等设备月度检查。', operator: '管理员', opTime: '2026-10-20 14:30' }
 ];
 let emg2ClSeq = 3;
 
@@ -6947,18 +6955,52 @@ function resetEmg2ConfigFilter() {
 
 function renderC2Items() {
   document.getElementById('c2ItemList').innerHTML = c2Items.map((it, i) => `
-    <div class="emg-content-row">
-      <input type="text" class="c2-in" placeholder="请输入检查项" value="${it}" ${c2ViewMode ? 'disabled' : ''} style="flex:1;border:1px solid #d9d9d9;border-radius:4px;padding:6px 8px;font-size:13px;">
-      ${c2ViewMode ? '' : (i === 0
-        ? '<button class="emg-circle-btn" onclick="addC2Item()">＋</button>'
-        : `<button class="emg-circle-btn minus" onclick="removeC2Item(${i})">－</button>`)}
+    <div style="border:1px solid #f0f0f0;border-radius:6px;padding:10px 12px;margin-bottom:10px;">
+      <div class="emg-content-row">
+        <input type="text" class="c2-name" data-i="${i}" placeholder="请输入检查项" value="${it.text}" ${c2ViewMode ? 'disabled' : ''} style="flex:1;border:1px solid #d9d9d9;border-radius:4px;padding:6px 8px;font-size:13px;">
+        <select class="c2-type" data-i="${i}" ${c2ViewMode ? 'disabled' : ''} style="width:96px;flex:none;border:1px solid #d9d9d9;border-radius:4px;padding:5px;font-size:13px;">
+          <option ${it.type === '复选框' ? 'selected' : ''}>复选框</option>
+          <option ${it.type === '单选框' ? 'selected' : ''}>单选框</option>
+          <option ${it.type === '输入框' ? 'selected' : ''}>输入框</option>
+        </select>
+        ${c2ViewMode ? '' : (i === 0
+          ? '<button class="emg-circle-btn" onclick="addC2Item()">＋</button>'
+          : `<button class="emg-circle-btn minus" onclick="removeC2Item(${i})">－</button>`)}
+      </div>
+      ${it.type === '输入框' ? '' : `
+      <div style="display:flex;align-items:flex-start;gap:8px;padding-left:2px;">
+        <span style="font-size:12px;color:#999;flex:none;line-height:26px;">选项（${it.options.length}）：</span>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;flex:1;align-items:center;">
+          ${it.options.map((op, j) => `
+            <span style="display:inline-flex;align-items:center;gap:4px;">
+              <input type="text" class="c2-opt" data-i="${i}" data-j="${j}" value="${op}" placeholder="选项${j + 1}" ${c2ViewMode ? 'disabled' : ''} style="width:110px;border:1px solid #d9d9d9;border-radius:4px;padding:4px 6px;font-size:12px;">
+              ${c2ViewMode ? '' : `<span class="link" style="font-size:12px;" onclick="removeC2Option(${i},${j})">✕</span>`}
+            </span>`).join('')}
+          ${c2ViewMode ? '' : `<span class="link" style="font-size:12px;" onclick="addC2Option(${i})">＋添加选项</span>`}
+        </div>
+      </div>`}
     </div>`).join('');
   if (c2ViewMode) return;
-  document.querySelectorAll('#c2ItemList .c2-in').forEach((el, i) =>
-    el.addEventListener('input', function () { c2Items[i] = this.value; }));
+  document.querySelectorAll('#c2ItemList .c2-name').forEach(el => el.addEventListener('input', function () {
+    c2Items[Number(this.dataset.i)].text = this.value;
+  }));
+  document.querySelectorAll('#c2ItemList .c2-type').forEach(el => el.addEventListener('change', function () {
+    const it = c2Items[Number(this.dataset.i)];
+    it.type = this.value;
+    if (it.type !== '输入框' && !it.options.length) it.options = ['选项1', '选项2'];
+    renderC2Items();
+  }));
+  document.querySelectorAll('#c2ItemList .c2-opt').forEach(el => el.addEventListener('input', function () {
+    c2Items[Number(this.dataset.i)].options[Number(this.dataset.j)] = this.value;
+  }));
 }
-function addC2Item() { c2Items.push(''); renderC2Items(); }
+function addC2Item() {
+  c2Items.push({ text: '', type: '单选框', options: ['正常', '异常'] });
+  renderC2Items();
+}
 function removeC2Item(i) { c2Items.splice(i, 1); renderC2Items(); }
+function addC2Option(i) { c2Items[i].options.push(''); renderC2Items(); }
+function removeC2Option(i, j) { c2Items[i].options.splice(j, 1); renderC2Items(); }
 
 function openEmg2Cl2Modal(id, viewMode) {
   c2EditId = id || null;
@@ -6967,7 +7009,7 @@ function openEmg2Cl2Modal(id, viewMode) {
   document.getElementById('emg2Cl2ModalTitle').textContent = c2ViewMode ? '检查配置详情' : (c ? '编辑检查配置' : '新增检查配置');
   document.getElementById('c2Name').value = c ? c.name : '';
   document.getElementById('c2Desc').value = c ? (c.desc || '') : '';
-  c2Items = c ? c.items.slice() : [''];
+  c2Items = c ? c.items.map(it => ({ text: it.text, type: it.type, options: it.options.slice() })) : [{ text: '', type: '单选框', options: ['正常', '异常'] }];
   const scope = c ? emg2ScopeOf(c.id) : { mats: [], devs: [] };
   c2ScopePicks = { mats: scope.mats.map(m => m.id), devs: scope.devs.map(d => d.id) };
   document.getElementById('c2Scope').value = c ? `应急物资 ${scope.mats.length} 项，应急设备 ${scope.devs.length} 项` : '';
@@ -7036,9 +7078,20 @@ function confirmEmg2Scope() {
 
 function saveEmg2Cl2() {
   const name = document.getElementById('c2Name').value.trim();
-  const items = c2Items.map(s => s.trim()).filter(Boolean);
+  const items = [];
+  for (let i = 0; i < c2Items.length; i++) {
+    const it = c2Items[i];
+    const text = it.text.trim();
+    if (!text) { alert('请填写第 ' + (i + 1) + ' 个检查项的名称'); return; }
+    if (it.type !== '输入框') {
+      const opts = it.options.map(o => o.trim()).filter(Boolean);
+      if (!opts.length) { alert('检查项「' + text + '」为' + it.type + '，请至少设置一个选项'); return; }
+      items.push({ text, type: it.type, options: opts });
+    } else {
+      items.push({ text, type: it.type, options: [] });
+    }
+  }
   if (!name) { alert('请输入检查清单名称'); return; }
-  if (!items.length) { alert('请至少填写一个检查项'); return; }
   if (!c2ScopePicks.mats.length && !c2ScopePicks.devs.length) { alert('请点击选择适用范围'); return; }
   const cid = c2EditId || emg2ClSeq++;
   const data = {
@@ -7093,9 +7146,17 @@ function openEmg2ItemsView(id) {
   const c = emg2Checklists.find(x => x.id === id);
   if (!c) return;
   document.getElementById('emg2ViewTitle').textContent = '检查项（' + c.name + '）';
-  document.getElementById('emg2ViewBody').innerHTML = c.items.length
-    ? `<div style="border:1px solid #f0f0f0;border-radius:6px;padding:4px 14px;">${c.items.map((it, i) => `<div style="font-size:13px;line-height:2.4;">${i + 1}. ${it}</div>`).join('')}</div>`
-    : '<div class="mo-empty">未配置检查项</div>';
+  document.getElementById('emg2ViewBody').innerHTML = c.items.length ? c.items.map((it, i) => `
+    <div style="border:1px solid #f0f0f0;border-radius:6px;padding:10px 14px;margin-bottom:10px;">
+      <div style="font-size:13px;font-weight:600;line-height:2;">${i + 1}. ${it.text} <span style="color:#999;font-weight:400;">（${it.type}）</span></div>
+      <div style="font-size:13px;color:#666;padding-left:18px;line-height:2.2;">
+        ${it.type === '输入框'
+          ? '<input type="text" disabled placeholder="检查人填写" style="border:1px solid #e8e8e8;border-radius:4px;padding:4px 8px;width:240px;background:#fafafa;">'
+          : it.options.map(op => it.type === '单选框'
+            ? `<label style="margin-right:16px;"><input type="radio" disabled name="c2v-${i}"> ${op}</label>`
+            : `<label style="margin-right:16px;"><input type="checkbox" disabled> ${op}</label>`).join('')}
+      </div>
+    </div>`).join('') : '<div class="mo-empty">未配置检查项</div>';
   document.getElementById('emg2ViewModal').classList.remove('hidden');
 }
 function closeEmg2View() { document.getElementById('emg2ViewModal').classList.add('hidden'); }
