@@ -380,7 +380,10 @@
     display: flex;
     flex-direction: column;
     box-shadow: -4px 0 16px rgba(0,21,41,.12);
+    transform: translateX(100%);
+    transition: transform .25s ease;
   }
+  .modal-mask:not(.hidden) .drawer { transform: translateX(0); }
   .drawer-header {
     padding: 14px 24px;
     border-bottom: 1px solid #f0f0f0;
@@ -2535,6 +2538,20 @@
     <div class="modal-footer">
       <button class="btn btn-plain" onclick="closeEmg2Cl2Modal()">取消</button>
       <button class="btn btn-primary" onclick="saveEmg2Cl2()">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- 应急检查2：物资/设备详情（右侧滑出抽屉：基础信息 + 检查记录） -->
+<div class="modal-mask drawer-mask hidden" id="emg2DetailDrawer">
+  <div class="drawer" style="width:860px;max-width:70vw;">
+    <div class="drawer-header">
+      <span id="emg2DetailTitle">详情</span>
+      <span class="modal-close" onclick="closeEmg2Detail()">✕</span>
+    </div>
+    <div class="drawer-body" id="emg2DetailBody"></div>
+    <div class="drawer-footer">
+      <button class="btn btn-plain" onclick="closeEmg2Detail()">关闭</button>
     </div>
   </div>
 </div>
@@ -6733,7 +6750,7 @@ function renderEmg2Mats() {
       <td>${m.checklistId ? cl2Name(m.checklistId) : '—'}</td>
       <td>
         <span class="link" onclick="openEmg2MatModal(${m.id})">编辑</span>
-        <span class="link" onclick="openEmg2MatModal(${m.id}, true)">详情</span>
+        <span class="link" onclick="openEmg2Detail('物资', ${m.id})">详情</span>
         <span class="link" onclick="openEmg2Qr('物资', ${m.id})">二维码</span>
       </td>
     </tr>`).join('') : '<tr><td colspan="22" style="text-align:center;color:#999;padding:40px;">暂无数据</td></tr>';
@@ -6860,7 +6877,7 @@ function renderEmg2Devs() {
       <td>${d.checklistId ? cl2Name(d.checklistId) : '—'}</td>
       <td>
         <span class="link" onclick="openEmg2DevModal(${d.id})">编辑</span>
-        <span class="link" onclick="openEmg2DevModal(${d.id}, true)">详情</span>
+        <span class="link" onclick="openEmg2Detail('设备', ${d.id})">详情</span>
         <span class="link" onclick="openEmg2Qr('设备', ${d.id})">二维码</span>
       </td>
     </tr>`).join('') : '<tr><td colspan="23" style="text-align:center;color:#999;padding:40px;">暂无数据</td></tr>';
@@ -6919,6 +6936,69 @@ function openEmg2DevModal(id, viewMode) {
   document.getElementById('emg2DevModal').classList.remove('hidden');
 }
 function closeEmg2DevModal() { document.getElementById('emg2DevModal').classList.add('hidden'); }
+
+// 应急物资/设备详情抽屉（右侧滑出：基础信息 + 检查记录）
+let emg2DetailKind = null;
+let emg2DetailId = null;
+let emg2DetailExpand = {};
+function openEmg2Detail(kind, id) {
+  const src = kind === '物资' ? emg2Materials : emg2Devices;
+  const r = src.find(x => x.id === id);
+  if (!r) return;
+  emg2DetailKind = kind;
+  emg2DetailId = id;
+  const isMat = kind === '物资';
+  const numLabel = isMat ? '物资数量' : '设备数量';
+  const modelLabel = isMat ? '规格型号' : '设备型号';
+  const fields = [
+    [kind + '名称', r.name], [kind + '编号', r.code || '—'], [kind + '类别', r.category], ['存放单位', r.unit],
+    ['保管部门', r.dept], ['限用日期', r.limitDate], ['生产日期', r.prodDate], [numLabel, r.qty],
+    ['检查周期(天)', r.cycle], ['巡检周期(天)', r.patrol === '' || r.patrol == null ? '—' : r.patrol], ['投用日期', r.useDate || '—'], ['生产厂家', r.manufacturer || '—'],
+    [modelLabel, r.spec || '—'], ['联系人', r.contact], ['联系方式', r.phone || '—'], ['储存点', r.storage],
+    ['所在区域/位置', r.location || '—']
+  ];
+  if (!isMat) fields.push(['地图标记', r.map || '—']);
+  fields.push(['备注信息', r.remark || '—'], ['事故类型', r.accidents.length ? r.accidents.join('、') : '—'],
+    ['现场图片', r.photo ? '🖼 ' + r.photo : '—'], ['关联检查清单', r.checklistId ? cl2Name(r.checklistId) : '—']);
+  const info = `<div style="display:grid;grid-template-columns:repeat(4,1fr);row-gap:10px;column-gap:8px;padding:12px 16px;background:#fafafa;border-radius:4px;">${fields.map(([l, v]) => `<div style="min-width:0;"><span style="color:#999;">${l}：</span><span>${v}</span></div>`).join('')}</div>`;
+  const recs = emg2Records.filter(x => x.kind === kind && x.targetId === id);
+  const recRows = recs.length ? recs.map(rec => `
+    <tr>
+      <td style="text-align:center;cursor:pointer;" onclick="toggleEmg2DetailRec(${rec.id})"><span class="expand-icon">${emg2DetailExpand[rec.id] ? '▾' : '▸'}</span></td>
+      <td>${rec.checklistName || '—'}</td>
+      <td>${rec.inspector || '—'}</td>
+      <td>${rec.checkTime}</td>
+    </tr>
+    ${emg2DetailExpand[rec.id] ? `
+    <tr><td style="background:#fafafa;"></td><td colspan="3" style="background:#fafafa;padding:10px 14px;">
+      <div style="font-size:12px;color:#666;margin-bottom:8px;">现场照片：${rec.photo ? '📷 ' + rec.photo : '—'}　描述：${rec.desc || '—'}</div>
+      <div class="table-wrap" style="border:1px solid #f0f0f0;border-radius:4px;"><table style="min-width:640px;background:#fff;"><thead><tr><th style="width:40px;">序号</th><th>检查项</th><th style="width:90px;">方式</th><th>结果</th><th style="width:150px;">图片</th><th>检查内容</th></tr></thead><tbody>
+      ${rec.results.map((it, i) => `
+        <tr>
+          <td style="text-align:center;">${i + 1}</td>
+          <td>${it.text}</td>
+          <td>${it.type}</td>
+          <td>${it.type === '复选框' ? (it.value || []).join('、') : (it.value || '—')}</td>
+          <td>${it.photo ? '📷 ' + it.photo : '—'}</td>
+          <td>${it.content || '—'}</td>
+        </tr>`).join('')}
+      </tbody></table></div>
+    </td></tr>` : ''}`).join('') : '<tr><td colspan="4" style="text-align:center;color:#999;padding:30px;">暂无检查记录</td></tr>';
+  document.getElementById('emg2DetailTitle').textContent = `应急${kind}详情（${r.name}）`;
+  document.getElementById('emg2DetailBody').innerHTML = `
+    <div class="drawer-section-title">基础信息</div>
+    ${info}
+    <div class="drawer-section-title" style="margin-top:20px;">检查记录（${recs.length}）</div>
+    <div class="table-wrap" style="border:1px solid #f0f0f0;border-radius:6px;"><table style="min-width:680px;"><thead>
+      <tr><th style="width:36px;"></th><th>检查清单</th><th style="width:120px;">检查人</th><th style="width:170px;">检查时间</th></tr>
+    </thead><tbody>${recRows}</tbody></table></div>`;
+  document.getElementById('emg2DetailDrawer').classList.remove('hidden');
+}
+function toggleEmg2DetailRec(id) {
+  emg2DetailExpand[id] = !emg2DetailExpand[id];
+  openEmg2Detail(emg2DetailKind, emg2DetailId);
+}
+function closeEmg2Detail() { document.getElementById('emg2DetailDrawer').classList.add('hidden'); }
 
 function saveEmg2Dev() {
   const v = k => document.getElementById(k).value.trim();
@@ -7325,7 +7405,7 @@ function closeEmg2Qr() { document.getElementById('emg2QrModal').classList.add('h
 let emg2RecSeq = 2;
 let emg2Records = [
   { id: 1, kind: '物资', targetId: 1, name: '正压式空气呼吸器', code: 'WZ-2026-001', location: '一号厂房东门内侧',
-    checkTime: '2026-10-28 09:30', checklistName: '应急物资日常检查清单', photo: '现场照片.jpg',
+    checkTime: '2026-10-28 09:30', checklistName: '应急物资日常检查清单', inspector: '管理员', photo: '现场照片.jpg',
     desc: '外观有一处轻微划痕，其余正常。',
     results: [
       { text: '外观完好，无破损、锈蚀', type: '单选框', value: '正常', photo: '外观照片.jpg', content: '整体完好，背带卡扣无锈蚀。' },
@@ -7483,7 +7563,7 @@ function submitEmg2Check() {
     id: emg2RecSeq++,
     kind, targetId,
     name: r.name, code: r.code || '', location: r.location || '',
-    checklistName: c.name, checkTime: formatNow(),
+    checklistName: c.name, checkTime: formatNow(), inspector: '管理员',
     photo: eqFormPhoto, desc: document.getElementById('eqDesc').value.trim(),
     results
   });
@@ -7598,7 +7678,7 @@ renderEmg2Records();
  ['emgTargetModal', closeEmgTargetModal], ['emgUserModal', closeEmgUserModal],
  ['emg2MatModal', closeEmg2MatModal], ['emg2DevModal', closeEmg2DevModal], ['emg2Cl2Modal', closeEmg2Cl2Modal],
  ['emg2ClPickModal', closeEmg2ClPick], ['emg2ScopeModal', closeEmg2ScopeModal], ['emg2ViewModal', closeEmg2View],
- ['emg2QrModal', closeEmg2Qr], ['emg2OrgModal', closeEmg2OrgModal],
+ ['emg2QrModal', closeEmg2Qr], ['emg2OrgModal', closeEmg2OrgModal], ['emg2DetailDrawer', closeEmg2Detail],
  ['emg2ScanModal', closeEmg2Scan], ['emg2CheckModal', closeEmg2Check], ['emg2RecordModal', closeEmg2Record]]
 .forEach(([id, fn]) => document.getElementById(id).addEventListener('click', function (e) {
   if (e.target === this) fn();
