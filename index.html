@@ -3141,8 +3141,10 @@
         </div>
         <div class="form-item span-2">
           <label class="required">检查类型</label>
-          <select id="ccPlanTplId"></select>
-          <span style="color:#999;font-size:12px;flex:none;">选择检查清单中已开启的清单</span>
+          <div style="flex:1;display:flex;gap:6px;">
+            <input type="text" id="ccPlanTplName" readonly placeholder="点击右侧按钮选择检查清单" style="flex:1;background:#fafafa;">
+            <button class="btn btn-plain" onclick="openCcPlanTplPick()" style="flex:none;">选择清单</button>
+          </div>
         </div>
         <div class="form-item span-2">
           <label class="required">检查维度</label>
@@ -3232,6 +3234,34 @@
     <div class="modal-footer">
       <button class="btn btn-plain" onclick="closeCcPlanModal()">取消</button>
       <button class="btn btn-primary" onclick="saveCcPlan()">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- 承包商检查：选择检查清单（检查类型字段弹窗） -->
+<div class="modal-mask hidden" id="ccPlanTplPickModal">
+  <div class="modal wide" style="width:1000px;">
+    <div class="modal-header">
+      选择检查清单
+      <span class="modal-close" onclick="closeCcPlanTplPick()">✕</span>
+    </div>
+    <div class="modal-body">
+      <div class="table-wrap">
+        <table style="min-width:900px;">
+          <thead>
+            <tr>
+              <th style="width:48px;">选择</th><th>清单名称</th><th>检查类型</th><th>当前版本</th>
+              <th>检查项任务数</th><th>引用计划数</th><th>状态</th>
+            </tr>
+          </thead>
+          <tbody id="ccPlanTplPickBody"></tbody>
+        </table>
+      </div>
+      <div style="color:#999;font-size:12px;margin-top:8px;">仅展示已开启且存在生效版本的检查清单；点击"检查项任务数 / 引用计划数"可查看明细。</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-plain" onclick="closeCcPlanTplPick()">取消</button>
+      <button class="btn btn-primary" onclick="confirmCcPlanTplPick()">确定</button>
     </div>
   </div>
 </div>
@@ -10077,11 +10107,33 @@ let ccPlanEdit = { mode: 'new', planId: null };
 function ccPlanOptionList(arr, cur) {
   return '<option value="">请选择</option>' + arr.map(x => `<option ${cur === x ? 'selected' : ''}>${x}</option>`).join('');
 }
-function ccEnabledTplOptions(cur) {
-  return '<option value="">请选择</option>' + ccTemplates.filter(t => t.enabled && ccTplVer(t.id)).map(t => {
+// 检查类型：弹窗选择检查清单（仅已开启且存在生效版本）
+let ccPlanTplSel = { id: null };
+function openCcPlanTplPick() {
+  const list = ccTemplates.filter(t => t.enabled && ccTplVer(t.id));
+  document.getElementById('ccPlanTplPickBody').innerHTML = list.map(t => {
     const v = ccTplVer(t.id);
-    return `<option value="${t.id}" ${cur === t.id ? 'selected' : ''}>${t.name}（${t.type}） ${v.ver}（${v.items ? v.items.length : 0}项）</option>`;
-  }).join('');
+    const planCount = ccPlans.filter(p => p.templateId === t.id).length;
+    return `<tr style="cursor:pointer;" onclick="document.getElementById('ccPlanTplPickR${t.id}').checked = true;">
+      <td><input type="radio" name="ccPlanTplPick" id="ccPlanTplPickR${t.id}" value="${t.id}" ${ccPlanTplSel.id === t.id ? 'checked' : ''}></td>
+      <td>${ccEsc(t.name)}</td>
+      <td>${t.type}</td>
+      <td>${ccNowVer(t)}</td>
+      <td><span class="link" onclick="event.stopPropagation();openCcTplItems(${t.id})">${v && v.items ? v.items.length : 0}</span></td>
+      <td><span class="link" onclick="event.stopPropagation();openCcTplPlans(${t.id})">${planCount}</span></td>
+      <td><span class="tag tag-green">已开启</span></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="7"><div class="mo-empty">暂无已开启的检查清单</div></td></tr>';
+  document.getElementById('ccPlanTplPickModal').classList.remove('hidden');
+}
+function closeCcPlanTplPick() { document.getElementById('ccPlanTplPickModal').classList.add('hidden'); }
+function confirmCcPlanTplPick() {
+  const r = document.querySelector('input[name=ccPlanTplPick]:checked');
+  if (!r) { alert('请选择一条检查清单'); return; }
+  ccPlanTplSel.id = parseInt(r.value, 10);
+  const t = ccTpl(ccPlanTplSel.id);
+  document.getElementById('ccPlanTplName').value = t ? `${t.name}（${t.type}）` : '';
+  closeCcPlanTplPick();
 }
 function openCcPlanModal(mode, planId) {
   ccPlanEdit = { mode, planId: planId || null };
@@ -10094,7 +10146,9 @@ function openCcPlanModal(mode, planId) {
   document.querySelectorAll('input[name=ccPlanDim]').forEach(r => r.checked = r.value === dim);
   document.getElementById('ccPlanProject').innerHTML = ccPlanOptionList(CC_PROJECTS, p ? (dim === '项目' ? p.target : '') : '');
   document.getElementById('ccPlanContractor').innerHTML = ccPlanOptionList(CC_CONTRACTORS, p ? (dim === '承包商' ? p.target : '') : '');
-  document.getElementById('ccPlanTplId').innerHTML = ccEnabledTplOptions(p ? p.templateId : null);
+  ccPlanTplSel = { id: p ? p.templateId : null };
+  const selT = ccPlanTplSel.id ? ccTpl(ccPlanTplSel.id) : null;
+  document.getElementById('ccPlanTplName').value = selT ? `${selT.name}（${selT.type}）` : '';
   const freq = p ? p.freq : '单次';
   document.querySelectorAll('input[name=ccPlanFreq]').forEach(r => r.checked = r.value === freq);
   document.getElementById('ccPlanExecTime').value = p && p.freq === '单次' ? ccToLocal(p.execTime) : '';
@@ -10164,7 +10218,7 @@ function saveCcPlan() {
   const name = document.getElementById('ccPlanName').value.trim();
   const dim = (document.querySelector('input[name=ccPlanDim]:checked') || {}).value || '项目';
   const target = dim === '项目' ? document.getElementById('ccPlanProject').value : document.getElementById('ccPlanContractor').value;
-  const templateId = parseInt(document.getElementById('ccPlanTplId').value, 10);
+  const templateId = ccPlanTplSel.id;
   const freq = (document.querySelector('input[name=ccPlanFreq]:checked') || {}).value || '单次';
   const skipWeekend = ((document.querySelector('input[name=ccPlanSkip]:checked') || {}).value || '否') === '是';
   let execTime = '', cycleStart = '', cycleEnd = '', firstExec = '', cycleType = '', cycleRule = '', rule = null;
@@ -13213,7 +13267,7 @@ document.getElementById('menu').addEventListener('click', function (e) {
  ['ccTplPlansModal', closeCcTplPlans], ['ccTplItemsModal', closeCcTplItems], ['ccTplBlockModal', closeCcTplBlock],
  ['ccTypeModal', closeCcTypeModal], ['ccPenTypeModal', closeCcPenTypeModal], ['ccAutoRuleModal', closeCcAutoRuleModal],
  ['ccBlackRuleModal', closeCcBlackRuleModal], ['ccFlowModal', closeCcFlowModal], ['ccNoticeModal', closeCcNoticeModal],
- ['ccPlanModal', closeCcPlanModal], ['ccPlanExecModal', closeCcPlanExec], ['ccPlanCancelModal', closeCcPlanCancel],
+ ['ccPlanModal', closeCcPlanModal], ['ccPlanTplPickModal', closeCcPlanTplPick], ['ccPlanExecModal', closeCcPlanExec], ['ccPlanCancelModal', closeCcPlanCancel],
  ['ccPlanDetailDrawer', closeCcPlanDetail], ['ccNewRecModal', closeCcNewRec], ['ccExecModal', closeCcExec],
  ['ccExecConfirmModal', closeCcExecConfirm], ['ccRecordDetailDrawer', closeCcRecordDetail],
  ['ccRectDetailDrawer', closeCcRectDetail], ['ccAssignModal', closeCcAssignModal], ['ccVerifyModal', closeCcVerifyModal],
