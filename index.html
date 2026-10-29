@@ -3569,9 +3569,9 @@
 
 <!-- 承包商检查：通用阻止弹窗（关联数据删除阻止） -->
 <div class="modal-mask hidden" id="ccBlockModal">
-  <div class="modal" style="width:480px;">
+  <div class="modal" id="ccBlockBox" style="width:480px;">
     <div class="modal-header">
-      操作被阻止
+      <span id="ccBlockTitle">操作被阻止</span>
       <span class="modal-close" onclick="closeCcBlockModal()">✕</span>
     </div>
     <div class="modal-body" id="ccBlockBody" style="color:#666;line-height:2;"></div>
@@ -11022,27 +11022,39 @@ function ccRecItemFlow(recId, seq) {
       ${fld('整改要求', ccEsc(rep.requirement || '—'))}
       ${fld('整改截至期限', ccEsc(rep.deadline || '—'))}`, '#fa8c16'));
     const shared = rep.targets.length === 1;
-    rep.targets.forEach((tg, i) => {
-      const fT = tg.fixTime || (shared ? rep.fixTime : '');
-      const fD = tg.fixDesc || (shared ? rep.fixDesc : '');
-      const fP = (tg.fixPhotos && tg.fixPhotos.length) ? tg.fixPhotos : (shared ? rep.fixPhotos : []);
-      const vT = tg.verifyTime || (shared ? rep.verifyTime : '');
-      const vR = tg.verifyRes || (shared ? rep.verifyRes : '');
-      const vO = tg.verifyOpinion || (shared ? rep.verifyOpinion : '');
-      nodes.push(node('🔧', `整改任务 ${i + 1}（${ccEsc(tg.name)} → 整改人：${ccEsc(tg.assignee || '待分配')}）`, '', `
-        ${fld('整改要求', ccEsc(rep.requirement || '—'))}
-        ${fld('整改截至期限', ccEsc(rep.deadline || '—'))}`, '#fa8c16'));
-      nodes.push(fT
-        ? node('✏', '整改处理', fT, `
-          ${fld('整改描述', ccEsc(fD || '—'))}
-          ${fld('整改图片', fP.length ? fP.map(p => '🖼 ' + ccEsc(p)).join('　') : '—')}`, '#1890ff')
-        : node('✏', '整改处理', '', pending('该整改人待整改'), '#d9d9d9'));
-      nodes.push(vT
-        ? node('✔', '验收', vT, `
-          ${fld('验收结论', `<span class="tag ${vR === '通过' ? 'tag-green' : 'tag-red'}">${ccEsc(vR || '—')}</span>`)}
-          ${fld('验收意见', ccEsc(vO || '—'))}`, vR === '通过' ? '#52c41a' : '#f5222d')
-        : node('✔', '验收', '', pending('待验收'), '#d9d9d9'));
-    });
+    const cols = rep.targets.map((tg, i) => {
+      let rds = tg.rounds;
+      if (!rds) {
+        const fT = tg.fixTime || (shared ? rep.fixTime : '');
+        const vT = tg.verifyTime || (shared ? rep.verifyTime : '');
+        rds = [];
+        if (fT) rds.push({ type: '提交', result: tg.fixDesc || (shared ? rep.fixDesc : '') || '', time: fT, attachments: (tg.fixPhotos && tg.fixPhotos.length) ? tg.fixPhotos : (shared ? rep.fixPhotos : []) });
+        if (vT) rds.push({ type: '验证', result: tg.verifyRes || (shared ? rep.verifyRes : '') || '', opinion: tg.verifyOpinion || (shared ? rep.verifyOpinion : '') || '', time: vT });
+      }
+      const fixN = rds.filter(x => x.type === '提交').length;
+      const verN = rds.filter(x => x.type === '验证').length;
+      let fi = 0, vi = 0;
+      const inner = rds.length ? rds.map(rd => {
+        if (rd.type === '提交') {
+          fi++;
+          return node('✏', '整改' + (fixN > 1 ? `（第${fi}次）` : ''), rd.time, `
+            ${fld('整改描述', ccEsc(rd.result || '—'))}
+            ${fld('整改图片', (rd.attachments || []).length ? rd.attachments.map(p => '🖼 ' + ccEsc(p)).join('　') : '—')}`, '#1890ff');
+        }
+        vi++;
+        return node('✔', '验收' + (verN > 1 ? `（第${vi}次）` : ''), rd.time, `
+          ${fld('验收结论', `<span class="tag ${rd.result === '通过' ? 'tag-green' : 'tag-red'}">${ccEsc(rd.result || '—')}</span>`)}
+          ${fld('验收意见', ccEsc(rd.opinion || '—'))}`, rd.result === '通过' ? '#52c41a' : '#f5222d');
+      }).join('') : pending('待整改');
+      return `<div style="flex:1;min-width:0;border:1px solid #f0f0f0;border-radius:8px;overflow:hidden;">
+        <div style="padding:10px 12px;border-bottom:1px solid #f0f0f0;background:#fafafa;">
+          <div style="font-weight:600;font-size:13px;">整改任务 ${i + 1}</div>
+          <div style="font-size:12px;color:#666;margin-top:3px;line-height:1.7;">${ccEsc(tg.name)}<br>整改人：<span style="color:#1890ff;">${ccEsc(tg.assignee || '待分配')}</span></div>
+        </div>
+        <div style="padding:12px 12px 0;">${inner}</div>
+      </div>`;
+    }).join('');
+    nodes.push(`<div style="display:flex;gap:12px;align-items:flex-start;margin-top:4px;">${cols}</div>`);
   } else if (rect) {
     // 桌面端整改任务数据：按 rounds 逐轮展示完整流程
     nodes.push(node('②', '整改上报（任务下发）', '', `
@@ -11078,7 +11090,7 @@ function ccRecItemFlow(recId, seq) {
     nodes.push(node('③', '整改处理', '', pending('待整改'), '#d9d9d9'));
     nodes.push(node('④', '验收', '', pending('待验收'), '#d9d9d9'));
   }
-  openCcBlock(`整改全流程（第 ${seq} 项：${ccEsc(it.task)}）`, `<div style="max-width:640px;">${nodes.join('')}</div>`);
+  openCcBlock(`整改全流程（第 ${seq} 项：${ccEsc(it.task)}）`, `<div style="max-width:1180px;">${nodes.join('')}</div>`, 'min(1240px, 96vw)');
 }
 function ccGoRectPage() {
   closeCcRecordDetail();
@@ -11137,8 +11149,10 @@ function ccRefreshAll() {
   renderCcBlacks();
   renderCcAudits();
 }
-function openCcBlock(title, html) {
+function openCcBlock(title, html, width) {
+  document.getElementById('ccBlockTitle').textContent = title || '操作被阻止';
   document.getElementById('ccBlockBody').innerHTML = html;
+  document.getElementById('ccBlockBox').style.width = width || '480px';
   document.getElementById('ccBlockModal').classList.remove('hidden');
 }
 function closeCcBlockModal() { document.getElementById('ccBlockModal').classList.add('hidden'); }
@@ -14706,7 +14720,11 @@ let c2mReps = [
   { id: 1, code: 'ZG2-20261029-001', planId: 2, planCode: 'JCJH-202610-006', planName: '华筑建设每周综合安全检查', level: '一般',
     desc: '现场材料堆放杂乱，消防通道被占用', photos: ['PIC_20261026_1.jpg'],
     targets: [
-      { name: '城东综合体二期', assignee: '陈建国', fixDesc: '已清理堆放材料并恢复消防通道畅通', fixPhotos: ['整改照片A.jpg'], fixTime: '2026-10-29 15:00', verifyRes: '通过', verifyOpinion: '现场复查合格，通道恢复畅通', verifyTime: '2026-10-29 16:00' },
+      { name: '城东综合体二期', assignee: '陈建国', fixDesc: '已清理堆放材料并恢复消防通道畅通', fixPhotos: ['整改照片A.jpg'], fixTime: '2026-10-29 15:00', verifyRes: '通过', verifyOpinion: '现场复查合格，通道恢复畅通', verifyTime: '2026-10-29 16:00',
+        rounds: [
+          { type: '提交', result: '已清理堆放材料并恢复消防通道畅通', time: '2026-10-29 15:00', attachments: ['整改照片A.jpg'] },
+          { type: '验证', result: '通过', opinion: '现场复查合格，通道恢复畅通', time: '2026-10-29 16:00' }
+        ] },
       { name: '智能制造厂房三期', assignee: '赵宁' }
     ],
     requirement: '立即清理堆放材料，恢复消防通道畅通，并拍照留存', deadline: '2026-11-01',
@@ -14715,10 +14733,23 @@ let c2mReps = [
   { id: 2, code: 'ZG2-20261029-002', planId: 1, planCode: 'JCJH-202610-001', planName: '城东综合体二期日常安全检查', level: '一般',
     desc: '东侧二级配电箱未落实防雨措施，箱体顶部盖板缺失', photos: ['现场照片1.jpg'],
     targets: [
-      { name: '华筑建设有限公司', assignee: '陈建国', fixDesc: '已恢复防雨措施并加装固定卡扣', fixPhotos: ['整改照片B1.jpg'], fixTime: '2026-10-29 10:20', verifyRes: '通过', verifyOpinion: '复查合格，防雨措施落实', verifyTime: '2026-10-29 11:00' },
-      { name: '宏远建筑有限公司', assignee: '赵四火', fixDesc: '已完成配电箱防雨处理', fixPhotos: ['整改照片B2.jpg'], fixTime: '2026-10-29 11:10' },
+      { name: '华筑建设有限公司', assignee: '陈建国', fixDesc: '已恢复防雨措施并加装固定卡扣', fixPhotos: ['整改照片B1.jpg'], fixTime: '2026-10-29 10:20', verifyRes: '通过', verifyOpinion: '复查合格，防雨措施落实', verifyTime: '2026-10-29 11:00',
+        rounds: [
+          { type: '提交', result: '已恢复防雨措施并加装固定卡扣', time: '2026-10-29 10:20', attachments: ['整改照片B1.jpg'] },
+          { type: '验证', result: '通过', opinion: '复查合格，防雨措施落实', time: '2026-10-29 11:00' }
+        ] },
+      { name: '宏远建筑有限公司', assignee: '赵四火', fixDesc: '已完成配电箱防雨处理', fixPhotos: ['整改照片B2.jpg'], fixTime: '2026-10-29 11:10',
+        rounds: [
+          { type: '提交', result: '已完成配电箱防雨处理', time: '2026-10-29 11:10', attachments: ['整改照片B2.jpg'] }
+        ] },
       { name: '华美装饰工程有限公司', assignee: '吴烟枪' },
-      { name: '华筑建设有限公司', assignee: '高翔' }
+      { name: '华筑建设有限公司', assignee: '高翔', fixDesc: '已加装固定卡扣并完成防雨处理', fixPhotos: ['整改照片B3.jpg'], fixTime: '2026-10-29 16:30', verifyRes: '通过', verifyOpinion: '二次复查合格', verifyTime: '2026-10-29 17:00',
+        rounds: [
+          { type: '提交', result: '已恢复防雨措施', time: '2026-10-29 14:00', attachments: ['整改照片B3.jpg'] },
+          { type: '验证', result: '不通过', opinion: '固定卡扣未拧紧，盖板仍有脱落风险', time: '2026-10-29 15:00' },
+          { type: '提交', result: '已加装固定卡扣并完成防雨处理', time: '2026-10-29 16:30', attachments: ['整改照片B4.jpg'] },
+          { type: '验证', result: '通过', opinion: '二次复查合格', time: '2026-10-29 17:00' }
+        ] }
     ],
     requirement: '限期恢复防雨措施，加装固定卡扣并拍照留存', deadline: '2026-10-31',
     fixDesc: '', fixPhotos: [], fixTime: '', verifyRes: '', verifyOpinion: '', verifyTime: '',
@@ -14726,9 +14757,16 @@ let c2mReps = [
   { id: 3, code: 'ZG2-20261029-003', planId: 3, planCode: 'JCJH-202610-009', planName: '城东综合体二期消防设施巡检', level: '一般',
     desc: '连墙件缺失2处，与方案不符', photos: ['连墙件缺失位置.jpg'],
     targets: [
-      { name: '华筑建设有限公司', assignee: '陈建国', fixDesc: '已补设连墙件2处并挂设标识', fixPhotos: ['整改照片C1.jpg'], fixTime: '2026-10-29 09:10', verifyRes: '通过', verifyOpinion: '复查合格', verifyTime: '2026-10-29 10:00' },
+      { name: '华筑建设有限公司', assignee: '陈建国', fixDesc: '已补设连墙件2处并挂设标识', fixPhotos: ['整改照片C1.jpg'], fixTime: '2026-10-29 09:10', verifyRes: '通过', verifyOpinion: '复查合格', verifyTime: '2026-10-29 10:00',
+        rounds: [
+          { type: '提交', result: '已补设连墙件2处并挂设标识', time: '2026-10-29 09:10', attachments: ['整改照片C1.jpg'] },
+          { type: '验证', result: '通过', opinion: '复查合格', time: '2026-10-29 10:00' }
+        ] },
       { name: '宏远建筑有限公司', assignee: '赵四火' },
-      { name: '华美装饰工程有限公司', assignee: '吴烟枪' },
+      { name: '华美装饰工程有限公司', assignee: '吴烟枪', fixDesc: '已按方案补设连墙件', fixPhotos: ['整改照片C2.jpg'], fixTime: '2026-10-29 10:40',
+        rounds: [
+          { type: '提交', result: '已按方案补设连墙件', time: '2026-10-29 10:40', attachments: ['整改照片C2.jpg'] }
+        ] },
       { name: '华筑建设有限公司', assignee: '高翔' }
     ],
     requirement: '按方案补设连墙件并挂设标识，拍照留存', deadline: '2026-10-31',
