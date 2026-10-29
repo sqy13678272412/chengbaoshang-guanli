@@ -10441,11 +10441,11 @@ function ccPlanSlots(p) {
   recs.forEach(r => { if (!used[r.id]) rows.push({ slot: (r.slotDate || r.date) + ' 09:00', rec: r }); });
   return rows;
 }
-function ccPlanSubRowHtml(p) {
+function ccPlanRecRowsHtml(p) {
   const slots = ccPlanSlots(p);
   const today = CC_NOW.slice(0, 10);
   const execLabel = p.execType === '部门' ? ccEsc(p.execDept) + '（部门）' : (p.execType === '个人' ? ccEsc(p.execPerson) + '（人）' : '—');
-  const body = slots.length ? slots.map(s => {
+  return slots.length ? slots.map(s => {
     const r = s.rec;
     const sDate = s.slot.slice(0, 10);
     if (!r) {
@@ -10467,16 +10467,20 @@ function ccPlanSubRowHtml(p) {
       <td class="sticky-col"><span class="link" onclick="openCcPlanRecCheck(${r.id})">查看检查</span></td>
     </tr>`;
   }).join('') : '<tr><td colspan="6"><div class="mo-empty">截至当前暂无检查记录</div></td></tr>';
+}
+// 计划的检查记录表（列表展开与计划详情共用）
+function ccPlanRecTableHtml(p) {
+  return `<div class="table-wrap" style="border:1px solid #e8e8e8;border-radius:6px;">
+    <table style="min-width:760px;">
+      <thead><tr><th>检查人</th><th>检查时间</th><th>状态</th><th>检查项</th><th>整改项</th><th class="sticky-col">操作</th></tr></thead>
+      <tbody>${ccPlanRecRowsHtml(p)}</tbody>
+    </table>
+  </div>`;
+}
+function ccPlanSubRowHtml(p) {
   return `<tr>
     <td colspan="11" style="padding:0;background:#fafafa;">
-      <div style="padding:10px 20px 14px 46px;">
-        <div class="table-wrap" style="border:1px solid #e8e8e8;border-radius:6px;">
-          <table style="min-width:760px;">
-            <thead><tr><th>检查人</th><th>检查时间</th><th>状态</th><th>检查项</th><th>整改项</th><th class="sticky-col">操作</th></tr></thead>
-            <tbody>${body}</tbody>
-          </table>
-        </div>
-      </div>
+      <div style="padding:10px 20px 14px 46px;">${ccPlanRecTableHtml(p)}</div>
     </td>
   </tr>`;
 }
@@ -10487,12 +10491,12 @@ function openCcPlanRecCheck(id) {
   const r = ccRecords.find(x => x.id === id);
   if (!r) return;
   ccPlanRecId = id;
+  const late = r.slotDate ? r.date > r.slotDate : false;
   document.getElementById('ccPlanRecBody').innerHTML = `
     <div class="info-grid" style="grid-template-columns:110px 1fr 110px 1fr;margin-bottom:12px;">
-      <div class="ig-label">检查编号</div><div>${r.code}</div>
       <div class="ig-label">检查人</div><div>${ccEsc(r.inspector)}</div>
       <div class="ig-label">检查时间</div><div>${r.date}</div>
-      <div class="ig-label">状态</div><div><span class="tag ${ccRecStatusClass[r.status] || 'tag-gray'}">${r.status}</span></div>
+      <div class="ig-label">状态</div><div><span class="tag ${late ? 'tag-orange' : 'tag-green'}">${late ? '逾期已检查' : '已检查'}</span></div>
     </div>
     <div class="table-wrap" style="border:1px solid #f0f0f0;border-radius:6px;">
       <table>
@@ -10615,33 +10619,13 @@ function renderCcPlanDetail() {
     <div class="drawer-section-title">清单摘要（${v ? v.ver : '—'}）</div>
     ${v && v.items ? `<div class="table-wrap" style="border:1px solid #f0f0f0;border-radius:6px;margin-bottom:18px;">
       <table>
-        <thead><tr><th style="width:44px;">序号</th><th>检查项任务</th><th style="width:70px;">必检</th></tr></thead>
-        <tbody>${v.items.map(it => `<tr><td>${it.seq}</td><td>${ccEsc(it.task)}</td><td>${it.required ? '是' : '否'}</td></tr>`).join('')}</tbody>
+        <thead><tr><th style="width:44px;">序号</th><th>检查项任务</th><th>检查标准</th><th style="width:80px;">是否必检</th><th style="width:100px;">是否上传图片</th></tr></thead>
+        <tbody>${v.items.map(it => `<tr><td>${it.seq}</td><td>${ccEsc(it.task)}</td><td>${ccEsc(it.standard)}</td><td>${it.required ? '是' : '否'}</td><td>${it.needPhoto ? '是' : '否'}</td></tr>`).join('')}</tbody>
       </table>
     </div>` : '<div class="mo-empty" style="padding:18px 0;">该清单暂无生效版本</div>'}
-    <div class="drawer-section-title">执行实例（${p.instances.length}）</div>
-    ${p.instances.length ? `<div class="table-wrap" style="border:1px solid #f0f0f0;border-radius:6px;">
-      <table>
-        <thead><tr><th>记录编号</th><th>检查人</th><th>检查日期</th><th>整体结论</th><th>状态</th></tr></thead>
-        <tbody>${p.instances.map(rid => {
-          const r = ccRecords.find(x => x.id === rid);
-          if (!r) return '';
-          const concl = ccRecConclusion(r);
-          return `<tr>
-            <td><span class="link" onclick="ccPlanGoRecord(${r.id})">${r.code}</span></td>
-            <td>${r.inspector}</td><td>${r.date}</td>
-            <td>${concl ? `<span class="tag ${concl === '合格' ? 'tag-green' : 'tag-red'}">${concl}</span>` : '—'}</td>
-            <td><span class="tag ${ccRecStatusClass[r.status] || 'tag-gray'}">${r.status}</span></td>
-          </tr>`;
-        }).join('')}</tbody>
-      </table>
-    </div>` : '<div class="mo-empty" style="padding:18px 0;">暂无执行实例</div>'}`;
+    <div class="drawer-section-title">检查记录（${ccPlanSlots(p).length}）</div>
+    ${ccPlanRecTableHtml(p)}`;
 }
-function ccPlanGoRecord(recId) {
-  closeCcPlanDetail();
-  openCcRecordDetail(recId);
-}
-
 // ===== 7. 检查记录 =====
 let ccRecFilter = { kw: '', type: '', status: '' };
 function ccRecDispStatus(r) { return r.status === '检查中' ? '未检查' : '已检查'; }
