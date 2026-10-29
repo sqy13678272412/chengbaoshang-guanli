@@ -10148,16 +10148,15 @@ function ccPlanFreqChange() {
   const freq = (document.querySelector('input[name=ccPlanFreq]:checked') || {}).value || '单次';
   const isCycle = freq === '周期';
   document.getElementById('ccPlanSingleTimeItem').style.display = isCycle ? 'none' : '';
-  document.getElementById('ccPlanExecObjItem').style.display = isCycle ? 'none' : '';
+  document.getElementById('ccPlanExecObjItem').style.display = '';
   ['ccPlanCycleRangeItem', 'ccPlanGapItem', 'ccPlanSkipItem', 'ccPlanFirstItem']
     .forEach(id => document.getElementById(id).style.display = isCycle ? '' : 'none');
   ccPlanExecTypeChange();
 }
 function ccPlanExecTypeChange() {
   const t = (document.querySelector('input[name=ccPlanExecType]:checked') || {}).value || '部门';
-  const single = ((document.querySelector('input[name=ccPlanFreq]:checked') || {}).value || '单次') === '单次';
-  document.getElementById('ccPlanDeptItem').style.display = single && t === '部门' ? '' : 'none';
-  document.getElementById('ccPlanPersonItem').style.display = single && t === '个人' ? '' : 'none';
+  document.getElementById('ccPlanDeptItem').style.display = t === '部门' ? '' : 'none';
+  document.getElementById('ccPlanPersonItem').style.display = t === '个人' ? '' : 'none';
   if (t === '部门') document.getElementById('ccPlanExecPerson').value = '';
   else document.getElementById('ccPlanExecDept').value = '';
 }
@@ -10169,11 +10168,11 @@ function saveCcPlan() {
   const freq = (document.querySelector('input[name=ccPlanFreq]:checked') || {}).value || '单次';
   const skipWeekend = ((document.querySelector('input[name=ccPlanSkip]:checked') || {}).value || '否') === '是';
   let execTime = '', cycleStart = '', cycleEnd = '', firstExec = '', cycleType = '', cycleRule = '', rule = null;
-  let execType = '', execDept = '', execPerson = '', freqN = null, freqUnit = '';
+  let freqN = null, freqUnit = '';
+  const execType = (document.querySelector('input[name=ccPlanExecType]:checked') || {}).value || '部门';
+  const execDept = execType === '部门' ? document.getElementById('ccPlanExecDept').value.trim() : '';
+  const execPerson = execType === '个人' ? document.getElementById('ccPlanExecPerson').value.trim() : '';
   if (freq === '单次') {
-    execType = (document.querySelector('input[name=ccPlanExecType]:checked') || {}).value || '部门';
-    execDept = execType === '部门' ? document.getElementById('ccPlanExecDept').value.trim() : '';
-    execPerson = execType === '个人' ? document.getElementById('ccPlanExecPerson').value.trim() : '';
     execTime = ccFromLocal(document.getElementById('ccPlanExecTime').value);
   } else {
     cycleStart = ccFromLocal(document.getElementById('ccPlanCycleStart').value);
@@ -10202,14 +10201,14 @@ function saveCcPlan() {
   if (!ccTplVer(templateId)) { alert('所选清单没有生效版本，请先到配置中心发布版本'); return; }
   if (freq === '单次') {
     if (!execTime) { alert('请选择执行时间'); return; }
-    if (execType === '部门' && !execDept) { alert('请选择检查部门'); return; }
-    if (execType === '个人' && !execPerson) { alert('请选择检查人'); return; }
   } else {
     if (!cycleStart) { alert('请选择检查周期开始时间'); return; }
     if (!cycleEnd) { alert('请选择检查周期结束时间'); return; }
     if (cycleEnd < cycleStart) { alert('检查周期结束时间不能早于开始时间'); return; }
     if (!firstExec) { alert('请选择首次执行时间'); return; }
   }
+  if (execType === '部门' && !execDept) { alert('请选择检查部门'); return; }
+  if (execType === '个人' && !execPerson) { alert('请选择检查人'); return; }
 
   // PLN-01 冲突校验：同 dimension+target+templateId 且日期范围重叠（排除已取消与自身）
   const [newStart, newEnd] = freq === '单次' ? [execTime, execTime] : [cycleStart, cycleEnd || '2099-12-31 23:59'];
