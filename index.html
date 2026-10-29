@@ -3926,6 +3926,29 @@
   </div>
 </div>
 
+<!-- 承包商检查：黑名单-新增弹窗（业主端） -->
+<div class="modal-mask hidden" id="ccBlackCreateModal">
+  <div class="modal" style="width:560px;">
+    <div class="modal-header">
+      新增黑名单
+      <span class="modal-close" onclick="closeCcBlackCreate()">✕</span>
+    </div>
+    <div class="modal-body">
+      <div class="form-item"><label class="required">对象类型</label>
+        <select id="ccBlackCreateObjType" style="flex:1;">
+          <option>个人</option><option>公司</option>
+        </select>
+      </div>
+      <div class="form-item"><label class="required">对象名称</label><input type="text" id="ccBlackCreateName" placeholder="如：张三 / 某某建设有限公司" style="flex:1;"></div>
+      <div class="form-item"><label class="required">缘由</label><textarea id="ccBlackCreateReason" rows="3" maxlength="500" placeholder="填写纳入黑名单的缘由" style="flex:1;border:1px solid #d9d9d9;border-radius:4px;padding:6px 8px;resize:none;font-size:13px;"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-plain" onclick="closeCcBlackCreate()">取消</button>
+      <button class="btn btn-primary" onclick="saveCcBlackCreate()">提交</button>
+    </div>
+  </div>
+</div>
+
 <!-- 应急检查：排查项数量 / 历史执行数量 弹窗 -->
 <div class="modal-mask hidden" id="emgClCountModal">
   <div class="modal wide">
@@ -4229,6 +4252,8 @@ function switchRole(role) {
   renderRelation();
   // 刷新处罚记录（承包商端仅「处理记录」，业主端双 Tab）
   if (typeof renderCcPens === 'function' && activePage === 'ccPen') renderCcPens();
+  // 刷新黑名单（承包商端仅展示列表）
+  if (typeof renderCcBlacks === 'function' && activePage === 'ccBlack') renderCcBlacks();
 }
 
 // 切换页面（供菜单点击与端口切换共用）
@@ -9166,9 +9191,17 @@ let ccPenRecords = [
 ];
 let ccPenRecordSeq = 5;
 let ccBlacklists = [
-  { id:1, code:'HMD-20261025-001', objType:'企业', name:'华筑建设有限公司', srcPen:2, effectDate:'2026-10-26', expireDate:'2027-10-25', status:'有效', reason:'重复严重违规且逾期未整改', way:'自动创建' }
+  { id:1, code:'HMD-20261025-001', objType:'个人', name:'刘建军', source:'处罚', reason:'整改超时（系统自动触发：整改任务 ZG-20261020-003 逾期未整改）', operator:'系统', opTime:'2026-10-25 09:00', status:'有效', srcPen:2, effectDate:'2026-10-25', expireDate:'2027-10-24',
+    history:[{ type:'加入', time:'2026-10-25 09:00', operator:'系统', note:'整改超时自动触发（来源处罚 CF-20261025-002）' }] },
+  { id:2, code:'HMD-20261022-001', objType:'个人', name:'赵强', source:'处罚', reason:'整改不通过（系统自动触发：整改验证不通过且未按期复改）', operator:'系统', opTime:'2026-10-22 14:00', status:'有效', srcPen:null, effectDate:'2026-10-22', expireDate:'2027-10-21',
+    history:[{ type:'加入', time:'2026-10-22 14:00', operator:'系统', note:'整改不通过自动触发' }] },
+  { id:3, code:'HMD-20261018-001', objType:'个人', name:'孙明', source:'手动新增', reason:'伪造特种作业操作证，情节严重', operator:'王敏', opTime:'2026-10-18 10:00', status:'已解除', srcPen:null, effectDate:'2026-10-18', expireDate:'2027-10-17',
+    history:[
+      { type:'加入', time:'2026-10-18 10:00', operator:'王敏', note:'伪造特种作业操作证，情节严重' },
+      { type:'解除', time:'2026-10-24 15:30', operator:'刘峰', note:'经复核为证件过期而非伪造，予以解除' }
+    ] }
 ];
-let ccBlackSeq = 2;
+let ccBlackSeq = 4;
 let ccLogs = [
   { time:'2026-10-15 09:00', operator:'王敏', role:'监管管理员', action:'发布模板版本', object:'MB-日常-003 V1.2', summary:'发布V1.2，V1.0自动归档', src:'配置中心' },
   { time:'2026-10-29 09:30', operator:'李强', role:'检查人', action:'提交检查', object:'JC-20261029-001', summary:'6项：合格5、不合格1，结论不合格', src:'移动端' },
@@ -12279,7 +12312,7 @@ function renderCcPenDetail() {
     ${blacks.length ? `
     <div class="drawer-section-title">黑名单联动（9.5）</div>
     <div style="border:1px solid #f0f0f0;border-radius:6px;padding:10px 14px;font-size:13px;line-height:2;margin-bottom:16px;">
-      ${blacks.map(b => `<div>${b.code}　<span class="tag ${b.objType === '人员' ? 'tag-blue' : 'tag-orange'}">${b.objType}</span>　${ccEsc(b.name)}　${b.status === '有效' ? '<span class="tag tag-red">有效</span>' : '<span class="tag tag-gray">已撤销</span>'}　生效 ${b.effectDate} ～ ${b.expireDate}　<span class="link" onclick="closeCcPenDetail();openCcBlackDetail(${b.id})">查看黑名单</span></div>`).join('')}
+      ${blacks.map(b => `<div>${b.code}　<span class="tag ${b.objType === '个人' ? 'tag-blue' : 'tag-orange'}">${b.objType}</span>　${ccEsc(b.name)}　${b.status === '有效' ? '<span class="tag tag-red">有效</span>' : '<span class="tag tag-gray">已解除</span>'}　生效 ${b.effectDate} ～ ${b.expireDate}　<span class="link" onclick="closeCcPenDetail();openCcBlackDetail(${b.id})">查看黑名单</span></div>`).join('')}
       ${activeBlacks.length ? '' : '<div style="color:#999;">关联黑名单均已撤销，处罚撤销不影响其他来源黑名单（9.4）。</div>'}
     </div>` : ''}
     <div class="drawer-section-title">操作日志</div>
@@ -12391,8 +12424,8 @@ function ccPenStartExec(id) {
 // 列入黑名单自动创建黑名单（幂等：同一处罚同一对象仅一条有效记录，9.5/11.4）
 function ccAutoCreateBlacklists(pen) {
   const targets = [];
-  if (pen.person) targets.push({ objType: '人员', name: pen.person });
-  if (pen.company) targets.push({ objType: '企业', name: pen.company });
+  if (pen.person) targets.push({ objType: '个人', name: pen.person });
+  if (pen.company) targets.push({ objType: '公司', name: pen.company });
   const created = [];
   targets.forEach(t => {
     const dup = ccBlacklists.find(b => b.srcPen === pen.id && b.objType === t.objType && b.name === t.name && b.status === '有效');
@@ -12401,9 +12434,10 @@ function ccAutoCreateBlacklists(pen) {
     const b = {
       id: ccBlackSeq,
       code: 'HMD-' + ymd + '-' + String(ccBlackSeq).padStart(3, '0'),
-      objType: t.objType, name: t.name, srcPen: pen.id,
+      objType: t.objType, name: t.name, source: '处罚', reason: pen.fact,
+      operator: '系统', opTime: formatNow(), status: '有效', srcPen: pen.id,
       effectDate: ccToday(), expireDate: ccDstr(ccAddDays(ccParse(CC_NOW), 365)),
-      status: '有效', reason: pen.fact, way: '自动创建'
+      history: [{ type: '加入', time: formatNow(), operator: '系统', note: `处罚 ${pen.code} 执行触发（列入黑名单），有效期一年` }]
     };
     ccBlackSeq++;
     ccBlacklists.unshift(b);
@@ -12624,57 +12658,108 @@ function saveCcAppealHandle() {
 // ===== 10.2 黑名单 =====
 let ccBlackFilter = { kw: '', objType: '', status: '' };
 function renderCcBlacks() {
+  const isOwner = currentRole !== 'contractor';
   const kw = (document.getElementById('ccBlackFilterKw') ? document.getElementById('ccBlackFilterKw').value : ccBlackFilter.kw).trim();
   const objType = document.getElementById('ccBlackFilterObjType') ? document.getElementById('ccBlackFilterObjType').value : ccBlackFilter.objType;
   const status = document.getElementById('ccBlackFilterStatus') ? document.getElementById('ccBlackFilterStatus').value : ccBlackFilter.status;
   ccBlackFilter = { kw, objType, status };
   const list = ccBlacklists.filter(b =>
-    (!kw || b.code.includes(kw) || b.name.includes(kw)) &&
+    (!kw || b.code.includes(kw) || b.name.includes(kw) || (b.reason || '').includes(kw)) &&
     (!objType || b.objType === objType) &&
     (!status || b.status === status));
   const rows = list.map(b => {
-    const pen = ccPenById(b.srcPen);
+    const ops = [];
+    if (isOwner) {
+      ops.push(`<span class="link" onclick="openCcBlackDetail(${b.id})">详情</span>`);
+      if (b.status === '有效') ops.push(`<span class="link" onclick="ccRelieveBlack(${b.id})">解除</span>`);
+    }
     return `<tr>
       <td>${b.code}</td>
-      <td><span class="tag ${b.objType === '人员' ? 'tag-blue' : 'tag-orange'}">${b.objType}</span></td>
-      <td>${ccEsc(b.name)}</td>
-      <td>${pen ? `<span class="link" onclick="openCcPenDetail(${pen.id})">${pen.code}</span>` : '<span style="color:#999;">来源处罚已删除</span>'}</td>
-      <td>${b.effectDate}</td>
-      <td>${b.expireDate}</td>
-      <td>${b.status === '有效' ? '<span class="tag tag-red">有效</span>' : '<span class="tag tag-gray">已撤销</span>'}</td>
-      <td>${b.way}</td>
-      <td class="sticky-col"><span class="link" onclick="openCcBlackDetail(${b.id})">查看</span></td>
+      <td><span class="tag ${b.source === '处罚' ? 'tag-orange' : 'tag-gray'}">${b.source}</span></td>
+      <td><span class="tag ${b.objType === '个人' ? 'tag-blue' : 'tag-orange'}">${b.objType}</span>　${ccEsc(b.name)}</td>
+      <td style="max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${ccEsc(b.reason)}">${ccEsc(b.reason)}</td>
+      <td>${ccEsc(b.operator)}</td>
+      <td>${b.opTime}</td>
+      <td>${b.status === '有效' ? '<span class="tag tag-red">有效</span>' : '<span class="tag tag-gray">已解除</span>'}</td>
+      <td class="sticky-col">${ops.join('') || '<span style="color:#ccc;">—</span>'}</td>
     </tr>`;
   }).join('');
   document.getElementById('ccBlackBody').innerHTML = `
     <div class="toolbar">
       <div class="filters">
-        <input type="text" id="ccBlackFilterKw" placeholder="编号 / 人员 / 企业" value="${ccEsc(kw)}">
+        <input type="text" id="ccBlackFilterKw" placeholder="编号 / 对象 / 缘由" value="${ccEsc(kw)}">
         <select id="ccBlackFilterObjType">
           <option value="">全部对象类型</option>
-          <option ${objType === '人员' ? 'selected' : ''}>人员</option>
-          <option ${objType === '企业' ? 'selected' : ''}>企业</option>
+          <option ${objType === '个人' ? 'selected' : ''}>个人</option>
+          <option ${objType === '公司' ? 'selected' : ''}>公司</option>
         </select>
         <select id="ccBlackFilterStatus">
           <option value="">全部状态</option>
           <option ${status === '有效' ? 'selected' : ''}>有效</option>
-          <option ${status === '已撤销' ? 'selected' : ''}>已撤销</option>
+          <option ${status === '已解除' ? 'selected' : ''}>已解除</option>
         </select>
         <button class="btn btn-plain" onclick="renderCcBlacks()">查询</button>
         <button class="btn btn-plain" onclick="resetCcBlackFilter()">重置</button>
       </div>
-      <div style="font-size:12px;color:#999;">黑名单仅由处罚联动创建与撤销（9.5），不提供人工新增/解除入口。</div>
+      ${isOwner ? '<button class="btn btn-primary" onclick="openCcBlackCreate()">+ 新增</button>' : ''}
     </div>
     <div class="table-wrap">
       <table style="min-width:1180px;">
         <thead>
-          <tr><th>黑名单编号</th><th>对象类型</th><th>人员/企业</th><th>来源处罚</th><th>生效日期</th><th>解除日期</th><th>状态</th><th>创建方式</th><th class="sticky-col">操作</th></tr>
+          <tr><th>黑名单编号</th><th>来源</th><th>对象</th><th>缘由</th><th>操作人</th><th>操作时间</th><th>状态</th><th class="sticky-col">操作</th></tr>
         </thead>
-        <tbody>${rows || '<tr><td colspan="9"><div class="mo-empty">暂无黑名单记录</div></td></tr>'}</tbody>
+        <tbody>${rows || '<tr><td colspan="8"><div class="mo-empty">暂无黑名单记录</div></td></tr>'}</tbody>
       </table>
     </div>`;
 }
 function resetCcBlackFilter() { ccBlackFilter = { kw: '', objType: '', status: '' }; renderCcBlacks(); }
+
+// 新增黑名单（业主端手动新增）
+function openCcBlackCreate() {
+  if (currentRole === 'contractor') { alert('承包商端仅可查看黑名单'); return; }
+  document.getElementById('ccBlackCreateObjType').value = '个人';
+  document.getElementById('ccBlackCreateName').value = '';
+  document.getElementById('ccBlackCreateReason').value = '';
+  document.getElementById('ccBlackCreateModal').classList.remove('hidden');
+}
+function closeCcBlackCreate() { document.getElementById('ccBlackCreateModal').classList.add('hidden'); }
+function saveCcBlackCreate() {
+  const objType = document.getElementById('ccBlackCreateObjType').value;
+  const name = document.getElementById('ccBlackCreateName').value.trim();
+  const reason = document.getElementById('ccBlackCreateReason').value.trim();
+  if (!name) { alert('请填写对象名称'); return; }
+  if (!reason) { alert('请填写缘由'); return; }
+  const ymd = ccToday().replace(/-/g, '');
+  const b = {
+    id: ccBlackSeq,
+    code: 'HMD-' + ymd + '-' + String(ccBlackSeq).padStart(3, '0'),
+    objType, name, source: '手动新增', reason,
+    operator: '王敏', opTime: formatNow(), status: '有效', srcPen: null,
+    effectDate: ccToday(), expireDate: ccDstr(ccAddDays(ccParse(CC_NOW), 365)),
+    history: [{ type: '加入', time: formatNow(), operator: '王敏', note: reason }]
+  };
+  ccBlackSeq++;
+  ccBlacklists.unshift(b);
+  ccLog('王敏', '监管管理员', '新增黑名单', b.code, `对象：${objType}·${name}，缘由：${reason}`, '黑名单');
+  closeCcBlackCreate();
+  ccRefreshAll();
+  alert(`黑名单 ${b.code} 已新增`);
+}
+
+// 解除黑名单（二次确认）
+function ccRelieveBlack(id) {
+  const b = ccBlacklists.find(x => x.id === id);
+  if (!b || b.status !== '有效') return;
+  if (!confirm(`确认解除 ${b.name}（${b.objType}）的黑名单记录 ${b.code}？\n解除后该对象不再受黑名单限制。`)) return;
+  b.status = '已解除';
+  b.history = b.history || [];
+  b.history.push({ type: '解除', time: formatNow(), operator: '王敏', note: '手动解除' });
+  ccLog('王敏', '监管管理员', '解除黑名单', b.code, `对象：${b.objType}·${b.name}，手动解除`, '黑名单');
+  ccRefreshAll();
+  if (ccBlackDetailId === b.id) renderCcBlackDetail();
+  alert(`黑名单 ${b.code} 已解除`);
+}
+
 let ccBlackDetailId = null;
 function openCcBlackDetail(id) {
   ccBlackDetailId = id;
@@ -12685,50 +12770,44 @@ function closeCcBlackDetail() { ccBlackDetailId = null; document.getElementById(
 function renderCcBlackDetail() {
   const b = ccBlacklists.find(x => x.id === ccBlackDetailId);
   if (!b) return;
-  const pen = ccPenById(b.srcPen);
-  const others = ccBlacklists.filter(x => x.name === b.name && x.status === '有效' && x.id !== b.id);
-  const bLogs = ccLogs.filter(l => l.object === b.code);
+  const pen = b.srcPen ? ccPenById(b.srcPen) : null;
+  // 历史记录：该对象所有加入/解除记录（跨编号聚合，按时间倒序）
+  const history = ccBlacklists.filter(x => x.name === b.name)
+    .flatMap(x => (x.history || []).map(h => ({ ...h, code: x.code })))
+    .sort((x, y) => y.time.localeCompare(x.time));
   document.getElementById('ccBlackDetailTitle').textContent = `黑名单详情（${b.code}）`;
   document.getElementById('ccBlackDetailBody').innerHTML = `
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
       <span style="font-size:16px;font-weight:600;">${b.code}</span>
-      <span class="tag ${b.objType === '人员' ? 'tag-blue' : 'tag-orange'}">${b.objType}</span>
-      ${b.status === '有效' ? '<span class="tag tag-red">有效</span>' : '<span class="tag tag-gray">已撤销</span>'}
+      <span class="tag ${b.objType === '个人' ? 'tag-blue' : 'tag-orange'}">${b.objType}</span>
+      ${b.status === '有效' ? '<span class="tag tag-red">有效</span>' : '<span class="tag tag-gray">已解除</span>'}
     </div>
-    <div class="drawer-section-title">对象信息</div>
-    <div class="info-grid" style="grid-template-columns:110px 1fr 110px 1fr;">
-      <div class="ig-label">对象名称</div><div>${ccEsc(b.name)}</div>
-      <div class="ig-label">对象类型</div><div>${b.objType}</div>
-      <div class="ig-label">生效日期</div><div>${b.effectDate}</div>
-      <div class="ig-label">解除日期</div><div>${b.expireDate}</div>
+    <div class="drawer-section-title">基础信息</div>
+    <div class="info-grid" style="grid-template-columns:110px 1fr 110px 1fr;margin-bottom:16px;">
+      <div class="ig-label">来源</div><div><span class="tag ${b.source === '处罚' ? 'tag-orange' : 'tag-gray'}">${b.source}</span></div>
+      <div class="ig-label">对象</div><div><span class="tag ${b.objType === '个人' ? 'tag-blue' : 'tag-orange'}">${b.objType}</span>　${ccEsc(b.name)}</div>
+      <div class="ig-label">缘由</div><div class="ig-full" style="grid-column:span 3;">${ccEsc(b.reason)}</div>
+      <div class="ig-label">操作人</div><div>${ccEsc(b.operator)}</div>
+      <div class="ig-label">操作时间</div><div>${b.opTime}</div>
     </div>
-    <div class="drawer-section-title">列入原因</div>
-    <div style="border:1px solid #f0f0f0;border-radius:6px;padding:10px 14px;font-size:13px;line-height:2;margin-bottom:16px;">${ccEsc(b.reason)}<div style="color:#999;">创建方式：${b.way}</div></div>
+    ${pen ? `
     <div class="drawer-section-title">来源处罚</div>
     <div style="border:1px solid #f0f0f0;border-radius:6px;padding:10px 14px;font-size:13px;line-height:2;margin-bottom:16px;">
-      ${pen ? `<span class="link" onclick="closeCcBlackDetail();openCcPenDetail(${pen.id})">${pen.code}</span>　${pen.type}　${ccPenStatusTag(pen.status)}<br>${ccEsc(pen.fact)}`
-        : '<span style="color:#999;">来源处罚已删除，以编号快照保留审计上下文。</span>'}
-    </div>
-    <div class="drawer-section-title">状态时间线</div>
+      <span class="link" onclick="closeCcBlackDetail();openCcPenDetail(${pen.id})">${pen.code}</span>　${pen.type}　${ccPenStatusTag(pen.status)}<br>${ccEsc(pen.fact)}
+    </div>` : ''}
+    <div class="drawer-section-title">历史记录（该对象加入 / 解除记录 ${history.length} 条）</div>
     <div class="timeline" style="margin-bottom:16px;">
-      ${bLogs.length ? bLogs.map(l => `
-        <div class="t-node ${l.action.indexOf('撤销') >= 0 ? 'rejected' : 'done'}">
+      ${history.length ? history.map(h => `
+        <div class="t-node ${h.type === '加入' ? 'done' : 'rejected'}">
           <span class="t-dot"></span>
-          <div class="t-head"><span class="t-node-name">${ccEsc(l.action)}</span></div>
-          <div style="font-size:13px;color:#666;">${ccEsc(l.summary)}</div>
-          <div class="t-time">操作人：${ccEsc(l.operator)}（${ccEsc(l.role)}）　|　${l.time}</div>
+          <div class="t-head"><span class="t-node-name">${h.type}黑名单</span>
+            <span class="tag ${h.type === '加入' ? 'tag-red' : 'tag-green'}">${h.type}</span>
+            <span style="color:#999;font-size:12px;">${h.code}</span></div>
+          <div style="font-size:13px;color:#666;">${ccEsc(h.note || '—')}</div>
+          <div class="t-time">操作人：${ccEsc(h.operator)}　|　${h.time}</div>
         </div>`).join('')
-      : `<div class="t-node done"><span class="t-dot"></span>
-          <div class="t-head"><span class="t-node-name">${b.way}</span></div>
-          <div style="font-size:13px;color:#666;">${b.effectDate} 生效，有效期至 ${b.expireDate}</div></div>`}
-    </div>
-    ${others.length ? `
-    <div class="drawer-section-title">该对象其他有效黑名单来源</div>
-    <div style="border:1px solid #ffd591;border-radius:6px;padding:10px 14px;font-size:13px;line-height:2;margin-bottom:16px;background:#fffbe6;">
-      ${others.map(o => `<div>${o.code}　生效 ${o.effectDate} ～ ${o.expireDate}　<span class="link" onclick="closeCcBlackDetail();openCcBlackDetail(${o.id})">查看</span></div>`).join('')}
-      <div style="color:#ad6800;">解除本记录不影响以上来源，对象总体黑名单状态保持不变。</div>
-    </div>` : '<div style="color:#52c41a;font-size:13px;margin-bottom:16px;">该对象暂无其他有效黑名单来源。</div>'}
-  `;
+      : '<div style="color:#999;">暂无历史记录</div>'}
+    </div>`;
 }
 
 // ===== 10.4 审计中心 =====
@@ -15734,7 +15813,7 @@ document.getElementById('menu').addEventListener('click', function (e) {
  ['ccPenRecAppealModal', closeCcPenRecAppeal], ['ccPenRecAppealHandleModal', closeCcPenRecAppealHandle],
  ['ccPenDetailDrawer', closeCcPenDetail], ['ccPenApproveModal', closeCcPenApprove], ['ccPenRejectModal', closeCcPenReject],
  ['ccPenFinishModal', closeCcPenFinish], ['ccAppealSubmitModal', closeCcAppealSubmit], ['ccAppealHandleModal', closeCcAppealHandle],
- ['ccBlackDetailDrawer', closeCcBlackDetail], ['ccmConfirmModal', closeCcmConfirm], ['c2mConfirmModal', closeC2mConfirm], ['c2mReportModal', closeC2mReport]]
+ ['ccBlackDetailDrawer', closeCcBlackDetail], ['ccBlackCreateModal', closeCcBlackCreate], ['ccmConfirmModal', closeCcmConfirm], ['c2mConfirmModal', closeC2mConfirm], ['c2mReportModal', closeC2mReport]]
 .forEach(([id, fn]) => document.getElementById(id).addEventListener('click', function (e) {
   if (e.target === this) fn();
 }));
