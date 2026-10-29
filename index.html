@@ -11016,11 +11016,7 @@ function ccRecItemFlow(recId, seq) {
     ${fld('检查人', ccEsc(rec.inspector))}`, '#f5222d');
   const nodes = [n1];
   if (rep) {
-    // 移动端2整改上报数据：整改人可能有多个，每人下发一条独立整改任务，各自完成整改与验收
-    nodes.push(node('②', '整改上报', rep.reportTime, `
-      ${fld('整改人', rep.targets.map(t2 => `${ccEsc(t2.name)}：${ccEsc(t2.assignee || '—')}`).join('；'))}
-      ${fld('整改要求', ccEsc(rep.requirement || '—'))}
-      ${fld('整改截至期限', ccEsc(rep.deadline || '—'))}`, '#fa8c16'));
+    // 问题提出后直接下发到各整改人，每人一列，列内展示该人独立的 整改→验收（可多轮） 流程
     const shared = rep.targets.length === 1;
     const cols = rep.targets.map((tg, i) => {
       let rds = tg.rounds;
@@ -11050,6 +11046,7 @@ function ccRecItemFlow(recId, seq) {
         <div style="padding:10px 12px;border-bottom:1px solid #f0f0f0;background:#fafafa;">
           <div style="font-weight:600;font-size:13px;">整改任务 ${i + 1}</div>
           <div style="font-size:12px;color:#666;margin-top:3px;line-height:1.7;">${ccEsc(tg.name)}<br>整改人：<span style="color:#1890ff;">${ccEsc(tg.assignee || '待分配')}</span></div>
+          <div style="font-size:12px;color:#999;margin-top:3px;line-height:1.7;">整改要求：${ccEsc(rep.requirement || '—')}<br>截至期限：${ccEsc(rep.deadline || '—')}</div>
         </div>
         <div style="padding:12px 12px 0;">${inner}</div>
       </div>`;
@@ -11057,7 +11054,7 @@ function ccRecItemFlow(recId, seq) {
     nodes.push(`<div style="display:flex;gap:12px;align-items:flex-start;margin-top:4px;">${cols}</div>`);
   } else if (rect) {
     // 桌面端整改任务数据：按 rounds 逐轮展示完整流程
-    nodes.push(node('②', '整改上报（任务下发）', '', `
+    nodes.push(node('②', '整改任务下发', '', `
       ${fld('整改人', ccEsc(rect.assignee || '待分配'))}
       ${fld('整改要求', ccEsc(rect.requirement || '—'))}
       ${fld('整改截至期限', ccEsc(rect.deadline || '—'))}`, '#fa8c16'));
