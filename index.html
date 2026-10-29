@@ -3266,6 +3266,20 @@
   </div>
 </div>
 
+<!-- 承包商检查：查看检查（记录逐项检查情况） -->
+<div class="modal-mask hidden" id="ccPlanRecModal">
+  <div class="modal wide" style="width:1000px;">
+    <div class="modal-header">
+      检查情况明细
+      <span class="modal-close" onclick="closeCcPlanRec()">✕</span>
+    </div>
+    <div class="modal-body" id="ccPlanRecBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-plain" onclick="closeCcPlanRec()">关闭</button>
+    </div>
+  </div>
+</div>
+
 <!-- 承包商检查：计划执行确认 -->
 <div class="modal-mask hidden" id="ccPlanExecModal">
   <div class="modal">
@@ -9796,7 +9810,10 @@ function ccRiskTag(deadline) {
 
 // ===== 周期规则解析与执行日期推算 =====
 function ccRuleOf(p) {
-  if (p.rule) return p.rule;
+  if (p.rule) {
+    if (p.rule.type === '按周' && !p.rule.days.length) return Object.assign({}, p.rule, { days: [1] });
+    return p.rule;
+  }
   const r = { type: p.cycleType || '按天', n: 1, days: [], day: 1, last: false, month: 1 };
   const s = p.cycleRule || '';
   const m = /每(\d+)/.exec(s);
@@ -9806,6 +9823,7 @@ function ccRuleOf(p) {
     const map = { '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '日': 7 };
     while ((mm = re.exec(s))) r.days.push(map[mm[1]]);
     r.days.sort((a, b) => a - b);
+    if (!r.days.length) r.days = [1];
   }
   if (r.type === '按月') {
     if (/最后一日/.test(s)) { r.last = true; } else { const d = /(\d+)日/.exec(s); if (d) r.day = parseInt(d[1], 10); }
@@ -9839,7 +9857,7 @@ function ccGenDates(rule, startS, endS, timeStr, skip, count, futureOnly) {
     for (let i = 0; i < 366 * 5 && out.length < count; i++) { if (!push(ccAddDays(start, i * rule.n))) break; }
   } else if (rule.type === '按周') {
     const base = ccAddDays(start, -((start.getDay() + 6) % 7));
-    outer: for (let w = 0; w < 260 * rule.n && out.length < count; w += rule.n) {
+    outer: for (let w = 0; w < 260 * 7 * rule.n && out.length < count; w += 7 * rule.n) {
       for (const v of rule.days) {
         const d = ccAddDays(base, w + ((v === 7 ? 0 : v) + 6) % 7);
         if (d < start) continue;
@@ -10043,7 +10061,8 @@ function renderCcPlans() {
     (!kw || (p.name || '').includes(kw) || p.code.includes(kw) || p.target.includes(kw)) &&
     (!dim || p.dimension === dim) &&
     (!status || p.status === status));
-  const rows = list.map(p => {
+  let rows = '';
+  list.forEach(p => {
     const t = ccTpl(p.templateId);
     const ops = [`<span class="link" onclick="openCcPlanDetail(${p.id})">详情</span>`];
     if (p.status === '待执行') {
@@ -10053,17 +10072,21 @@ function renderCcPlans() {
     } else if (p.status === '已取消') {
       ops.push(`<span class="link link-danger" onclick="ccPlanDelete(${p.id})">删除</span>`);
     }
-    return `<tr>
+    const expanded = !!ccPlanExpanded[p.id];
+    rows += `<tr>
+      <td style="text-align:center;"><span class="link" style="display:inline-block;padding:0 6px;" title="${expanded ? '收起' : '展开'}检查记录" onclick="ccPlanToggleExpand(${p.id})">${expanded ? '▾' : '▸'}</span></td>
       <td>${ccEsc(p.name || '—')}</td>
       <td><span class="tag ${p.dimension === '项目' ? 'tag-blue' : 'tag-green'}">${p.dimension}维度</span></td>
       <td>${ccEsc(p.target)}</td>
       <td>${t ? t.type : '—'}</td>
       <td>${p.freq === '单次' ? '单次任务' : '周期任务'}</td>
+      <td>${p.freq === '单次' ? ccEsc(p.execTime) : (ccEsc(p.cycleStart) + ' ~ ' + ccEsc(p.cycleEnd))}</td>
       <td>${ccPlanNextExec(p)}</td>
       <td><span class="tag ${ccPlanStatusClass[p.status] || 'tag-gray'}">${p.status}</span></td>
       <td class="sticky-col">${ops.join('')}</td>
     </tr>`;
-  }).join('');
+    if (expanded) rows += ccPlanSubRowHtml(p);
+  });
   document.getElementById('ccPlanBody').innerHTML = `
     <div class="toolbar">
       <div class="filters">
@@ -10083,14 +10106,14 @@ function renderCcPlans() {
       <button class="btn btn-primary" onclick="openCcPlanModal('new')">+ 新建计划</button>
     </div>
     <div class="table-wrap">
-      <table style="min-width:1100px;">
+      <table style="min-width:1200px;">
         <thead>
           <tr>
-            <th>计划名称</th><th>检查维度</th><th>项目/承包商</th><th>检查类型</th><th>执行频次</th>
-            <th>下次执行时间</th><th>状态</th><th class="sticky-col">操作</th>
+            <th style="width:40px;"></th><th>计划名称</th><th>检查维度</th><th>项目/承包商</th><th>检查类型</th>
+            <th>执行频次</th><th>执行周期</th><th>下次执行时间</th><th>状态</th><th class="sticky-col">操作</th>
           </tr>
         </thead>
-        <tbody>${rows || '<tr><td colspan="8"><div class="mo-empty">暂无检查计划</div></td></tr>'}</tbody>
+        <tbody>${rows || '<tr><td colspan="10"><div class="mo-empty">暂无检查计划</div></td></tr>'}</tbody>
       </table>
     </div>`;
 }
@@ -10316,6 +10339,91 @@ function ccPlanDelete(id) {
   renderCcWork();
   alert('计划已删除');
 }
+
+// 展开收起：计划下所有检查记录（含预期未检查的执行时点）
+let ccPlanExpanded = {};
+function ccPlanToggleExpand(id) { ccPlanExpanded[id] = !ccPlanExpanded[id]; renderCcPlans(); }
+function ccPlanSlots(p) {
+  const rule = ccRuleOf(p);
+  let slots = [];
+  if (p.freq === '单次') {
+    if (p.execTime && p.execTime <= CC_NOW) slots.push(p.execTime);
+  } else if (p.cycleStart) {
+    slots = ccGenDates(rule, p.cycleStart, p.cycleEnd, p.execTime, p.skipWeekend, 500, false)
+      .map(x => x.date).filter(d => d <= CC_NOW);
+  }
+  const recs = (p.instances || []).map(id => ccRecords.find(r => r.id === id)).filter(Boolean)
+    .sort((a, b) => (a.date + a.code).localeCompare(b.date + b.code));
+  let ri = 0;
+  const out = slots.map(s => {
+    let rec = null;
+    if (ri < recs.length && recs[ri].date <= s.slice(0, 10)) { rec = recs[ri]; ri++; }
+    return { slot: s, rec };
+  });
+  while (ri < recs.length) { out.push({ slot: recs[ri].date, rec: recs[ri] }); ri++; }
+  return out;
+}
+function ccPlanSubRowHtml(p) {
+  const slots = ccPlanSlots(p);
+  const body = slots.length ? slots.map(s => {
+    const r = s.rec;
+    if (!r) return `<tr>
+      <td>—</td><td>${s.slot}</td>
+      <td><span class="tag tag-gray">预期未检查</span></td>
+      <td>—</td><td>—</td><td>—</td>
+    </tr>`;
+    const bad = r.items.filter(i => i.result === '不合格').length;
+    const closed = ccRecClosedCount(r);
+    return `<tr>
+      <td>${ccEsc(r.inspector)}</td><td>${s.slot}</td>
+      <td><span class="tag ${ccRecStatusClass[r.status] || 'tag-gray'}">${r.status}</span></td>
+      <td>${r.items.length}项${bad ? `（<span style="color:#f5222d;">不合格${bad}项</span>）` : ''}</td>
+      <td>${r.rectIds.length ? `${r.rectIds.length}项（已关闭${closed}项）` : '—'}</td>
+      <td><span class="link" onclick="openCcPlanRecCheck(${r.id})">查看检查</span></td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="6"><div class="mo-empty">截至当前暂无检查记录</div></td></tr>';
+  return `<tr>
+    <td colspan="10" style="padding:0;background:#fafafa;">
+      <div style="padding:10px 20px 14px 46px;">
+        <div class="table-wrap" style="border:1px solid #e8e8e8;border-radius:6px;">
+          <table style="min-width:760px;">
+            <thead><tr><th>检查人</th><th>检查时间</th><th>状态</th><th>检查项</th><th>整改项</th><th>操作</th></tr></thead>
+            <tbody>${body}</tbody>
+          </table>
+        </div>
+      </div>
+    </td>
+  </tr>`;
+}
+
+// 查看检查：记录内每一项的检查情况
+let ccPlanRecId = null;
+function openCcPlanRecCheck(id) {
+  const r = ccRecords.find(x => x.id === id);
+  if (!r) return;
+  ccPlanRecId = id;
+  document.getElementById('ccPlanRecBody').innerHTML = `
+    <div class="info-grid" style="grid-template-columns:110px 1fr 110px 1fr;margin-bottom:12px;">
+      <div class="ig-label">检查编号</div><div>${r.code}</div>
+      <div class="ig-label">检查人</div><div>${ccEsc(r.inspector)}</div>
+      <div class="ig-label">检查时间</div><div>${r.date}</div>
+      <div class="ig-label">状态</div><div><span class="tag ${ccRecStatusClass[r.status] || 'tag-gray'}">${r.status}</span></div>
+    </div>
+    <div class="table-wrap" style="border:1px solid #f0f0f0;border-radius:6px;">
+      <table>
+        <thead><tr><th style="width:44px;">序号</th><th>检查项任务</th><th>检查标准</th><th style="width:84px;">检查结果</th><th style="width:70px;">严重程度</th><th>问题描述</th><th style="width:120px;">现场照片</th></tr></thead>
+        <tbody>${r.items.map(it => `<tr>
+          <td>${it.seq}</td><td>${ccEsc(it.task)}</td><td>${ccEsc(it.standard)}</td>
+          <td>${it.result ? `<span class="tag ${it.result === '合格' ? 'tag-green' : 'tag-red'}">${it.result}</span>` : '—'}</td>
+          <td>${it.level || '—'}</td>
+          <td>${ccEsc(it.desc || '—')}</td>
+          <td>${it.photos && it.photos.length ? it.photos.map(ph => `<span class="link">${ccEsc(ph)}</span>`).join('<br>') : '—'}</td>
+        </tr>`).join('')}</tbody>
+      </table>
+    </div>`;
+  document.getElementById('ccPlanRecModal').classList.remove('hidden');
+}
+function closeCcPlanRec() { ccPlanRecId = null; document.getElementById('ccPlanRecModal').classList.add('hidden'); }
 
 // 执行确认
 let ccPlanExecId = null;
@@ -13267,7 +13375,7 @@ document.getElementById('menu').addEventListener('click', function (e) {
  ['ccTplPlansModal', closeCcTplPlans], ['ccTplItemsModal', closeCcTplItems], ['ccTplBlockModal', closeCcTplBlock],
  ['ccTypeModal', closeCcTypeModal], ['ccPenTypeModal', closeCcPenTypeModal], ['ccAutoRuleModal', closeCcAutoRuleModal],
  ['ccBlackRuleModal', closeCcBlackRuleModal], ['ccFlowModal', closeCcFlowModal], ['ccNoticeModal', closeCcNoticeModal],
- ['ccPlanModal', closeCcPlanModal], ['ccPlanTplPickModal', closeCcPlanTplPick], ['ccPlanExecModal', closeCcPlanExec], ['ccPlanCancelModal', closeCcPlanCancel],
+ ['ccPlanModal', closeCcPlanModal], ['ccPlanTplPickModal', closeCcPlanTplPick], ['ccPlanRecModal', closeCcPlanRec], ['ccPlanExecModal', closeCcPlanExec], ['ccPlanCancelModal', closeCcPlanCancel],
  ['ccPlanDetailDrawer', closeCcPlanDetail], ['ccNewRecModal', closeCcNewRec], ['ccExecModal', closeCcExec],
  ['ccExecConfirmModal', closeCcExecConfirm], ['ccRecordDetailDrawer', closeCcRecordDetail],
  ['ccRectDetailDrawer', closeCcRectDetail], ['ccAssignModal', closeCcAssignModal], ['ccVerifyModal', closeCcVerifyModal],
