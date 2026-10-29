@@ -14802,7 +14802,9 @@ function c2mDoPlanCheck() {
     c2mExec = null;
     ccRefreshAll();
     if (failItems.length) c2mPushNotice('整改待处理', c2mReps[0].code, `检查 ${rec.code} 的 ${failItems.length} 项不合格已完成整改上报，请在「整改」模块处理。`);
-    c2mGo({ name: 'submitResult', recId: rec.id, fail: failItems.length, pass, rectIds: [] }, true);
+    c2mCheckTab = 'done';
+    c2mGo({ name: 'check' }, true);
+    setTimeout(() => alert(`检查已提交：${rec.code}\n合格 ${pass} 项 / 不合格 ${failItems.length} 项` + (failItems.length ? `，已生成 ${failItems.length} 条整改上报单，可在「整改」模块跟踪处理` : '，记录已归档')), 100);
   } finally { c2mSubmitting = false; }
 }
 function c2mSubmitResultHtml() {
