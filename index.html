@@ -13440,7 +13440,7 @@ function c2mGo(view, replace) {
   c2mView = view;
   c2mRender();
 }
-function c2mDeepGo(view) { c2mStack = []; c2mView = view; c2mRender(); }
+function c2mDeepGo(view) { c2mStack.push(c2mView); c2mView = view; c2mRender(); }
 function c2mBack() {
   const body = document.getElementById('c2mBody');
   c2mScroll[c2mViewKey()] = body ? body.scrollTop : 0;
@@ -15023,7 +15023,8 @@ function c2mRender() {
   foot.innerHTML = c2mFootHtml();
   foot.style.display = foot.innerHTML ? 'flex' : 'none';
   document.getElementById('c2mHeadTitle').textContent = c2mView.name === 'info' ? (c2mView.title || '详情') : (CCM_TITLES[c2mView.name] || '承包商检查移动端2');
-  document.getElementById('c2mBackBtn').style.visibility = c2mStack.length ? 'visible' : 'hidden';
+  const c2mRoots = { home: 1, task: 1, msg: 1, me: 1 };
+  document.getElementById('c2mBackBtn').style.visibility = (c2mStack.length || !c2mRoots[c2mView.name]) ? 'visible' : 'hidden';
   const sel = document.getElementById('c2mRoleSel');
   if (sel && sel.value !== c2mRole) sel.value = c2mRole;
   body.scrollTop = c2mScroll[c2mViewKey()] || 0;
