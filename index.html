@@ -1026,11 +1026,15 @@
             <option>抢险工具</option>
             <option>通讯器材</option>
           </select>
+          <select id="filterDept-emg2Mat"><option value="">全部保管部门</option></select>
           <input type="text" id="filterKeyword-emg2Mat" placeholder="物资名称 / 物资编号">
           <button class="btn btn-plain" onclick="renderEmg2Mats()">查询</button>
           <button class="btn btn-plain" onclick="resetEmg2MatFilter()">重置</button>
         </div>
-        <button class="btn btn-primary" onclick="openEmg2MatModal()">+ 新增</button>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-plain" onclick="downloadEmg2Qrs('物资')">批量下载二维码</button>
+          <button class="btn btn-primary" onclick="openEmg2MatModal()">+ 新增</button>
+        </div>
       </div>
       <div class="table-wrap">
         <table style="min-width:2600px;">
@@ -1060,11 +1064,15 @@
             <option>排涝设备</option>
             <option>照明设备</option>
           </select>
+          <select id="filterDept-emg2Dev"><option value="">全部保管部门</option></select>
           <input type="text" id="filterKeyword-emg2Dev" placeholder="设备名称 / 设备编号">
           <button class="btn btn-plain" onclick="renderEmg2Devs()">查询</button>
           <button class="btn btn-plain" onclick="resetEmg2DevFilter()">重置</button>
         </div>
-        <button class="btn btn-primary" onclick="openEmg2DevModal()">+ 新增</button>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-plain" onclick="downloadEmg2Qrs('设备')">批量下载二维码</button>
+          <button class="btn btn-primary" onclick="openEmg2DevModal()">+ 新增</button>
+        </div>
       </div>
       <div class="table-wrap">
         <table style="min-width:2700px;">
@@ -1085,6 +1093,7 @@
     <div class="card page hidden" id="page-emg2Config">
       <div class="toolbar">
         <div class="filters">
+          <select id="filterOp-emg2Config"><option value="">全部操作人</option></select>
           <input type="text" id="filterKeyword-emg2Config" placeholder="检查清单名称">
           <button class="btn btn-plain" onclick="renderEmg2Configs()">查询</button>
           <button class="btn btn-plain" onclick="resetEmg2ConfigFilter()">重置</button>
@@ -1117,6 +1126,15 @@
             <button class="btn btn-primary" onclick="openEmg2Scan()">📷 检查扫码</button>
           </div>
           <div style="font-weight:600;font-size:13px;margin-bottom:8px;">本次检查记录</div>
+          <div style="display:flex;gap:8px;margin-bottom:12px;">
+            <select id="filterKind-emg2Rec" onchange="renderEmg2Records()" style="width:110px;">
+              <option value="">全部类型</option>
+              <option>物资</option>
+              <option>设备</option>
+            </select>
+            <input type="text" id="filterKw-emg2Rec" placeholder="名称 / 编码" onkeyup="if(event.keyCode===13)renderEmg2Records()" style="flex:1;min-width:0;border:1px solid #d9d9d9;border-radius:4px;padding:6px 8px;font-size:13px;">
+            <button class="btn btn-plain" onclick="resetEmg2RecFilter()">重置</button>
+          </div>
           <div id="emg2RecordList"></div>
         </div>
       </div>
@@ -6713,10 +6731,13 @@ function emg2SetAcc(prefix, list, viewMode) {
 
 // 应急物资
 function renderEmg2Mats() {
+  fillEmg2FilterOpts();
   const cat = document.getElementById('filterCat-emg2Mat').value;
+  const dept = document.getElementById('filterDept-emg2Mat').value;
   const kw = document.getElementById('filterKeyword-emg2Mat').value.trim();
   const list = emg2Materials.filter(m =>
     (!cat || m.category === cat) &&
+    (!dept || m.dept === dept) &&
     (!kw || m.name.includes(kw) || (m.code || '').includes(kw)));
   document.getElementById('tbody-emg2Mat').innerHTML = list.length ? list.map(m => `
     <tr>
@@ -6749,6 +6770,7 @@ function renderEmg2Mats() {
 }
 function resetEmg2MatFilter() {
   document.getElementById('filterCat-emg2Mat').value = '';
+  document.getElementById('filterDept-emg2Mat').value = '';
   document.getElementById('filterKeyword-emg2Mat').value = '';
   renderEmg2Mats();
 }
@@ -6836,10 +6858,13 @@ function saveEmg2Mat() {
 
 // 应急设备
 function renderEmg2Devs() {
+  fillEmg2FilterOpts();
   const cat = document.getElementById('filterCat-emg2Dev').value;
+  const dept = document.getElementById('filterDept-emg2Dev').value;
   const kw = document.getElementById('filterKeyword-emg2Dev').value.trim();
   const list = emg2Devices.filter(d =>
     (!cat || d.category === cat) &&
+    (!dept || d.dept === dept) &&
     (!kw || d.name.includes(kw) || (d.code || '').includes(kw)));
   document.getElementById('tbody-emg2Dev').innerHTML = list.length ? list.map(d => `
     <tr>
@@ -6873,6 +6898,7 @@ function renderEmg2Devs() {
 }
 function resetEmg2DevFilter() {
   document.getElementById('filterCat-emg2Dev').value = '';
+  document.getElementById('filterDept-emg2Dev').value = '';
   document.getElementById('filterKeyword-emg2Dev').value = '';
   renderEmg2Devs();
 }
@@ -7083,8 +7109,12 @@ let c2ScopePicks = { mats: [], devs: [] };
 let c2ScopeTab = 'mat';
 
 function renderEmg2Configs() {
+  fillEmg2FilterOpts();
+  const op = document.getElementById('filterOp-emg2Config').value;
   const kw = document.getElementById('filterKeyword-emg2Config').value.trim();
-  const list = emg2Checklists.filter(c => !kw || c.name.includes(kw));
+  const list = emg2Checklists.filter(c =>
+    (!op || c.operator === op) &&
+    (!kw || c.name.includes(kw)));
   document.getElementById('tbody-emg2Config').innerHTML = list.length ? list.map(c => {
     const scope = emg2ScopeOf(c.id);
     const cnt = scope.mats.length + scope.devs.length;
@@ -7104,6 +7134,7 @@ function renderEmg2Configs() {
   }).join('') : '<tr><td colspan="6" style="text-align:center;color:#999;padding:40px;">暂无数据</td></tr>';
 }
 function resetEmg2ConfigFilter() {
+  document.getElementById('filterOp-emg2Config').value = '';
   document.getElementById('filterKeyword-emg2Config').value = '';
   renderEmg2Configs();
 }
@@ -7445,7 +7476,12 @@ let emg2RecTab = 'base';
 
 // 检查记录卡片列表
 function renderEmg2Records() {
-  document.getElementById('emg2RecordList').innerHTML = emg2Records.length ? `<div class="mo-grid">${emg2Records.map(rec => `
+  const kind = document.getElementById('filterKind-emg2Rec').value;
+  const kw = document.getElementById('filterKw-emg2Rec').value.trim();
+  const list = emg2Records.filter(r =>
+    (!kind || r.kind === kind) &&
+    (!kw || r.name.includes(kw) || (r.code || '').includes(kw)));
+  document.getElementById('emg2RecordList').innerHTML = list.length ? `<div class="mo-grid">${list.map(rec => `
     <div class="mo-card" onclick="openEmg2Record(${rec.id})">
       <div class="mc-title">
         <span>${rec.name}</span>
@@ -7455,6 +7491,66 @@ function renderEmg2Records() {
       <div class="mc-field"><span class="mc-label">所在区域/位置</span><span class="mc-value" title="${rec.location}">${rec.location || '—'}</span></div>
       <div class="mc-field"><span class="mc-label">检查时间</span><span class="mc-value">${rec.checkTime}</span></div>
     </div>`).join('')}</div>` : '<div class="mo-empty">暂无检查记录，请点击左上角“检查扫码”开始检查</div>';
+}
+function resetEmg2RecFilter() {
+  document.getElementById('filterKind-emg2Rec').value = '';
+  document.getElementById('filterKw-emg2Rec').value = '';
+  renderEmg2Records();
+}
+// 下拉搜索项跟随数据动态生成（保留当前选中值）
+function fillEmg2FilterOpts() {
+  const mk = (id, allLabel, vals) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const cur = el.value;
+    el.innerHTML = `<option value="">${allLabel}</option>` + [...new Set(vals.filter(Boolean))].map(v => `<option>${v}</option>`).join('');
+    el.value = cur;
+  };
+  mk('filterDept-emg2Mat', '全部保管部门', emg2Materials.map(m => m.dept));
+  mk('filterDept-emg2Dev', '全部保管部门', emg2Devices.map(d => d.dept));
+  mk('filterOp-emg2Config', '全部操作人', emg2Checklists.map(c => c.operator));
+}
+// 批量下载二维码：将全部（当前筛选结果）二维码拼成一张 PNG 下载
+function downloadEmg2Qrs(kind) {
+  const catEl = document.getElementById(kind === '物资' ? 'filterCat-emg2Mat' : 'filterCat-emg2Dev');
+  const deptEl = document.getElementById(kind === '物资' ? 'filterDept-emg2Mat' : 'filterDept-emg2Dev');
+  const kwEl = document.getElementById(kind === '物资' ? 'filterKeyword-emg2Mat' : 'filterKeyword-emg2Dev');
+  const cat = catEl ? catEl.value : '';
+  const dept = deptEl ? deptEl.value : '';
+  const kw = kwEl ? kwEl.value.trim() : '';
+  const all = kind === '物资' ? emg2Materials : emg2Devices;
+  const rows = all.filter(r =>
+    (!cat || r.category === cat) &&
+    (!dept || r.dept === dept) &&
+    (!kw || r.name.includes(kw) || (r.code || '').includes(kw)));
+  if (!rows.length) { alert('当前筛选条件下暂无' + kind + '数据'); return; }
+  const cols = 4, cell = 190, pad = 14, qrPx = 100;
+  const line = Math.ceil(rows.length / cols);
+  const cv = document.createElement('canvas');
+  cv.width = cols * cell;
+  cv.height = line * cell;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, cv.width, cv.height);
+  rows.forEach((r, i) => {
+    const x = (i % cols) * cell, y = Math.floor(i / cols) * cell;
+    const q = document.createElement('canvas');
+    drawEmg2QR(q, `应急${kind}：${r.name}（编号：${r.code || '无'}）`, 4);
+    ctx.strokeStyle = '#eee';
+    ctx.strokeRect(x + 8.5, y + 8.5, cell - 17, cell - 17);
+    ctx.drawImage(q, x + (cell - qrPx) / 2, y + pad, qrPx, qrPx);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#333';
+    ctx.font = '12px sans-serif';
+    ctx.fillText(r.name, x + cell / 2, y + pad + qrPx + 18, cell - 20);
+    ctx.fillStyle = '#999';
+    ctx.font = '11px sans-serif';
+    ctx.fillText('编码：' + (r.code || '—'), x + cell / 2, y + pad + qrPx + 34, cell - 20);
+  });
+  const a = document.createElement('a');
+  a.download = `应急${kind}二维码.png`;
+  a.href = cv.toDataURL('image/png');
+  a.click();
 }
 
 // 扫码（模拟：展示物资/设备二维码，点击即识别）
