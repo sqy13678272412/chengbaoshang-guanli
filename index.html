@@ -1040,6 +1040,7 @@
         <table style="min-width:2600px;">
           <thead>
             <tr>
+              <th style="width:36px;text-align:center;"><input type="checkbox" onclick="toggleEmg2CheckAll('物资', this.checked)" title="全选"></th>
               <th>物资名称</th><th>物资编号</th><th>物资类别</th><th>存放单位</th><th>保管部门</th>
               <th>限用日期</th><th>生产日期</th><th>物资数量</th><th>巡检周期</th><th>投用日期</th>
               <th>生产厂家</th><th>规格型号</th><th>联系人</th><th>联系方式</th><th>储存点</th><th>所在区域/位置</th>
@@ -1078,6 +1079,7 @@
         <table style="min-width:2700px;">
           <thead>
             <tr>
+              <th style="width:36px;text-align:center;"><input type="checkbox" onclick="toggleEmg2CheckAll('设备', this.checked)" title="全选"></th>
               <th>设备名称</th><th>设备编号</th><th>设备类别</th><th>存放单位</th><th>保管部门</th>
               <th>限用日期</th><th>生产日期</th><th>设备数量</th><th>巡检周期</th><th>投用日期</th>
               <th>生产厂家</th><th>设备型号</th><th>联系人</th><th>联系方式</th><th>储存点</th><th>所在区域/位置</th>
@@ -2645,6 +2647,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-plain" onclick="closeEmg2Qr()">关闭</button>
+      <button class="btn btn-primary" onclick="downloadEmg2Qr()">下载二维码</button>
     </div>
   </div>
 </div>
@@ -6741,6 +6744,7 @@ function renderEmg2Mats() {
     (!kw || m.name.includes(kw) || (m.code || '').includes(kw)));
   document.getElementById('tbody-emg2Mat').innerHTML = list.length ? list.map(m => `
     <tr>
+      <td style="text-align:center;"><input type="checkbox" ${emg2Sel.mats.includes(m.id) ? 'checked' : ''} onchange="toggleEmg2Sel('物资',${m.id},this.checked)"></td>
       <td>${m.name}</td>
       <td>${m.code || '—'}</td>
       <td>${m.category}</td>
@@ -6766,7 +6770,7 @@ function renderEmg2Mats() {
         <span class="link" onclick="openEmg2Detail('物资', ${m.id})">详情</span>
         <span class="link" onclick="openEmg2Qr('物资', ${m.id})">二维码</span>
       </td>
-    </tr>`).join('') : '<tr><td colspan="21" style="text-align:center;color:#999;padding:40px;">暂无数据</td></tr>';
+    </tr>`).join('') : '<tr><td colspan="22" style="text-align:center;color:#999;padding:40px;">暂无数据</td></tr>';
 }
 function resetEmg2MatFilter() {
   document.getElementById('filterCat-emg2Mat').value = '';
@@ -6868,6 +6872,7 @@ function renderEmg2Devs() {
     (!kw || d.name.includes(kw) || (d.code || '').includes(kw)));
   document.getElementById('tbody-emg2Dev').innerHTML = list.length ? list.map(d => `
     <tr>
+      <td style="text-align:center;"><input type="checkbox" ${emg2Sel.devs.includes(d.id) ? 'checked' : ''} onchange="toggleEmg2Sel('设备',${d.id},this.checked)"></td>
       <td>${d.name}</td>
       <td>${d.code || '—'}</td>
       <td>${d.category}</td>
@@ -6894,7 +6899,7 @@ function renderEmg2Devs() {
         <span class="link" onclick="openEmg2Detail('设备', ${d.id})">详情</span>
         <span class="link" onclick="openEmg2Qr('设备', ${d.id})">二维码</span>
       </td>
-    </tr>`).join('') : '<tr><td colspan="22" style="text-align:center;color:#999;padding:40px;">暂无数据</td></tr>';
+    </tr>`).join('') : '<tr><td colspan="23" style="text-align:center;color:#999;padding:40px;">暂无数据</td></tr>';
 }
 function resetEmg2DevFilter() {
   document.getElementById('filterCat-emg2Dev').value = '';
@@ -7455,6 +7460,29 @@ function openEmg2Qr(type, id) {
   document.getElementById('emg2QrModal').classList.remove('hidden');
 }
 function closeEmg2Qr() { document.getElementById('emg2QrModal').classList.add('hidden'); }
+// 下载单个二维码 PNG
+function downloadEmg2Qr() {
+  const cv = document.getElementById('emg2QrCanvas');
+  const a = document.createElement('a');
+  a.download = document.getElementById('emg2QrTitle').textContent.replace(/[\\/:*?"<>|\s]/g, '') + '.png';
+  a.href = cv.toDataURL('image/png');
+  a.click();
+}
+// 列表勾选（物资/设备）
+let emg2Sel = { mats: [], devs: [] };
+function toggleEmg2Sel(kind, id, checked) {
+  const arr = kind === '物资' ? emg2Sel.mats : emg2Sel.devs;
+  const i = arr.indexOf(id);
+  if (checked && i < 0) arr.push(id);
+  if (!checked && i >= 0) arr.splice(i, 1);
+}
+function toggleEmg2CheckAll(kind, checked) {
+  const all = kind === '物资' ? emg2Materials : emg2Devices;
+  const arr = kind === '物资' ? emg2Sel.mats : emg2Sel.devs;
+  if (checked) all.forEach(r => { if (!arr.includes(r.id)) arr.push(r.id); });
+  else emg2Sel[kind === '物资' ? 'mats' : 'devs'] = [];
+  if (kind === '物资') renderEmg2Mats(); else renderEmg2Devs();
+}
 
 // ===== 应急检查2：移动端（扫码检查） =====
 // 本次检查记录
