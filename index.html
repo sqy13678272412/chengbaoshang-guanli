@@ -14514,9 +14514,6 @@ function c2mPlanCheckHtml() {
         <span>合格 <b style="color:#52c41a;">${pass}</b></span>
         <span>不合格 <b style="color:#f5222d;">${fail}</b></span>
       </div>
-      <div>
-        ${[['', '全部'], ['undo', '仅看未填写'], ['fail', '仅看不合格']].map(([k, tt]) => `<span class="ccm-chip ${c2mExec.filter === k ? 'on' : ''}" onclick="c2mSetFilter('${k}')">${tt}</span>`).join('')}
-      </div>
       <div style="color:#999;margin-top:6px;line-height:1.7;">必检项不可跳过；选择「不合格」需登记严重等级与问题描述。</div>
     </div>
     ${shown.length ? shown.map(c2mExecItemHtml).join('') : '<div class="mo-empty">当前筛选条件下暂无检查项</div>'}`;
