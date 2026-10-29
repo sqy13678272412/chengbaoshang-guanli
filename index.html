@@ -3469,6 +3469,97 @@
   </div>
 </div>
 
+<!-- 承包商检查：系统判定-详情抽屉（整改任务详情，去掉关联处置/完整时间线） -->
+<div class="modal-mask drawer-mask hidden" id="ccSysPenDetailDrawer">
+  <div class="drawer" style="width:980px;max-width:74vw;">
+    <div class="drawer-header">
+      <span id="ccSysPenDetailTitle">系统判定详情</span>
+      <span class="modal-close" onclick="closeCcSysPenDetail()">✕</span>
+    </div>
+    <div class="drawer-body" id="ccSysPenDetailBody"></div>
+  </div>
+</div>
+
+<!-- 承包商检查：系统判定-处理弹窗 -->
+<div class="modal-mask hidden" id="ccSysPenHandleModal">
+  <div class="modal" style="width:820px;max-height:94vh;display:flex;flex-direction:column;">
+    <div class="modal-header">
+      <span id="ccSysPenHandleTitle">处理系统判定</span>
+      <span class="modal-close" onclick="closeCcSysPenHandle()">✕</span>
+    </div>
+    <div class="modal-body" style="overflow:auto;">
+      <div id="ccSysPenHandleRect"></div>
+      <div class="drawer-section-title">处理结果</div>
+      <div class="form-item">
+        <label class="required">是否处罚</label>
+        <div style="display:flex;gap:16px;align-items:center;flex:1;">
+          <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="radio" name="ccSysPenPunish" value="是" onchange="ccSysPenPunishChange()"> 是</label>
+          <label style="display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="radio" name="ccSysPenPunish" value="否" onchange="ccSysPenPunishChange()"> 否</label>
+        </div>
+      </div>
+      <div class="form-item" id="ccSysPenTypeItem" style="display:none;">
+        <label class="required">处罚类型</label>
+        <select id="ccSysPenHandleType" style="flex:1;">
+          <option>警告</option><option>罚款</option><option>停工整改</option><option>清退出场</option><option>列入黑名单</option>
+        </select>
+      </div>
+      <div class="form-item" id="ccSysPenDescItem" style="display:none;">
+        <label class="required">处罚描述</label>
+        <textarea id="ccSysPenHandleDesc" rows="2" maxlength="500" placeholder="填写处罚描述" style="flex:1;border:1px solid #d9d9d9;border-radius:4px;padding:6px 8px;resize:none;font-size:13px;"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-plain" onclick="closeCcSysPenHandle()">取消</button>
+      <button class="btn btn-primary" onclick="saveCcSysPenHandle()">提交</button>
+    </div>
+  </div>
+</div>
+
+<!-- 承包商检查：处罚记录-查看弹窗 -->
+<div class="modal-mask hidden" id="ccPenRecViewModal">
+  <div class="modal" style="width:680px;">
+    <div class="modal-header">
+      <span id="ccPenRecViewTitle">处罚记录查看</span>
+      <span class="modal-close" onclick="closeCcPenRecView()">✕</span>
+    </div>
+    <div class="modal-body" id="ccPenRecViewBody" style="max-height:70vh;overflow:auto;"></div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="closeCcPenRecView()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- 承包商检查：处罚记录-新增弹窗 -->
+<div class="modal-mask hidden" id="ccPenRecCreateModal">
+  <div class="modal" style="width:640px;">
+    <div class="modal-header">
+      新增处罚记录
+      <span class="modal-close" onclick="closeCcPenRecCreate()">✕</span>
+    </div>
+    <div class="modal-body">
+      <div class="form-item"><label class="required">处罚来源</label>
+        <select id="ccPenRecCreateSource" style="flex:1;">
+          <option>人为添加</option><option>系统判定</option>
+        </select>
+      </div>
+      <div class="form-item"><label class="required">处罚类型</label>
+        <select id="ccPenRecCreateType" style="flex:1;">
+          <option>警告</option><option>罚款</option><option>停工整改</option><option>清退出场</option><option>列入黑名单</option>
+        </select>
+      </div>
+      <div class="form-item"><label class="required">处罚对象</label><input type="text" id="ccPenRecCreateTarget" placeholder="如：华筑建设有限公司 / 陈建国" style="flex:1;"></div>
+      <div class="form-item"><label class="required">处罚时间</label><input type="datetime-local" id="ccPenRecCreateTime" style="flex:1;"></div>
+      <div class="form-item"><label class="required">处罚原因</label><textarea id="ccPenRecCreateReason" rows="2" maxlength="500" placeholder="填写处罚原因" style="flex:1;border:1px solid #d9d9d9;border-radius:4px;padding:6px 8px;resize:none;font-size:13px;"></textarea></div>
+      <div class="form-item"><label>操作人</label><input type="text" value="王敏" readonly style="flex:1;background:#fafafa;"></div>
+      <div class="form-item"><label>操作时间</label><input type="text" value="提交时自动生成" readonly style="flex:1;background:#fafafa;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-plain" onclick="closeCcPenRecCreate()">取消</button>
+      <button class="btn btn-primary" onclick="saveCcPenRecCreate()">提交</button>
+    </div>
+  </div>
+</div>
+
 <!-- 承包商检查：整改分配弹窗 -->
 <div class="modal-mask hidden" id="ccAssignModal">
   <div class="modal" style="width:600px;">
@@ -9008,11 +9099,11 @@ let ccRects = [
       { type:'提交', result:'已完成防护栏杆恢复，共18米', opinion:'', by:'陈建国', time:'2026-10-25 10:20', attachments:['整改照片1.jpg','整改照片2.jpg'] },
       { type:'验证', result:'不通过', opinion:'防护栏杆搭设间距超限，需按方案加设立杆', by:'周凯', time:'2026-10-27 09:00', attachments:[] }
     ], penId:null, logs:[] },
-  { id:3, code:'ZG-20261028-002', recordId:3, itemSeq:2, project:'城东综合体二期', contractor:'华筑建设有限公司', problem:'连墙件缺失2处，与方案不符', level:'一般', requirement:'按方案补设连墙件并挂设标识', assignee:'陈建国', deadline:'2026-10-30 18:00', verifier:'周凯', assigner:'王敏', status:'待验证', overdue:false,
+  { id:3, code:'ZG-20261028-002', recordId:3, itemSeq:2, project:'城东综合体二期', contractor:'华筑建设有限公司', problem:'连墙件缺失2处，与方案不符', level:'一般', requirement:'按方案补设连墙件并挂设标识', assignee:'陈建国', deadline:'2026-10-28 18:00', verifier:'周凯', assigner:'王敏', status:'待验证', overdue:false,
     rounds:[
       { type:'提交', result:'已补设连墙件2处并挂设标识', opinion:'', by:'陈建国', time:'2026-10-29 09:10', attachments:['整改照片3.jpg'] }
     ], penId:null, logs:[] },
-  { id:4, code:'ZG-20261027-002', recordId:0, itemSeq:0, project:'城东综合体二期', contractor:'华筑建设有限公司', problem:'安全通道堆放杂物，通行不畅', level:'轻微', requirement:'立即清理并保持通道畅通', assignee:'', deadline:'2026-10-28 18:00', verifier:'', assigner:'', status:'待分配', overdue:false, rounds:[], penId:null, logs:[] }
+  { id:4, code:'ZG-20261027-002', recordId:0, itemSeq:0, project:'城东综合体二期', contractor:'华筑建设有限公司', problem:'安全通道堆放杂物，通行不畅', level:'轻微', requirement:'立即清理并保持通道畅通', assignee:'', deadline:'2026-11-01 18:00', verifier:'', assigner:'', status:'待分配', overdue:false, rounds:[], penId:null, logs:[] }
 ];
 let ccRectSeq = 5;
 let ccPens = [
@@ -9020,6 +9111,20 @@ let ccPens = [
   { id:2, code:'CF-20261025-002', source:'人工发起', sourceId:null, project:'城东综合体二期', contractor:'华筑建设有限公司', person:'', company:'华筑建设有限公司', type:'列入黑名单', amount:'', fact:'重复发生严重违规且逾期未整改', basis:'《承包商安全管理办法》第25条', decision:'将华筑建设有限公司列入承包商黑名单，有效期一年', execReq:'立即停止新项目投标资格', status:'执行中', appeal:{ status:'未申诉', reason:'', result:'' }, approvals:[{ node:'一级审批', approver:'刘峰', result:'通过', opinion:'同意', time:'2026-10-26 10:00' }], blacklistId:1, logs:[] }
 ];
 let ccPenSeq = 3;
+// 处罚记录（新）：系统判定（Tab1）+ 处罚记录（Tab2）
+let ccSysPens = [
+  { id:1, source:'整改超时', person:'陈建国', company:'华筑建设有限公司', rectId:2, status:'待处理', genTime:'2026-10-28 09:00', handle:null },
+  { id:2, source:'整改未通过', person:'陈建国', company:'华筑建设有限公司', rectId:1, status:'待处理', genTime:'2026-10-29 10:40', handle:null },
+  { id:3, source:'整改未通过', person:'陈建国', company:'华筑建设有限公司', rectId:3, status:'已处理', genTime:'2026-10-29 09:30', handle:{ punish:'是', type:'警告', desc:'连墙件整改逾期提交且此前验证未通过，给予警告并督促后续按计划整改', operator:'王敏', time:'2026-10-29 10:00' } },
+  { id:4, source:'整改超时', person:'赵磊', company:'宏远建筑集团', rectId:0, status:'已处理', genTime:'2026-10-27 09:00', handle:{ punish:'否', type:'不予处罚', desc:'系恶劣天气导致的客观延期，整改已完成，不予处罚', operator:'王敏', time:'2026-10-27 10:00' } }
+];
+let ccSysPenSeq = 5;
+let ccPenRecords = [
+  { id:1, source:'系统判定', type:'罚款', target:'华筑建设有限公司', time:'2026-10-26 14:30', reason:'整改任务 ZG-20261020-003（基坑临边防护栏杆缺失两段）整改超时，按规则处罚', operator:'王敏', opTime:'2026-10-26 14:30', sysPenId:null },
+  { id:2, source:'人为添加', type:'警告', target:'陈建国', time:'2026-10-25 11:00', reason:'安全帽佩戴不规范，现场教育后仍反复出现', operator:'王敏', opTime:'2026-10-25 11:00', sysPenId:null },
+  { id:3, source:'人为添加', type:'停工整改', target:'宏远建筑集团', time:'2026-10-20 16:00', reason:'临电线路私拉乱接且拒不整改，责令局部停工整改', operator:'刘峰', opTime:'2026-10-20 16:00', sysPenId:null }
+];
+let ccPenRecordSeq = 4;
 let ccBlacklists = [
   { id:1, code:'HMD-20261025-001', objType:'企业', name:'华筑建设有限公司', srcPen:2, effectDate:'2026-10-26', expireDate:'2027-10-25', status:'有效', reason:'重复严重违规且逾期未整改', way:'自动创建' }
 ];
@@ -10704,7 +10809,6 @@ function renderCcRecords() {
         <button class="btn btn-plain" onclick="renderCcRecords()">查询</button>
         <button class="btn btn-plain" onclick="resetCcRecFilter()">重置</button>
       </div>
-      <button class="btn btn-primary" onclick="openCcNewRec()">+ 独立新建</button>
     </div>
     <div class="table-wrap">
       <table style="min-width:1280px;">
@@ -11154,14 +11258,16 @@ function openCcBlock(title, html, width) {
 }
 function closeCcBlockModal() { document.getElementById('ccBlockModal').classList.add('hidden'); }
 
-// 整改任务展示状态：未整改 / 已整改 / 验收未通过 / 验收已通过
+// 整改任务展示状态：待整改 / 待验收(整改已延期) / 延期待整改 / 已验收
 function ccRectFlowStatus(r) {
   const vers = (r.rounds || []).filter(x => x.type === '验证');
-  if (r.status === '已关闭') return vers.length && vers[vers.length - 1].result === '不通过' ? '验收未通过' : '验收已通过';
-  if (r.status === '待验证') return '已整改';
-  return '未整改';
+  const lastVer = vers[vers.length - 1];
+  const overdue = r.deadline && r.deadline < CC_NOW;
+  if (r.status === '已关闭') return (lastVer && lastVer.result === '通过') ? '已验收' : (overdue ? '延期待整改' : '待整改');
+  if (r.status === '待验证') return '待验收(整改已延期)';
+  return overdue ? '延期待整改' : '待整改';
 }
-const ccRectFlowStatusClass = { '未整改': 'tag-orange', '已整改': 'tag-blue', '验收未通过': 'tag-red', '验收已通过': 'tag-green' };
+const ccRectFlowStatusClass = { '待整改': 'tag-orange', '待验收(整改已延期)': 'tag-blue', '延期待整改': 'tag-red', '已验收': 'tag-green' };
 let ccRectFilter = { kw: '', status: '', overdue: '', level: '' };
 function renderCcRects() {
   const kw = (document.getElementById('ccRectFilterKw') ? document.getElementById('ccRectFilterKw').value : ccRectFilter.kw).trim();
@@ -11176,13 +11282,8 @@ function renderCcRects() {
     return hitKw && (!status || ccRectFlowStatus(r) === status) && hitOverdue && (!level || r.level === level);
   });
   const rows = list.map(r => {
-    const pen = r.penId ? ccPens.find(p => p.id === r.penId) : null;
     const ops = [`<span class="link" onclick="openCcRectDetail(${r.id})">查看</span>`];
     if (r.status === '待分配') ops.push(`<span class="link" onclick="openCcAssignModal(${r.id})">分配</span>`);
-    if (r.status === '待验证') ops.push(`<span class="link" onclick="openCcVerifyModal(${r.id})">验证</span>`);
-    if (r.status === '整改中' || r.status === '待验证') ops.push(`<span class="link" onclick="openCcUrgeModal(${r.id})">催办</span>`);
-    if (pen) ops.push(`<span class="link" onclick="openCcPenDetail(${pen.id})">查看处罚</span>`);
-    else ops.push(`<span class="link" onclick="openCcRectPen(${r.id})">发起处罚</span>`);
     ops.push(`<span class="link link-danger" onclick="ccDeleteRect(${r.id})">删除</span>`);
     const st = ccRectFlowStatus(r);
     return `<tr>
@@ -11203,7 +11304,7 @@ function renderCcRects() {
         <input type="text" id="ccRectFilterKw" placeholder="整改编号 / 问题 / 项目 / 承包商" value="${ccEsc(kw)}">
         <select id="ccRectFilterStatus">
           <option value="">全部状态</option>
-          ${['未整改', '已整改', '验收未通过', '验收已通过'].map(s => `<option ${status === s ? 'selected' : ''}>${s}</option>`).join('')}
+          ${['待整改', '待验收(整改已延期)', '延期待整改', '已验收'].map(s => `<option ${status === s ? 'selected' : ''}>${s}</option>`).join('')}
         </select>
         <select id="ccRectFilterOverdue">
           <option value="">全部期限</option>
@@ -11453,28 +11554,13 @@ function openCcRectDetail(id) {
   document.getElementById('ccRectDetailDrawer').classList.remove('hidden');
 }
 function closeCcRectDetail() { ccRectDetailId = null; document.getElementById('ccRectDetailDrawer').classList.add('hidden'); }
-function renderCcRectDetail() {
-  const r = ccRectById(ccRectDetailId);
-  if (!r) return;
+// 整改详情主体（问题来源 + 整改要求 + 整改流程），供整改详情 / 处罚处理 / 处罚详情复用
+function ccRectDetailSectionsHtml(r) {
   const rec = ccRectRecord(r);
   const plan = rec && rec.planId ? ccPlans.find(p => p.id === rec.planId) : null;
   const item = ccRectRecItem(r);
-  const pen = r.penId ? ccPens.find(p => p.id === r.penId) : null;
   const assignLog = r.logs.find(l => l.action === '分配整改任务');
-  const subs = r.rounds.filter(x => x.type === '提交');
-  const vers = r.rounds.filter(x => x.type === '验证');
-  const logs = r.logs.slice().sort((a, b) => b.time.localeCompare(a.time));
-  document.getElementById('ccRectDetailTitle').textContent = '整改详情';
-  const roundCard = (x, idx) => `
-    <div style="border:1px solid #f0f0f0;border-radius:6px;padding:10px 14px;margin-bottom:8px;font-size:13px;line-height:1.9;">
-      <div><span class="tag ${x.type === '提交' ? 'tag-blue' : (x.result === '通过' ? 'tag-green' : 'tag-red')}">第${idx + 1}轮${x.type}</span>
-        ${x.result ? `<span class="tag ${x.result === '通过' ? 'tag-green' : x.result === '不通过' ? 'tag-red' : 'tag-gray'}" style="margin-left:6px;">${x.result}</span>` : ''}</div>
-      ${x.result && x.type === '提交' ? `<div>整改结果：${ccEsc(x.result)}</div>` : ''}
-      ${x.opinion ? `<div>${x.type === '验证' ? '验收意见' : '说明'}：${ccEsc(x.opinion)}</div>` : ''}
-      <div style="color:#666;">操作人：${ccEsc(x.by)}　时间：${x.time}</div>
-      ${x.attachments && x.attachments.length ? `<div style="color:#1890ff;">${x.attachments.map(a => '🖼 ' + ccEsc(a)).join('　')}</div>` : ''}
-    </div>`;
-  document.getElementById('ccRectDetailBody').innerHTML = `
+  return `
     <div class="drawer-section-title">问题来源</div>
     <div class="info-grid" style="grid-template-columns:130px 1fr 130px 1fr;">
       <div class="ig-label">检查计划名称</div>
@@ -11526,7 +11612,15 @@ function renderCcRectDetail() {
         </div>
       </div>`;
       }).join('') : '<div style="font-size:12px;color:#999;background:#fafafa;border-radius:4px;padding:6px 10px;">待整改</div>';
-    })()}
+    })()}`;
+}
+function renderCcRectDetail() {
+  const r = ccRectById(ccRectDetailId);
+  if (!r) return;
+  const pen = r.penId ? ccPens.find(p => p.id === r.penId) : null;
+  const logs = r.logs.slice().sort((a, b) => b.time.localeCompare(a.time));
+  document.getElementById('ccRectDetailTitle').textContent = '整改详情';
+  document.getElementById('ccRectDetailBody').innerHTML = ccRectDetailSectionsHtml(r) + `
     <div class="drawer-section-title">关联处置</div>
     <div style="border:1px solid #f0f0f0;border-radius:6px;padding:10px 14px;font-size:13px;line-height:2;margin-bottom:16px;">
       <div>超期预警：${ccRectOverdue(r)
@@ -11573,8 +11667,10 @@ function ccDeleteRect(id) {
   alert(`整改任务 ${r.code} 已删除，删除动作已留审计。`);
 }
 
-// ===== 9. 处罚记录 =====
-let ccPenFilter = { kw: '', source: '', type: '', status: '' };
+// ===== 9. 处罚记录（系统判定 / 处罚记录 双 Tab）=====
+let ccPenTab = 'sys';
+let ccSysPenFilter = { kw: '', source: '', status: '' };
+let ccPenRecFilter = { kw: '', source: '', type: '' };
 function ccPenById(id) { return ccPens.find(p => p.id === id); }
 function ccPenTargets(p) {
   const t = [];
@@ -11582,72 +11678,260 @@ function ccPenTargets(p) {
   if (p.company) t.push({ kind: '企业', name: p.company });
   return t;
 }
+function ccPenSwitchTab(t) { ccPenTab = t; renderCcPens(); }
+function ccPenTabHeaderHtml() {
+  const item = (key, label) => `<div onclick="ccPenSwitchTab('${key}')" style="padding:8px 18px;cursor:pointer;font-size:14px;${ccPenTab === key ? 'color:#1890ff;font-weight:600;border-bottom:2px solid #1890ff;margin-bottom:-2px;' : 'color:#666;'}">${label}</div>`;
+  return `<div style="display:flex;gap:4px;border-bottom:2px solid #f0f0f0;margin-bottom:14px;">${item('sys', '系统判定')}${item('rec', '处罚记录')}</div>`;
+}
 function renderCcPens() {
-  const kw = (document.getElementById('ccPenFilterKw') ? document.getElementById('ccPenFilterKw').value : ccPenFilter.kw).trim();
-  const source = document.getElementById('ccPenFilterSource') ? document.getElementById('ccPenFilterSource').value : ccPenFilter.source;
-  const type = document.getElementById('ccPenFilterType') ? document.getElementById('ccPenFilterType').value : ccPenFilter.type;
-  const status = document.getElementById('ccPenFilterStatus') ? document.getElementById('ccPenFilterStatus').value : ccPenFilter.status;
-  ccPenFilter = { kw, source, type, status };
-  const list = ccPens.filter(p =>
-    (!kw || p.code.includes(kw) || p.project.includes(kw) || p.contractor.includes(kw) || (p.person || '').includes(kw) || (p.company || '').includes(kw)) &&
-    (!source || p.source === source) &&
-    (!type || p.type === type) &&
-    (!status || p.status === status));
-  const rows = list.map(p => {
-    const targets = ccPenTargets(p).map(t => `<span class="tag ${t.kind === '人员' ? 'tag-blue' : 'tag-orange'}">${t.kind}·${ccEsc(t.name)}</span>`).join(' ');
-    const blacks = ccBlacklists.filter(b => b.srcPen === p.id && b.status === '有效');
-    const ops = [`<span class="link" onclick="openCcPenDetail(${p.id})">查看</span>`];
-    if (p.status === '待审批') ops.push(`<span class="link" onclick="openCcPenDetail(${p.id});setTimeout(()=>ccPenApproveClick(${p.id}),50)">审批</span>`);
-    if (p.status === '待执行' || p.status === '执行中') ops.push(`<span class="link" onclick="openCcPenDetail(${p.id})">执行</span>`);
-    if (p.status !== '已撤销' && p.status !== '申诉中') ops.push(`<span class="link" onclick="ccOpenAppealSubmit(${p.id})">申诉</span>`);
+  const tabs = ccPenTabHeaderHtml();
+  if (ccPenTab === 'sys') ccRenderSysPenTab(tabs); else ccRenderPenRecTab(tabs);
+}
+
+// Tab1 系统判定
+function ccRenderSysPenTab(tabs) {
+  const kw = (document.getElementById('ccSysPenKw') ? document.getElementById('ccSysPenKw').value : ccSysPenFilter.kw).trim();
+  const source = document.getElementById('ccSysPenSource') ? document.getElementById('ccSysPenSource').value : ccSysPenFilter.source;
+  const status = document.getElementById('ccSysPenStatus') ? document.getElementById('ccSysPenStatus').value : ccSysPenFilter.status;
+  ccSysPenFilter = { kw, source, status };
+  const list = ccSysPens.filter(sp => {
+    const rect = sp.rectId ? ccRectById(sp.rectId) : null;
+    const kwTxt = sp.person + sp.company + (rect ? rect.code + (rect.requirement || '') + rect.problem : '');
+    return (!kw || kwTxt.includes(kw)) && (!source || sp.source === source) && (!status || sp.status === status);
+  });
+  const rows = list.map(sp => {
+    const rect = sp.rectId ? ccRectById(sp.rectId) : null;
+    const ops = [`<span class="link" onclick="openCcSysPenDetail(${sp.id})">详情</span>`];
+    if (sp.status === '待处理') ops.unshift(`<span class="link" onclick="openCcSysPenHandle(${sp.id})">处理</span>`);
     return `<tr>
-      <td>${p.code}</td>
-      <td><span class="tag ${p.source === '人工发起' ? 'tag-gray' : p.source === '验证不通过' ? 'tag-red' : 'tag-orange'}">${p.source}</span></td>
-      <td>${ccEsc(p.project || '—')}</td>
-      <td>${ccEsc(p.contractor || '—')}</td>
-      <td>${targets || '—'}</td>
-      <td>${p.type}</td>
-      <td>${p.type === '罚款' ? '¥' + (p.amount || '0') : '—'}</td>
-      <td>${ccPenStatusTag(p.status)}</td>
-      <td>${p.status === '待审批' ? '刘峰（一级审批）' : '刘峰'}</td>
-      <td>${blacks.length ? '<span class="tag tag-red">已列入</span>' : '<span style="color:#ccc;">—</span>'}</td>
+      <td><span class="tag ${sp.source === '整改超时' ? 'tag-red' : 'tag-orange'}">${sp.source}</span></td>
+      <td>${ccEsc(sp.person)}<div style="color:#999;font-size:12px;">${ccEsc(sp.company)}</div></td>
+      <td style="max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${ccEsc(rect ? (rect.requirement || '') : '')}">${rect ? `<span class="link" onclick="openCcRectDetail(${rect.id})">${rect.code}</span>　${ccEsc(rect.requirement || '—')}` : '<span style="color:#999;">—</span>'}</td>
+      <td>${sp.genTime}</td>
+      <td><span class="tag ${sp.status === '待处理' ? 'tag-orange' : 'tag-green'}">${sp.status}</span></td>
       <td class="sticky-col">${ops.join('')}</td>
     </tr>`;
   }).join('');
-  document.getElementById('ccPenBody').innerHTML = `
+  document.getElementById('ccPenBody').innerHTML = tabs + `
     <div class="toolbar">
       <div class="filters">
-        <input type="text" id="ccPenFilterKw" placeholder="编号 / 项目 / 承包商 / 对象" value="${ccEsc(kw)}">
-        <select id="ccPenFilterSource">
+        <input type="text" id="ccSysPenKw" placeholder="处罚人 / 公司 / 整改任务" value="${ccEsc(kw)}">
+        <select id="ccSysPenSource">
           <option value="">全部来源</option>
-          ${['验证不通过', '整改超期', '人工发起'].map(s => `<option ${source === s ? 'selected' : ''}>${s}</option>`).join('')}
+          ${['整改超时', '整改未通过'].map(s => `<option ${source === s ? 'selected' : ''}>${s}</option>`).join('')}
         </select>
-        <select id="ccPenFilterType">
-          <option value="">全部类型</option>
-          ${ccPenTypes.filter(x => x.enabled).map(x => `<option ${type === x.name ? 'selected' : ''}>${x.name}</option>`).join('')}
-        </select>
-        <select id="ccPenFilterStatus">
+        <select id="ccSysPenStatus">
           <option value="">全部状态</option>
-          ${['待审批', '待执行', '执行中', '已关闭', '已撤销', '申诉中', '已驳回'].map(s => `<option ${status === s ? 'selected' : ''}>${s}</option>`).join('')}
+          ${['待处理', '已处理'].map(s => `<option ${status === s ? 'selected' : ''}>${s}</option>`).join('')}
         </select>
         <button class="btn btn-plain" onclick="renderCcPens()">查询</button>
-        <button class="btn btn-plain" onclick="resetCcPenFilter()">重置</button>
+        <button class="btn btn-plain" onclick="ccResetSysPenFilter()">重置</button>
       </div>
-      <button class="btn btn-primary" onclick="openCcPenCreate()">+ 人工发起</button>
     </div>
     <div class="table-wrap">
-      <table style="min-width:1380px;">
+      <table style="min-width:1100px;">
         <thead>
-          <tr>
-            <th>处罚编号</th><th>来源</th><th>项目</th><th>承包商</th><th>处罚对象</th><th>类型</th>
-            <th>金额摘要</th><th>状态</th><th>审批人</th><th>黑名单</th><th class="sticky-col">操作</th>
-          </tr>
+          <tr><th>处罚来源</th><th>处罚人</th><th>对应整改任务</th><th>生成时间</th><th>状态</th><th class="sticky-col">操作</th></tr>
         </thead>
-        <tbody>${rows || '<tr><td colspan="11"><div class="mo-empty">暂无处罚记录</div></td></tr>'}</tbody>
+        <tbody>${rows || '<tr><td colspan="6"><div class="mo-empty">暂无系统判定数据</div></td></tr>'}</tbody>
       </table>
     </div>`;
 }
-function resetCcPenFilter() { ccPenFilter = { kw: '', source: '', type: '', status: '' }; renderCcPens(); }
+function ccResetSysPenFilter() { ccSysPenFilter = { kw: '', source: '', status: '' }; renderCcPens(); }
+
+// Tab2 处罚记录
+function ccRenderPenRecTab(tabs) {
+  const kw = (document.getElementById('ccPenRecKw') ? document.getElementById('ccPenRecKw').value : ccPenRecFilter.kw).trim();
+  const source = document.getElementById('ccPenRecSource') ? document.getElementById('ccPenRecSource').value : ccPenRecFilter.source;
+  const type = document.getElementById('ccPenRecType') ? document.getElementById('ccPenRecType').value : ccPenRecFilter.type;
+  ccPenRecFilter = { kw, source, type };
+  const types = ['警告', '罚款', '停工整改', '清退出场', '列入黑名单', '不予处罚'];
+  const list = ccPenRecords.filter(p =>
+    (!kw || (p.target + p.reason + p.operator).includes(kw)) &&
+    (!source || p.source === source) &&
+    (!type || p.type === type));
+  const rows = list.map(p => `<tr>
+      <td><span class="tag ${p.source === '系统判定' ? 'tag-orange' : 'tag-gray'}">${p.source}</span></td>
+      <td>${ccEsc(p.type)}</td>
+      <td>${ccEsc(p.target)}</td>
+      <td>${p.time}</td>
+      <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${ccEsc(p.reason)}">${ccEsc(p.reason)}</td>
+      <td>${ccEsc(p.operator)}</td>
+      <td>${p.opTime}</td>
+      <td class="sticky-col"><span class="link" onclick="openCcPenRecView(${p.id})">查看</span></td>
+    </tr>`).join('');
+  document.getElementById('ccPenBody').innerHTML = tabs + `
+    <div class="toolbar">
+      <div class="filters">
+        <input type="text" id="ccPenRecKw" placeholder="处罚对象 / 原因 / 操作人" value="${ccEsc(kw)}">
+        <select id="ccPenRecSource">
+          <option value="">全部来源</option>
+          ${['人为添加', '系统判定'].map(s => `<option ${source === s ? 'selected' : ''}>${s}</option>`).join('')}
+        </select>
+        <select id="ccPenRecType">
+          <option value="">全部类型</option>
+          ${types.map(s => `<option ${type === s ? 'selected' : ''}>${s}</option>`).join('')}
+        </select>
+        <button class="btn btn-plain" onclick="renderCcPens()">查询</button>
+        <button class="btn btn-plain" onclick="ccResetPenRecFilter()">重置</button>
+      </div>
+      <button class="btn btn-primary" onclick="openCcPenRecCreate()">+ 新增</button>
+    </div>
+    <div class="table-wrap">
+      <table style="min-width:1150px;">
+        <thead>
+          <tr><th>处罚来源</th><th>处罚类型</th><th>处罚对象</th><th>处罚时间</th><th>处罚原因</th><th>操作人</th><th>操作时间</th><th class="sticky-col">操作</th></tr>
+        </thead>
+        <tbody>${rows || '<tr><td colspan="8"><div class="mo-empty">暂无处罚记录</div></td></tr>'}</tbody>
+      </table>
+    </div>`;
+}
+function ccResetPenRecFilter() { ccPenRecFilter = { kw: '', source: '', type: '' }; renderCcPens(); }
+
+// Tab1 详情抽屉（整改任务详情，去掉「关联处置」「完整时间线」）
+let ccSysPenDetailId = null;
+function openCcSysPenDetail(id) {
+  ccSysPenDetailId = id;
+  const sp = ccSysPens.find(x => x.id === id);
+  if (!sp) return;
+  const rect = sp.rectId ? ccRectById(sp.rectId) : null;
+  document.getElementById('ccSysPenDetailTitle').textContent = `系统判定详情（${sp.source}）`;
+  document.getElementById('ccSysPenDetailBody').innerHTML = `
+    <div class="info-grid" style="grid-template-columns:110px 1fr 110px 1fr;margin-bottom:14px;">
+      <div class="ig-label">处罚来源</div><div><span class="tag ${sp.source === '整改超时' ? 'tag-red' : 'tag-orange'}">${sp.source}</span></div>
+      <div class="ig-label">状态</div><div><span class="tag ${sp.status === '待处理' ? 'tag-orange' : 'tag-green'}">${sp.status}</span></div>
+      <div class="ig-label">处罚人</div><div>${ccEsc(sp.person)}</div>
+      <div class="ig-label">所属公司</div><div>${ccEsc(sp.company)}</div>
+      <div class="ig-label">生成时间</div><div>${sp.genTime}</div>
+      <div class="ig-label">对应整改任务</div><div>${rect ? `<span class="link" onclick="closeCcSysPenDetail();openCcRectDetail(${rect.id})">${rect.code}</span>` : '—'}</div>
+    </div>
+    ${sp.handle ? `
+    <div class="drawer-section-title">处理信息</div>
+    <div class="info-grid" style="grid-template-columns:110px 1fr 110px 1fr;margin-bottom:14px;">
+      <div class="ig-label">是否处罚</div><div>${sp.handle.punish}</div>
+      <div class="ig-label">处罚类型</div><div>${ccEsc(sp.handle.type)}</div>
+      <div class="ig-label">处罚描述</div><div class="ig-full" style="grid-column:span 3;">${ccEsc(sp.handle.desc)}</div>
+      <div class="ig-label">操作人</div><div>${ccEsc(sp.handle.operator)}</div>
+      <div class="ig-label">操作时间</div><div>${sp.handle.time}</div>
+    </div>` : ''}
+    ${rect ? ccRectDetailSectionsHtml(rect) : '<div style="color:#999;">来源整改任务已不存在。</div>'}`;
+  document.getElementById('ccSysPenDetailDrawer').classList.remove('hidden');
+}
+function closeCcSysPenDetail() { ccSysPenDetailId = null; document.getElementById('ccSysPenDetailDrawer').classList.add('hidden'); }
+
+// Tab1 处理弹窗（整改任务详情去掉「关联处置」「完整时间线」+ 处理结果）
+let ccSysPenHandleId = null;
+function openCcSysPenHandle(id) {
+  const sp = ccSysPens.find(x => x.id === id);
+  if (!sp || sp.status !== '待处理') return;
+  ccSysPenHandleId = id;
+  const rect = sp.rectId ? ccRectById(sp.rectId) : null;
+  document.getElementById('ccSysPenHandleTitle').textContent = `处理系统判定（${sp.source}）`;
+  document.getElementById('ccSysPenHandleRect').innerHTML = `
+    <div class="info-grid" style="grid-template-columns:110px 1fr 110px 1fr;margin-bottom:14px;">
+      <div class="ig-label">处罚来源</div><div><span class="tag ${sp.source === '整改超时' ? 'tag-red' : 'tag-orange'}">${sp.source}</span></div>
+      <div class="ig-label">处罚人</div><div>${ccEsc(sp.person)}（${ccEsc(sp.company)}）</div>
+    </div>
+    ${rect ? ccRectDetailSectionsHtml(rect) : '<div style="color:#999;">来源整改任务已不存在。</div>'}`;
+  document.querySelector('input[name="ccSysPenPunish"][value="否"]').checked = true;
+  document.getElementById('ccSysPenHandleType').value = '警告';
+  document.getElementById('ccSysPenHandleDesc').value = '';
+  ccSysPenPunishChange();
+  document.getElementById('ccSysPenHandleModal').classList.remove('hidden');
+}
+function closeCcSysPenHandle() { ccSysPenHandleId = null; document.getElementById('ccSysPenHandleModal').classList.add('hidden'); }
+function ccSysPenPunishChange() {
+  const el = document.querySelector('input[name="ccSysPenPunish"]:checked');
+  const punish = el ? el.value : '否';
+  document.getElementById('ccSysPenTypeItem').style.display = punish === '是' ? '' : 'none';
+  document.getElementById('ccSysPenDescItem').style.display = punish === '是' ? '' : 'none';
+}
+function saveCcSysPenHandle() {
+  const sp = ccSysPens.find(x => x.id === ccSysPenHandleId);
+  if (!sp) { closeCcSysPenHandle(); return; }
+  const el = document.querySelector('input[name="ccSysPenPunish"]:checked');
+  const punish = el ? el.value : '否';
+  const type = document.getElementById('ccSysPenHandleType').value;
+  const desc = document.getElementById('ccSysPenHandleDesc').value.trim();
+  if (punish === '是' && !desc) { alert('请填写处罚描述'); return; }
+  const rect = sp.rectId ? ccRectById(sp.rectId) : null;
+  sp.status = '已处理';
+  sp.handle = { punish, type: punish === '是' ? type : '不予处罚', desc: punish === '是' ? desc : (desc || '经核实不予处罚'), operator: '王敏', time: formatNow() };
+  ccPenRecords.unshift({
+    id: ccPenRecordSeq++, source: '系统判定', type: sp.handle.type, target: sp.company ? sp.company + '（' + sp.person + '）' : sp.person,
+    time: formatNow(),
+    reason: punish === '是'
+      ? `系统判定（${sp.source}）${rect ? '，整改任务 ' + rect.code + '：' : '：'}${sp.handle.desc}`
+      : `系统判定（${sp.source}）经核实不予处罚：${sp.handle.desc}`,
+    operator: '王敏', opTime: formatNow(), sysPenId: sp.id
+  });
+  ccLog('王敏', '监管管理员', '处理系统判定', sp.source, `处罚人：${sp.person}，是否处罚：${punish}${punish === '是' ? '，类型：' + type : ''}`, '处罚记录');
+  closeCcSysPenHandle();
+  ccRefreshAll();
+  alert('处理完成，处罚记录已归纳到「处罚记录」Tab');
+}
+
+// Tab2 查看
+function openCcPenRecView(id) {
+  const p = ccPenRecords.find(x => x.id === id);
+  if (!p) return;
+  const sp = p.sysPenId ? ccSysPens.find(x => x.id === p.sysPenId) : null;
+  document.getElementById('ccPenRecViewTitle').textContent = `处罚记录查看（${p.source}）`;
+  let html = `
+    <div class="info-grid" style="grid-template-columns:110px 1fr 110px 1fr;">
+      <div class="ig-label">处罚来源</div><div><span class="tag ${p.source === '系统判定' ? 'tag-orange' : 'tag-gray'}">${p.source}</span></div>
+      <div class="ig-label">处罚类型</div><div>${ccEsc(p.type)}</div>
+      <div class="ig-label">处罚对象</div><div>${ccEsc(p.target)}</div>
+      <div class="ig-label">处罚时间</div><div>${p.time}</div>
+      <div class="ig-label">处罚原因</div><div class="ig-full" style="grid-column:span 3;">${ccEsc(p.reason)}</div>
+      <div class="ig-label">操作人</div><div>${ccEsc(p.operator)}</div>
+      <div class="ig-label">操作时间</div><div>${p.opTime}</div>
+    </div>`;
+  if (sp) {
+    const rect = sp.rectId ? ccRectById(sp.rectId) : null;
+    html += `
+    <div class="drawer-section-title" style="margin-top:16px;">系统判定信息</div>
+    <div class="info-grid" style="grid-template-columns:110px 1fr 110px 1fr;">
+      <div class="ig-label">处罚来源</div><div>${sp.source}</div>
+      <div class="ig-label">处罚人</div><div>${ccEsc(sp.person)}（${ccEsc(sp.company)}）</div>
+      <div class="ig-label">对应整改任务</div><div>${rect ? rect.code + '：' + ccEsc(rect.requirement || '') : '—'}</div>
+      <div class="ig-label">生成时间</div><div>${sp.genTime}</div>
+      <div class="ig-label">是否处罚</div><div>${sp.handle ? sp.handle.punish : '—'}</div>
+      <div class="ig-label">处理填写</div><div class="ig-full" style="grid-column:span 3;">${sp.handle ? ccEsc(sp.handle.type + '：' + sp.handle.desc) : '—'}</div>
+      <div class="ig-label">处理人</div><div>${sp.handle ? ccEsc(sp.handle.operator) : '—'}</div>
+      <div class="ig-label">处理时间</div><div>${sp.handle ? sp.handle.time : '—'}</div>
+    </div>`;
+  }
+  document.getElementById('ccPenRecViewBody').innerHTML = html;
+  document.getElementById('ccPenRecViewModal').classList.remove('hidden');
+}
+function closeCcPenRecView() { document.getElementById('ccPenRecViewModal').classList.add('hidden'); }
+
+// Tab2 新增
+function openCcPenRecCreate() {
+  document.getElementById('ccPenRecCreateSource').value = '人为添加';
+  document.getElementById('ccPenRecCreateType').value = '警告';
+  document.getElementById('ccPenRecCreateTarget').value = '';
+  document.getElementById('ccPenRecCreateTime').value = ccToLocal(CC_NOW);
+  document.getElementById('ccPenRecCreateReason').value = '';
+  document.getElementById('ccPenRecCreateModal').classList.remove('hidden');
+}
+function closeCcPenRecCreate() { document.getElementById('ccPenRecCreateModal').classList.add('hidden'); }
+function saveCcPenRecCreate() {
+  const source = document.getElementById('ccPenRecCreateSource').value;
+  const type = document.getElementById('ccPenRecCreateType').value;
+  const target = document.getElementById('ccPenRecCreateTarget').value.trim();
+  const time = document.getElementById('ccPenRecCreateTime').value;
+  const reason = document.getElementById('ccPenRecCreateReason').value.trim();
+  if (!target) { alert('请填写处罚对象'); return; }
+  if (!time) { alert('请选择处罚时间'); return; }
+  if (!reason) { alert('请填写处罚原因'); return; }
+  ccPenRecords.unshift({ id: ccPenRecordSeq++, source, type, target, time: ccFromLocal(time), reason, operator: '王敏', opTime: formatNow(), sysPenId: null });
+  ccLog('王敏', '监管管理员', '新增处罚记录', target, `来源：${source}，类型：${type}，原因：${reason}`, '处罚记录');
+  closeCcPenRecCreate();
+  ccRefreshAll();
+  alert('处罚记录已新增');
+}
 
 // 发起处罚弹窗（人工发起 / 整改入口共用，PEN-01/02）
 let ccPenCreateRectId = null;
