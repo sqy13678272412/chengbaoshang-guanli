@@ -11475,7 +11475,7 @@ function renderCcRectDetail() {
       ${x.attachments && x.attachments.length ? `<div style="color:#1890ff;">${x.attachments.map(a => '🖼 ' + ccEsc(a)).join('　')}</div>` : ''}
     </div>`;
   document.getElementById('ccRectDetailBody').innerHTML = `
-    <div class="drawer-section-title">问题来源（只读快照）</div>
+    <div class="drawer-section-title">问题来源</div>
     <div class="info-grid" style="grid-template-columns:130px 1fr 130px 1fr;">
       <div class="ig-label">检查计划名称</div>
       <div>${plan ? ccEsc(plan.name || '—') : '<span style="color:#999;">—</span>'}</div>
@@ -11492,16 +11492,41 @@ function renderCcRectDetail() {
     <div class="info-grid" style="grid-template-columns:130px 1fr 130px 1fr;">
       <div class="ig-label">整改要求</div>
       <div class="ig-full" style="grid-column:span 3;">${ccEsc(r.requirement) || '<span style="color:#999;">待分配时填写</span>'}</div>
-      <div class="ig-label">责任人</div><div>${ccEsc(r.assignee || '—')}</div>
+      <div class="ig-label">整改人</div><div>${ccEsc(r.assignee || '—')}</div>
       <div class="ig-label">截止日期</div><div>${r.deadline || '—'}</div>
-      <div class="ig-label">验证人</div><div>${ccEsc(r.verifier || '—')}</div>
-      <div class="ig-label">分配人</div><div>${ccEsc(r.assigner || '—')}</div>
+      <div class="ig-label">验收人</div><div>${ccEsc(r.verifier || '—')}</div>
       <div class="ig-label">分配时间</div><div>${assignLog ? assignLog.time : '—'}</div>
     </div>
-    <div class="drawer-section-title">整改提交（${subs.length} 轮）</div>
-    ${subs.length ? subs.map(roundCard).join('') : '<div class="mo-empty" style="padding:10px 0;">责任人尚未提交整改结果</div>'}
-    <div class="drawer-section-title">验证记录（${vers.length} 轮）</div>
-    ${vers.length ? vers.map(roundCard).join('') : '<div class="mo-empty" style="padding:10px 0;">暂无验证记录</div>'}
+    <div class="drawer-section-title">整改流程</div>
+    ${(() => {
+      const fixN = r.rounds.filter(x => x.type === '提交').length;
+      const verN = r.rounds.filter(x => x.type === '验证').length;
+      let fi = 0, vi = 0;
+      return r.rounds.length ? r.rounds.map(rd => {
+        const isFix = rd.type === '提交';
+        const pass = rd.result === '通过';
+        if (isFix) fi++; else vi++;
+        const title = (isFix ? '整改' : '验收') + ((isFix ? fixN : verN) > 1 ? `（第${isFix ? fi : vi}次）` : '');
+        return `<div style="display:flex;gap:10px;">
+        <div style="flex:none;display:flex;flex-direction:column;align-items:center;">
+          <span style="width:26px;height:26px;border-radius:50%;background:${isFix ? '#1890ff' : pass ? '#52c41a' : '#f5222d'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;flex:none;">${isFix ? '✏' : '✔'}</span>
+          <span style="flex:1;width:2px;background:#e8e8e8;margin-top:2px;"></span>
+        </div>
+        <div style="flex:1;min-width:0;padding-bottom:18px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:8px;">
+            <span style="font-weight:600;font-size:13px;">${title}</span>
+            <span style="color:#999;font-size:12px;flex:none;">${rd.time || ''}</span>
+          </div>
+          ${isFix
+            ? `<div style="display:flex;font-size:12px;line-height:2;"><span style="flex:none;width:72px;color:#999;">整改描述</span><span style="flex:1;">${ccEsc(rd.result || '—')}</span></div>
+               <div style="display:flex;font-size:12px;line-height:2;"><span style="flex:none;width:72px;color:#999;">整改图片</span><span style="flex:1;">${(rd.attachments || []).length ? rd.attachments.map(a => '🖼 ' + ccEsc(a)).join('　') : '—'}</span></div>`
+            : `<div style="display:flex;font-size:12px;line-height:2;"><span style="flex:none;width:72px;color:#999;">验收结论</span><span style="flex:1;"><span class="tag ${pass ? 'tag-green' : 'tag-red'}">${ccEsc(rd.result || '—')}</span></span></div>
+               <div style="display:flex;font-size:12px;line-height:2;"><span style="flex:none;width:72px;color:#999;">验收意见</span><span style="flex:1;">${ccEsc(rd.opinion || '—')}</span></div>`}
+          <div style="font-size:12px;color:#999;line-height:2;">操作人：${ccEsc(rd.by || '—')}</div>
+        </div>
+      </div>`;
+      }).join('') : '<div style="font-size:12px;color:#999;background:#fafafa;border-radius:4px;padding:6px 10px;">待整改</div>';
+    })()}
     <div class="drawer-section-title">关联处置</div>
     <div style="border:1px solid #f0f0f0;border-radius:6px;padding:10px 14px;font-size:13px;line-height:2;margin-bottom:16px;">
       <div>超期预警：${ccRectOverdue(r)
