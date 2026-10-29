@@ -8959,7 +8959,7 @@ let ccTemplates = [
 let ccTemplateSeq = 4;
 let ccPlans = [
   { id:1, code:'JCJH-202610-001', name:'城东综合体二期日常安全检查', dimension:'项目', target:'城东综合体二期', templateId:1, ver:'V1.2', freq:'单次', execTime:'2026-10-29 09:00', cycleType:'', cycleRule:'', cycleStart:'', cycleEnd:'', skipWeekend:false, execNow:false, execType:'个人', execDept:'', execPerson:'李强', status:'待执行', instances:[1], cancelReason:'', remark:'' },
-  { id:2, code:'JCJH-202610-006', name:'华筑建设每周综合安全检查', dimension:'承包商', target:'华筑建设有限公司', templateId:1, ver:'V1.2', freq:'周期', execTime:'09:00', cycleType:'按周', cycleRule:'每1周', cycleStart:'2026-10-26 00:00', cycleEnd:'2026-12-31 23:59', skipWeekend:false, execNow:false, execType:'部门', execDept:'安全管理部', execPerson:'', status:'执行中', instances:[], cancelReason:'', remark:'' },
+  { id:2, code:'JCJH-202610-006', name:'华筑建设每周综合安全检查', dimension:'承包商', target:'华筑建设有限公司', templateId:1, ver:'V1.2', freq:'周期', execTime:'09:00', cycleType:'按周', cycleRule:'每1周', cycleStart:'2026-10-26 00:00', cycleEnd:'2026-12-31 23:59', skipWeekend:false, execNow:false, execType:'部门', execDept:'安全管理部', execPerson:'', status:'执行中', instances:[4], cancelReason:'', remark:'' },
   { id:3, code:'JCJH-202610-009', name:'城东综合体二期消防设施巡检', dimension:'项目', target:'城东综合体二期', templateId:2, ver:'V1.0', freq:'周期', execTime:'08:30', cycleType:'按天', cycleRule:'每1天', cycleStart:'2026-10-26 00:00', cycleEnd:'2026-10-29 23:59', skipWeekend:true, execNow:false, execType:'个人', execDept:'', execPerson:'赵宁', status:'执行中', instances:[2,3], cancelReason:'', remark:'' },
   { id:4, code:'JCJH-202610-012', name:'宏远建筑临电专项安全检查', dimension:'承包商', target:'宏远建筑有限公司', templateId:1, ver:'V1.2', freq:'单次', execTime:'2026-11-02 09:00', cycleType:'', cycleRule:'', cycleStart:'', cycleEnd:'', skipWeekend:false, execNow:false, execType:'部门', execDept:'安全管理部', execPerson:'', status:'待执行', instances:[], cancelReason:'', remark:'' }
 ];
@@ -8983,9 +8983,18 @@ let ccRecords = [
     items:[
       { seq:1, task:'检查脚手架基础承载与排水', standard:'基础平整夯实，垫板齐全，排水通畅', required:true, needPhoto:false, result:'合格', level:'', desc:'', photos:[] },
       { seq:2, task:'检查连墙件设置', standard:'连墙件按方案设置，无缺失无松动', required:true, needPhoto:false, result:'不合格', level:'一般', desc:'连墙件缺失2处，与方案不符', photos:['连墙件缺失位置.jpg'] }
-    ], status:'整改中', rectIds:[3], archivedAt:'', logs:[] }
+    ], status:'整改中', rectIds:[3], archivedAt:'', logs:[] },
+  { id:4, code:'JC-20261026-004', source:'计划', planId:2, project:'', contractor:'华筑建设有限公司', type:'日常检查', date:'2026-10-26', slotDate:'2026-10-26', inspector:'李强', templateCode:'MB-日常-003', ver:'V1.2',
+    items:[
+      { seq:1, task:'核查特种作业人员持证上岗情况', standard:'特种作业人员100%持有效证件上岗，证件在有效期内', required:true, needPhoto:false, result:'合格', level:'', desc:'', photos:[] },
+      { seq:2, task:'检查配电箱防雨措施落实情况', standard:'配电箱应具备防雨措施，箱体完好、接地可靠', required:true, needPhoto:true, result:'合格', level:'', desc:'', photos:[] },
+      { seq:3, task:'检查灭火器配备与有效期', standard:'灭火器压力正常、在有效期内、摆放位置醒目', required:true, needPhoto:false, result:'合格', level:'', desc:'', photos:[] },
+      { seq:4, task:'检查临边洞口防护设施', standard:'临边洞口设置定型化防护，警示标识齐全', required:false, needPhoto:false, result:'合格', level:'', desc:'', photos:[] },
+      { seq:5, task:'检查电缆敷设是否规范', standard:'电缆架空或埋地敷设，无破损、无泡水', required:false, needPhoto:false, result:'合格', level:'', desc:'', photos:[] },
+      { seq:6, task:'检查现场材料堆放', standard:'材料分类码放整齐，通道畅通', required:false, needPhoto:false, result:'不合格', level:'一般', desc:'现场材料堆放杂乱，消防通道被占用', photos:['PIC_20261026_1.jpg'] }
+    ], status:'整改中', rectIds:[], archivedAt:'', logs:[] }
 ];
-let ccRecordSeq = 4;
+let ccRecordSeq = 5;
 let ccRects = [
   { id:1, code:'ZG-20261029-001', recordId:1, itemSeq:2, project:'城东综合体二期', contractor:'华筑建设有限公司', problem:'配电箱未落实防雨措施，箱体顶部盖板缺失', level:'一般', requirement:'限期恢复防雨措施，加装固定卡扣并复查', assignee:'陈建国', deadline:'2026-10-30 18:00', verifier:'周凯', assigner:'王敏', status:'已关闭', overdue:false,
     rounds:[
@@ -10017,7 +10026,7 @@ function renderCcWork() {
   const rectTotal = ccRects.length;
   const rectClosed = ccRects.filter(ccRectClosed).length;
   const closeRate = rectTotal ? Math.round(rectClosed / rectTotal * 100) : 100;
-  const rectTodoRecs = ccRecords.filter(r => r.status === '待整改').length;
+  const rectTodoRecs = ccRecListRows().filter(x => !x.rec).length;
 
   // 我的待办
   const todos = [];
@@ -10063,9 +10072,9 @@ function renderCcWork() {
       <div style="border:1px solid #f0f0f0;border-radius:6px;padding:14px 16px;">
         <div style="font-weight:600;margin-bottom:10px;">整改闭环</div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center;">
-          <div style="cursor:pointer;" onclick="ccWorkGoRecord('未检查')">
+          <div style="cursor:pointer;" onclick="ccWorkGoRecord('')">
             <div style="font-size:22px;font-weight:600;color:#fa541c;">${rectTodoRecs}</div>
-            <div style="color:#999;font-size:12px;">未检查记录（个）</div>
+            <div style="color:#999;font-size:12px;">待检查记录（个）</div>
           </div>
           <div style="cursor:pointer;" onclick="switchPage('ccRect')">
             <div style="font-size:22px;font-weight:600;color:#1890ff;">${closeRate}%</div>
@@ -10628,38 +10637,57 @@ function renderCcPlanDetail() {
 }
 // ===== 7. 检查记录 =====
 let ccRecFilter = { kw: '', type: '', status: '' };
-function ccRecDispStatus(r) { return r.status === '检查中' ? '未检查' : '已检查'; }
-function ccRecPlan(r) { return r.planId ? ccPlans.find(p => p.id === r.planId) : null; }
+const ccRecStatus4Class = { '已检查': 'tag-green', '逾期已检查': 'tag-orange', '逾期待检查': 'tag-red', '待检查': 'tag-blue' };
 function ccRecTpl(r) { return ccTemplates.find(x => x.code === r.templateCode) || null; }
+// 全量行：每个计划的全部执行时点（含未检查）+ 无计划的独立记录
+function ccRecListRows() {
+  const today = CC_NOW.slice(0, 10);
+  const rows = [];
+  ccPlans.forEach(p => {
+    const t = ccTpl(p.templateId);
+    const execLabel = p.execType === '部门' ? p.execDept + '（部门）' : (p.execType === '个人' ? p.execPerson + '（人）' : '—');
+    ccPlanSlots(p).forEach(s => {
+      const r = s.rec;
+      const sDate = s.slot.slice(0, 10);
+      if (!r) {
+        rows.push({ plan: p, tpl: t, rec: null, time: s.slot, inspector: execLabel, status: sDate < today ? '逾期待检查' : '待检查' });
+      } else {
+        const late = r.date > sDate;
+        rows.push({ plan: p, tpl: t, rec: r, time: late ? r.date + '（补检）' : s.slot, inspector: r.inspector || execLabel, status: late ? '逾期已检查' : '已检查' });
+      }
+    });
+  });
+  ccRecords.filter(r => !r.planId).forEach(r => rows.push({ plan: null, tpl: ccRecTpl(r), rec: r, time: r.date, inspector: r.inspector, status: '已检查' }));
+  rows.sort((a, b) => String(b.time).localeCompare(String(a.time)));
+  return rows;
+}
 function renderCcRecords() {
   const kw = (document.getElementById('ccRecFilterKw') ? document.getElementById('ccRecFilterKw').value : ccRecFilter.kw).trim();
   const type = document.getElementById('ccRecFilterType') ? document.getElementById('ccRecFilterType').value : ccRecFilter.type;
   const status = document.getElementById('ccRecFilterStatus') ? document.getElementById('ccRecFilterStatus').value : ccRecFilter.status;
   ccRecFilter = { kw, type, status };
-  const list = ccRecords.filter(r => {
-    const plan = ccRecPlan(r);
-    const t = ccRecTpl(r);
-    const kwTxt = (plan ? plan.code + (plan.name || '') : '') + r.type + r.inspector + (r.project || '') + (r.contractor || '') + (t ? t.name : '');
-    return (!kw || kwTxt.includes(kw)) && (!type || r.type === type) && (!status || ccRecDispStatus(r) === status);
+  const list = ccRecListRows().filter(row => {
+    const p = row.plan;
+    const kwTxt = (p ? p.code + (p.name || '') + p.target : (row.rec ? (row.rec.project || '') + (row.rec.contractor || '') : '')) + (row.tpl ? row.tpl.name + row.tpl.type : '');
+    return (!kw || kwTxt.includes(kw)) && (!type || (row.tpl ? row.tpl.type : (row.rec ? row.rec.type : '')) === type) && (!status || row.status === status);
   });
   const typeOpts = ccCheckTypes.slice().sort((a, b) => a.sort - b.sort).filter(x => x.enabled)
     .map(x => `<option ${type === x.name ? 'selected' : ''}>${x.name}</option>`).join('');
-  const rows = list.map(r => {
-    const plan = ccRecPlan(r);
-    const t = ccRecTpl(r);
-    const disp = ccRecDispStatus(r);
+  const rows = list.map(row => {
+    const p = row.plan;
+    const t = row.tpl;
     return `<tr>
-      <td>${plan ? plan.code : '—'}</td>
-      <td>${plan ? ccEsc(plan.name || '—') : '—'}</td>
-      <td>${r.type}</td>
-      <td>${plan ? (plan.freq === '单次' ? '单次任务' : '周期任务') : '—'}</td>
-      <td>${r.date}</td>
-      <td>${ccEsc(r.inspector)}</td>
-      <td>${plan ? `<span class="tag ${plan.dimension === '项目' ? 'tag-blue' : 'tag-green'}">${plan.dimension}维度</span>` : '—'}</td>
-      <td>${plan ? ccEsc(plan.target) : ccEsc(r.project || r.contractor || '—')}</td>
+      <td>${p ? p.code : '—'}</td>
+      <td>${p ? ccEsc(p.name || '—') : '—'}</td>
+      <td>${t ? t.type : (row.rec ? row.rec.type : '—')}</td>
+      <td>${p ? (p.freq === '单次' ? '单次任务' : '周期任务') : '—'}</td>
+      <td>${row.time}</td>
+      <td>${ccEsc(row.inspector)}</td>
+      <td>${p ? `<span class="tag ${p.dimension === '项目' ? 'tag-blue' : 'tag-green'}">${p.dimension}维度</span>` : '—'}</td>
+      <td>${p ? ccEsc(p.target) : ccEsc((row.rec && (row.rec.project || row.rec.contractor)) || '—')}</td>
       <td>${t ? ccEsc(t.name) : '—'}</td>
-      <td><span class="tag ${disp === '已检查' ? 'tag-green' : 'tag-orange'}">${disp}</span></td>
-      <td class="sticky-col"><span class="link" onclick="openCcRecordDetail(${r.id})">详情</span></td>
+      <td><span class="tag ${ccRecStatus4Class[row.status] || 'tag-gray'}">${row.status}</span></td>
+      <td class="sticky-col">${row.rec ? `<span class="link" onclick="openCcRecordDetail(${row.rec.id})">详情</span>` : '<span style="color:#ccc;">—</span>'}</td>
     </tr>`;
   }).join('');
   document.getElementById('ccRecordBody').innerHTML = `
@@ -10671,7 +10699,7 @@ function renderCcRecords() {
         </select>
         <select id="ccRecFilterStatus">
           <option value="">全部状态</option>
-          ${['已检查', '未检查'].map(s => `<option ${status === s ? 'selected' : ''}>${s}</option>`).join('')}
+          ${['已检查', '逾期已检查', '逾期待检查', '待检查'].map(s => `<option ${status === s ? 'selected' : ''}>${s}</option>`).join('')}
         </select>
         <button class="btn btn-plain" onclick="renderCcRecords()">查询</button>
         <button class="btn btn-plain" onclick="resetCcRecFilter()">重置</button>
@@ -10916,9 +10944,9 @@ function closeCcRecordDetail() { ccRecDetailId = null; document.getElementById('
 function renderCcRecordDetail() {
   const rec = ccRecords.find(x => x.id === ccRecDetailId);
   if (!rec) return;
-  const plan = ccRecPlan(rec);
+  const plan = rec.planId ? ccPlans.find(x => x.id === rec.planId) : null;
   const t = ccRecTpl(rec);
-  const disp = ccRecDispStatus(rec);
+  const disp = rec.slotDate && rec.date > rec.slotDate ? '逾期已检查' : '已检查';
   const pass = rec.items.filter(i => i.result === '合格').length;
   const fail = rec.items.filter(i => i.result === '不合格').length;
   document.getElementById('ccRecDetailTitle').textContent = `检查记录详情（${rec.code}）`;
@@ -10988,21 +11016,33 @@ function ccRecItemFlow(recId, seq) {
     ${fld('检查人', ccEsc(rec.inspector))}`, '#f5222d');
   const nodes = [n1];
   if (rep) {
-    // 移动端2整改上报数据：固定四节点
+    // 移动端2整改上报数据：整改人可能有多个，每人下发一条独立整改任务，各自完成整改与验收
     nodes.push(node('②', '整改上报', rep.reportTime, `
       ${fld('整改人', rep.targets.map(t2 => `${ccEsc(t2.name)}：${ccEsc(t2.assignee || '—')}`).join('；'))}
       ${fld('整改要求', ccEsc(rep.requirement || '—'))}
       ${fld('整改截至期限', ccEsc(rep.deadline || '—'))}`, '#fa8c16'));
-    nodes.push(rep.fixTime
-      ? node('③', '整改处理', rep.fixTime, `
-        ${fld('整改描述', ccEsc(rep.fixDesc || '—'))}
-        ${fld('整改图片', rep.fixPhotos.length ? rep.fixPhotos.map(p => '🖼 ' + ccEsc(p)).join('　') : '—')}`, '#1890ff')
-      : node('③', '整改处理', '', pending('待整改'), '#d9d9d9'));
-    nodes.push(rep.verifyTime
-      ? node('④', '验收', rep.verifyTime, `
-        ${fld('验收结论', `<span class="tag ${rep.verifyRes === '通过' ? 'tag-green' : 'tag-red'}">${ccEsc(rep.verifyRes || '—')}</span>`)}
-        ${fld('验收意见', ccEsc(rep.verifyOpinion || '—'))}`, rep.verifyRes === '通过' ? '#52c41a' : '#f5222d')
-      : node('④', '验收', '', pending('待验收'), '#d9d9d9'));
+    const shared = rep.targets.length === 1;
+    rep.targets.forEach((tg, i) => {
+      const fT = tg.fixTime || (shared ? rep.fixTime : '');
+      const fD = tg.fixDesc || (shared ? rep.fixDesc : '');
+      const fP = (tg.fixPhotos && tg.fixPhotos.length) ? tg.fixPhotos : (shared ? rep.fixPhotos : []);
+      const vT = tg.verifyTime || (shared ? rep.verifyTime : '');
+      const vR = tg.verifyRes || (shared ? rep.verifyRes : '');
+      const vO = tg.verifyOpinion || (shared ? rep.verifyOpinion : '');
+      nodes.push(node('🔧', `整改任务 ${i + 1}（${ccEsc(tg.name)} → 整改人：${ccEsc(tg.assignee || '待分配')}）`, '', `
+        ${fld('整改要求', ccEsc(rep.requirement || '—'))}
+        ${fld('整改截至期限', ccEsc(rep.deadline || '—'))}`, '#fa8c16'));
+      nodes.push(fT
+        ? node('✏', '整改处理', fT, `
+          ${fld('整改描述', ccEsc(fD || '—'))}
+          ${fld('整改图片', fP.length ? fP.map(p => '🖼 ' + ccEsc(p)).join('　') : '—')}`, '#1890ff')
+        : node('✏', '整改处理', '', pending('该整改人待整改'), '#d9d9d9'));
+      nodes.push(vT
+        ? node('✔', '验收', vT, `
+          ${fld('验收结论', `<span class="tag ${vR === '通过' ? 'tag-green' : 'tag-red'}">${ccEsc(vR || '—')}</span>`)}
+          ${fld('验收意见', ccEsc(vO || '—'))}`, vR === '通过' ? '#52c41a' : '#f5222d')
+        : node('✔', '验收', '', pending('待验收'), '#d9d9d9'));
+    });
   } else if (rect) {
     // 桌面端整改任务数据：按 rounds 逐轮展示完整流程
     nodes.push(node('②', '整改上报（任务下发）', '', `
@@ -14664,11 +14704,14 @@ renderTable('archive');
 // ===== 移动端2：整改上报闭环（不合格项上报 → 整改待处理/已整改 → 验收待验收/已验收）=====
 let c2mReps = [
   { id: 1, code: 'ZG2-20261029-001', planId: 2, planCode: 'JCJH-202610-006', planName: '华筑建设每周综合安全检查', level: '一般',
-    desc: '现场材料堆放杂乱，消防通道被占用', photos: ['PIC_20261028_1.jpg'],
-    targets: [{ name: '城东综合体二期', assignee: '陈建国' }, { name: '智能制造厂房三期', assignee: '赵宁' }],
+    desc: '现场材料堆放杂乱，消防通道被占用', photos: ['PIC_20261026_1.jpg'],
+    targets: [
+      { name: '城东综合体二期', assignee: '陈建国', fixDesc: '已清理堆放材料并恢复消防通道畅通', fixPhotos: ['整改照片A.jpg'], fixTime: '2026-10-29 15:00', verifyRes: '通过', verifyOpinion: '现场复查合格，通道恢复畅通', verifyTime: '2026-10-29 16:00' },
+      { name: '智能制造厂房三期', assignee: '赵宁' }
+    ],
     requirement: '立即清理堆放材料，恢复消防通道畅通，并拍照留存', deadline: '2026-11-01',
     fixDesc: '', fixPhotos: [], fixTime: '', verifyRes: '', verifyOpinion: '', verifyTime: '',
-    status: '待整改', reportTime: '2026-10-29 10:30' }
+    status: '待整改', reportTime: '2026-10-26 11:30', recId: 4, itemSeq: 6 }
 ];
 let c2mRepSeq = 2;
 let c2mReportEdit = null;
