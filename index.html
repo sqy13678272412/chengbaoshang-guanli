@@ -3135,7 +3135,11 @@
     </div>
     <div class="modal-body">
       <div class="modal-body grid" style="padding:0;">
-        <div class="form-item span-2">
+        <div class="form-item">
+          <label>计划编号</label>
+          <input type="text" id="ccPlanCode" readonly placeholder="保存时自动生成" style="background:#fafafa;">
+        </div>
+        <div class="form-item">
           <label class="required">检查计划名称</label>
           <input type="text" id="ccPlanName" maxlength="50" placeholder="请输入检查计划名称">
         </div>
@@ -10164,6 +10168,8 @@ function openCcPlanModal(mode, planId) {
   if (mode === 'edit' && !p) { alert('计划不存在'); return; }
   if (p && p.status !== '待执行') { alert('仅待执行状态的计划可编辑'); return; }
   document.getElementById('ccPlanModalTitle').textContent = p ? `编辑检查计划（${p.code}）` : '新建检查计划';
+  document.getElementById('ccPlanCode').value = p ? p.code
+    : ('JCJH-' + ccToday().slice(0, 7).replace('-', '') + '-' + String(ccPlanSeq).padStart(3, '0'));
   document.getElementById('ccPlanName').value = p ? (p.name || '') : '';
   const dim = p ? p.dimension : '项目';
   document.querySelectorAll('input[name=ccPlanDim]').forEach(r => r.checked = r.value === dim);
@@ -10308,7 +10314,7 @@ function saveCcPlan() {
   if (ccPlanEdit.mode === 'edit') {
     plan = ccPlans.find(x => x.id === ccPlanEdit.planId);
   } else {
-    plan = { id: ccPlanSeq, code: 'JCJH-' + ccToday().slice(0, 7).replace('-', '') + '-' + String(ccPlanSeq).padStart(3, '0'), instances: [], cancelReason: '' };
+    plan = { id: ccPlanSeq, code: (document.getElementById('ccPlanCode').value || ('JCJH-' + ccToday().slice(0, 7).replace('-', '') + '-' + String(ccPlanSeq).padStart(3, '0'))).trim(), instances: [], cancelReason: '' };
     ccPlanSeq++;
     ccPlans.push(plan);
   }
