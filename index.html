@@ -601,6 +601,19 @@
       <li data-page="emg2Config">检查配置</li>
       <li data-page="emg2Mobile">移动端</li>
     </ul>
+    <li data-page="cc" class="has-sub">承包商检查</li>
+    <ul class="submenu" id="submenu-cc">
+      <li data-page="ccWork">监管工作台</li>
+      <li data-page="ccPlan">检查计划</li>
+      <li data-page="ccRecord">检查记录</li>
+      <li data-page="ccRect">整改任务</li>
+      <li data-page="ccPen">处罚记录</li>
+      <li data-page="ccAppeal">我的申诉</li>
+      <li data-page="ccBlack">黑名单</li>
+      <li data-page="ccConfig">配置中心</li>
+      <li data-page="ccAudit">审计中心</li>
+      <li data-page="ccMobile">移动端</li>
+    </ul>
   </ul>
 </div>
 
@@ -1141,6 +1154,47 @@
         </div>
       </div>
     </div>
+
+    <!-- 承包商检查：监管工作台（占位） -->
+    <div class="card page hidden" id="page-ccWork"><div class="mo-empty">功能建设中</div></div>
+
+    <!-- 承包商检查：检查计划（占位） -->
+    <div class="card page hidden" id="page-ccPlan"><div class="mo-empty">功能建设中</div></div>
+
+    <!-- 承包商检查：检查记录（占位） -->
+    <div class="card page hidden" id="page-ccRecord"><div class="mo-empty">功能建设中</div></div>
+
+    <!-- 承包商检查：整改任务（占位） -->
+    <div class="card page hidden" id="page-ccRect"><div class="mo-empty">功能建设中</div></div>
+
+    <!-- 承包商检查：处罚记录（占位） -->
+    <div class="card page hidden" id="page-ccPen"><div class="mo-empty">功能建设中</div></div>
+
+    <!-- 承包商检查：我的申诉（占位） -->
+    <div class="card page hidden" id="page-ccAppeal"><div class="mo-empty">功能建设中</div></div>
+
+    <!-- 承包商检查：黑名单（占位） -->
+    <div class="card page hidden" id="page-ccBlack"><div class="mo-empty">功能建设中</div></div>
+
+    <!-- 承包商检查：配置中心 -->
+    <div class="card page hidden" id="page-ccConfig">
+      <div class="tabs">
+        <span class="tab active" data-cctab="tpl" onclick="switchCcConfigTab('tpl')">清单模板</span>
+        <span class="tab" data-cctab="type" onclick="switchCcConfigTab('type')">检查类型</span>
+        <span class="tab" data-cctab="pentype" onclick="switchCcConfigTab('pentype')">处罚类型</span>
+        <span class="tab" data-cctab="auto" onclick="switchCcConfigTab('auto')">自动处罚规则</span>
+        <span class="tab" data-cctab="black" onclick="switchCcConfigTab('black')">黑名单规则</span>
+        <span class="tab" data-cctab="flow" onclick="switchCcConfigTab('flow')">审批流程</span>
+        <span class="tab" data-cctab="notice" onclick="switchCcConfigTab('notice')">通知规则</span>
+      </div>
+      <div id="ccConfigBody"></div>
+    </div>
+
+    <!-- 承包商检查：审计中心（占位） -->
+    <div class="card page hidden" id="page-ccAudit"><div class="mo-empty">功能建设中</div></div>
+
+    <!-- 承包商检查：移动端（占位） -->
+    <div class="card page hidden" id="page-ccMobile"><div class="mo-empty">功能建设中</div></div>
 
   </div>
 </div>
@@ -2727,6 +2781,294 @@
   </div>
 </div>
 
+<!-- 承包商检查：新建/编辑清单模板 -->
+<div class="modal-mask hidden" id="ccTplModal">
+  <div class="modal wide" style="width:980px;">
+    <div class="modal-header">
+      <span id="ccTplModalTitle">新建清单</span>
+      <span class="modal-close" onclick="closeCcTplModal()">✕</span>
+    </div>
+    <div class="modal-body">
+      <div class="form-item">
+        <label class="required">清单名称</label>
+        <input type="text" id="ccTplName" maxlength="50" placeholder="请输入清单名称（不超过50字）">
+      </div>
+      <div class="modal-body grid" style="padding:0;">
+        <div class="form-item">
+          <label class="required">检查类型</label>
+          <select id="ccTplType"></select>
+        </div>
+        <div class="form-item">
+          <label class="required">版本号</label>
+          <input type="text" id="ccTplVer" readonly>
+        </div>
+        <div class="form-item">
+          <label class="required">生效开始</label>
+          <input type="datetime-local" id="ccTplStart">
+        </div>
+        <div class="form-item">
+          <label>生效结束</label>
+          <input type="datetime-local" id="ccTplEnd">
+        </div>
+      </div>
+      <div class="form-item" style="margin-bottom:8px;">
+        <label style="line-height:1.6;"><span style="color:#ff4d4f;margin-right:4px;">*</span>检查项任务</label>
+        <div style="flex:1;">
+          <div class="table-wrap" style="border:1px solid #f0f0f0;border-radius:6px;">
+            <table style="min-width:820px;">
+              <thead>
+                <tr>
+                  <th style="width:44px;">序号</th>
+                  <th style="width:130px;">检查类别</th>
+                  <th>检查项任务</th>
+                  <th>检查标准</th>
+                  <th style="width:76px;">是否必检</th>
+                  <th style="width:64px;">操作</th>
+                </tr>
+              </thead>
+              <tbody id="ccTplItemRows"></tbody>
+            </table>
+          </div>
+          <div style="margin-top:8px;"><span class="link" onclick="ccTplAddItem()">＋ 添加检查项</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-plain" onclick="saveCcTpl(true)">保存草稿</button>
+      <button class="btn btn-primary" onclick="publishCcTpl()">发布</button>
+      <button class="btn btn-plain" onclick="closeCcTplModal()">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- 承包商检查：发布版本确认 -->
+<div class="modal-mask hidden" id="ccTplPubModal">
+  <div class="modal">
+    <div class="modal-header">
+      发布版本确认
+      <span class="modal-close" onclick="closeCcTplPubConfirm()">✕</span>
+    </div>
+    <div class="modal-body" id="ccTplPubInfo"></div>
+    <div class="modal-footer">
+      <button class="btn btn-plain" onclick="closeCcTplPubConfirm()">取消</button>
+      <button class="btn btn-primary" onclick="confirmCcTplPublish()">确认发布</button>
+    </div>
+  </div>
+</div>
+
+<!-- 承包商检查：清单模板详情抽屉 -->
+<div class="modal-mask drawer-mask hidden" id="ccTplDetailDrawer">
+  <div class="drawer" style="width:900px;max-width:70vw;">
+    <div class="drawer-header">
+      <span id="ccTplDetailTitle">清单模板详情</span>
+      <span class="modal-close" onclick="closeCcTplDetail()">✕</span>
+    </div>
+    <div class="drawer-body" id="ccTplDetailBody"></div>
+    <div class="drawer-footer">
+      <button class="btn btn-plain" id="ccTplDetailToggleBtn" onclick="ccTplToggleFromDetail()">关闭清单</button>
+      <button class="btn btn-primary" id="ccTplNewVerBtn" onclick="ccTplCreateNewVer()">创建新版本</button>
+    </div>
+  </div>
+</div>
+
+<!-- 承包商检查：引用计划列表 -->
+<div class="modal-mask hidden" id="ccTplPlansModal">
+  <div class="modal wide">
+    <div class="modal-header">
+      <span id="ccTplPlansTitle">引用计划</span>
+      <span class="modal-close" onclick="closeCcTplPlans()">✕</span>
+    </div>
+    <div class="modal-body" id="ccTplPlansBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-plain" onclick="closeCcTplPlans()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- 承包商检查：删除引用阻止弹窗 -->
+<div class="modal-mask hidden" id="ccTplBlockModal">
+  <div class="modal">
+    <div class="modal-header">
+      无法删除
+      <span class="modal-close" onclick="closeCcTplBlock()">✕</span>
+    </div>
+    <div class="modal-body" id="ccTplBlockBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-plain" onclick="closeCcTplBlock()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- 承包商检查：检查类型 新增/编辑 -->
+<div class="modal-mask hidden" id="ccTypeModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span id="ccTypeModalTitle">新增检查类型</span>
+      <span class="modal-close" onclick="closeCcTypeModal()">✕</span>
+    </div>
+    <div class="modal-body">
+      <div class="form-item"><label class="required">编码</label><input type="text" id="ccTypeCode" placeholder="如 JCLX-01"></div>
+      <div class="form-item"><label class="required">名称</label><input type="text" id="ccTypeName" placeholder="如 日常检查"></div>
+      <div class="form-item"><label>排序</label><input type="number" id="ccTypeSort" min="1" placeholder="数字越小越靠前"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-plain" onclick="closeCcTypeModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveCcType()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 承包商检查：处罚类型 新增/编辑 -->
+<div class="modal-mask hidden" id="ccPenTypeModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span id="ccPenTypeModalTitle">新增处罚类型</span>
+      <span class="modal-close" onclick="closeCcPenTypeModal()">✕</span>
+    </div>
+    <div class="modal-body">
+      <div class="form-item"><label class="required">编码</label><input type="text" id="ccPenTypeCode" placeholder="如 CFLX-01"></div>
+      <div class="form-item"><label class="required">名称</label><input type="text" id="ccPenTypeName" placeholder="如 罚款"></div>
+      <div class="form-item"><label>说明</label><textarea id="ccPenTypeDesc" rows="3" placeholder="处罚类型说明"></textarea></div>
+      <div class="form-item">
+        <label>动态字段</label>
+        <select id="ccPenTypeField">
+          <option value="">无</option>
+          <option>罚款金额</option>
+          <option>执行要求</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-plain" onclick="closeCcPenTypeModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveCcPenType()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 承包商检查：自动处罚规则 新增/编辑 -->
+<div class="modal-mask hidden" id="ccAutoRuleModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span id="ccAutoRuleModalTitle">新增自动处罚规则</span>
+      <span class="modal-close" onclick="closeCcAutoRuleModal()">✕</span>
+    </div>
+    <div class="modal-body">
+      <div class="form-item"><label class="required">规则名</label><input type="text" id="ccAutoRuleName" placeholder="如 验证不通过自动警告"></div>
+      <div class="form-item">
+        <label class="required">触发事件</label>
+        <select id="ccAutoRuleEvent">
+          <option>验证不通过</option>
+          <option>整改超期</option>
+        </select>
+      </div>
+      <div class="form-item"><label class="required">条件</label><input type="text" id="ccAutoRuleCond" placeholder="如 同一整改任务首次验证不通过"></div>
+      <div class="form-item">
+        <label class="required">处罚类型</label>
+        <select id="ccAutoRulePenType"></select>
+      </div>
+      <div class="form-item">
+        <label>启用</label>
+        <label class="switch"><input type="checkbox" id="ccAutoRuleEnabled" checked><span class="slider"></span></label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-plain" onclick="closeCcAutoRuleModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveCcAutoRule()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 承包商检查：黑名单规则 新增/编辑 -->
+<div class="modal-mask hidden" id="ccBlackRuleModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span id="ccBlackRuleModalTitle">新增黑名单规则</span>
+      <span class="modal-close" onclick="closeCcBlackRuleModal()">✕</span>
+    </div>
+    <div class="modal-body">
+      <div class="form-item"><label class="required">规则名</label><input type="text" id="ccBlackRuleName" placeholder="如 人员黑名单-超期未整改"></div>
+      <div class="form-item">
+        <label class="required">适用对象</label>
+        <select id="ccBlackRuleObj">
+          <option>人员</option>
+          <option>企业</option>
+          <option>双罚</option>
+        </select>
+      </div>
+      <div class="form-item"><label class="required">触发条件</label><input type="text" id="ccBlackRuleCond" placeholder="如 整改任务超期超过7天"></div>
+      <div class="form-item"><label class="required">有效期</label><input type="text" id="ccBlackRulePeriod" placeholder="如 1年"></div>
+      <div class="form-item">
+        <label>启用</label>
+        <label class="switch"><input type="checkbox" id="ccBlackRuleEnabled" checked><span class="slider"></span></label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-plain" onclick="closeCcBlackRuleModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveCcBlackRule()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 承包商检查：审批流程 新增/编辑 -->
+<div class="modal-mask hidden" id="ccFlowModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span id="ccFlowModalTitle">配置审批流程</span>
+      <span class="modal-close" onclick="closeCcFlowModal()">✕</span>
+    </div>
+    <div class="modal-body">
+      <div class="form-item"><label class="required">流程名称</label><input type="text" id="ccFlowName" placeholder="如 普通处罚审批流"></div>
+      <div class="form-item"><label class="required">适用处罚类型</label><input type="text" id="ccFlowPenTypes" placeholder="如 警告、罚款"></div>
+      <div class="form-item"><label>金额区间</label><input type="text" id="ccFlowAmount" placeholder="如 罚款 ≤ 5000元"></div>
+      <div class="form-item"><label class="required">节点1</label><input type="text" id="ccFlowNode1" placeholder="如 部门负责人"></div>
+      <div class="form-item">
+        <label class="required">节点1审批人</label>
+        <select id="ccFlowApprover1"></select>
+      </div>
+      <div class="form-item"><label class="required">节点2</label><input type="text" id="ccFlowNode2" placeholder="如 安全总监"></div>
+      <div class="form-item">
+        <label class="required">节点2审批人</label>
+        <select id="ccFlowApprover2"></select>
+      </div>
+      <div class="form-item">
+        <label>启用</label>
+        <label class="switch"><input type="checkbox" id="ccFlowEnabled" checked><span class="slider"></span></label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-plain" onclick="closeCcFlowModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveCcFlow()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 承包商检查：通知规则 新增/编辑 -->
+<div class="modal-mask hidden" id="ccNoticeModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span id="ccNoticeModalTitle">新增通知规则</span>
+      <span class="modal-close" onclick="closeCcNoticeModal()">✕</span>
+    </div>
+    <div class="modal-body">
+      <div class="form-item"><label class="required">事件</label><input type="text" id="ccNoticeEvent" placeholder="如 检查计划到期提醒"></div>
+      <div class="form-item"><label class="required">接收角色</label><input type="text" id="ccNoticeRoles" placeholder="如 检查人"></div>
+      <div class="form-item"><label>提前提醒天数</label><input type="number" id="ccNoticeDays" min="0" value="1"></div>
+      <div class="form-item">
+        <label>站内通知</label>
+        <label class="switch"><input type="checkbox" id="ccNoticeSite" checked><span class="slider"></span></label>
+      </div>
+      <div class="form-item">
+        <label>启用</label>
+        <label class="switch"><input type="checkbox" id="ccNoticeEnabled" checked><span class="slider"></span></label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-plain" onclick="closeCcNoticeModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveCcNotice()">保存</button>
+    </div>
+  </div>
+</div>
+
 <!-- 应急检查：排查项数量 / 历史执行数量 弹窗 -->
 <div class="modal-mask hidden" id="emgClCountModal">
   <div class="modal wide">
@@ -2933,7 +3275,17 @@ const pageTitles = {
   emg2Mat: '应急检查2 / 应急物资',
   emg2Dev: '应急检查2 / 应急设备',
   emg2Config: '应急检查2 / 检查配置',
-  emg2Mobile: '应急检查2 / 移动端'
+  emg2Mobile: '应急检查2 / 移动端',
+  ccWork: '承包商检查 / 监管工作台',
+  ccPlan: '承包商检查 / 检查计划',
+  ccRecord: '承包商检查 / 检查记录',
+  ccRect: '承包商检查 / 整改任务',
+  ccPen: '承包商检查 / 处罚记录',
+  ccAppeal: '承包商检查 / 我的申诉',
+  ccBlack: '承包商检查 / 黑名单',
+  ccConfig: '承包商检查 / 配置中心',
+  ccAudit: '承包商检查 / 审计中心',
+  ccMobile: '承包商检查 / 移动端'
 };
 
 // ===== 业主端 / 承包商端切换 =====
@@ -7802,6 +8154,886 @@ function renderEmg2RecBody() {
   }
 }
 
+// ===== 承包商检查 =====
+const CC_PEOPLE = { inspector: ['李强','赵宁'], rectifier: ['陈建国'], verifier: ['周凯'], approver: ['刘峰'], supervisor: ['王敏'] };
+let ccTemplates = [
+  { id:1, code:'MB-日常-003', name:'承包商日常安全检查清单', type:'日常检查', enabled:true,
+    versions:[
+      { ver:'V1.0', status:'已归档', effectStart:'2026-08-01 00:00', effectEnd:'2026-10-14 23:59', items:null, archivedAt:'2026-10-15 09:00', operator:'王敏' },
+      { ver:'V1.2', status:'生效', effectStart:'2026-10-15 00:00', effectEnd:'', items:[
+        { seq:1, category:'人员资质', task:'核查特种作业人员持证上岗情况', standard:'特种作业人员100%持有效证件上岗，证件在有效期内', required:true },
+        { seq:2, category:'临时用电', task:'检查配电箱防雨措施落实情况', standard:'配电箱应具备防雨措施，箱体完好、接地可靠', required:true },
+        { seq:3, category:'消防管理', task:'检查灭火器配备与有效期', standard:'灭火器压力正常、在有效期内、摆放位置醒目', required:true },
+        { seq:4, category:'高处作业', task:'检查临边洞口防护设施', standard:'临边洞口设置定型化防护，警示标识齐全', required:false },
+        { seq:5, category:'临时用电', task:'检查电缆敷设是否规范', standard:'电缆架空或埋地敷设，无破损、无泡水', required:false },
+        { seq:6, category:'文明施工', task:'检查现场材料堆放', standard:'材料分类码放整齐，通道畅通', required:false }
+      ], archivedAt:'', operator:'王敏' }
+    ] },
+  { id:2, code:'MB-专项-001', name:'脚手架专项安全检查清单', type:'专项检查', enabled:true,
+    versions:[ { ver:'V1.0', status:'生效', effectStart:'2026-09-01 00:00', effectEnd:'', items:[
+      { seq:1, category:'架体基础', task:'检查脚手架基础承载与排水', standard:'基础平整夯实，垫板齐全，排水通畅', required:true },
+      { seq:2, category:'架体搭设', task:'检查连墙件设置', standard:'连墙件按方案设置，无缺失无松动', required:true }
+    ], archivedAt:'', operator:'王敏' } ] },
+  { id:3, code:'MB-日常-001', name:'承包商日常安全检查清单（旧）', type:'日常检查', enabled:false,
+    versions:[ { ver:'V2.0', status:'草稿', effectStart:'', effectEnd:'', items:[], archivedAt:'', operator:'王敏' } ] }
+];
+let ccTemplateSeq = 4;
+let ccPlans = [
+  { id:1, code:'JCJH-202610-001', dimension:'项目', target:'城东综合体二期', templateId:1, ver:'V1.2', freq:'单次', execTime:'2026-10-29 09:00', cycleType:'', cycleRule:'', cycleStart:'', cycleEnd:'', skipWeekend:false, execNow:false, execType:'个人', execDept:'', execPerson:'李强', status:'待执行', instances:[1], cancelReason:'', remark:'' },
+  { id:2, code:'JCJH-202610-006', dimension:'承包商', target:'华筑建设有限公司', templateId:1, ver:'V1.2', freq:'周期', execTime:'09:00', cycleType:'按周', cycleRule:'每1周，周一', cycleStart:'2026-10-26 00:00', cycleEnd:'2026-12-31 23:59', skipWeekend:false, execNow:false, execType:'部门', execDept:'安全管理部', execPerson:'', status:'执行中', instances:[], cancelReason:'', remark:'' },
+  { id:3, code:'JCJH-202610-009', dimension:'项目', target:'城东综合体二期', templateId:2, ver:'V1.0', freq:'周期', execTime:'08:30', cycleType:'按天', cycleRule:'每2天', cycleStart:'2026-10-28 00:00', cycleEnd:'2026-11-30 23:59', skipWeekend:true, execNow:false, execType:'个人', execDept:'', execPerson:'赵宁', status:'执行中', instances:[], cancelReason:'', remark:'' }
+];
+let ccPlanSeq = 4;
+let ccRecords = [
+  { id:1, code:'JC-20261029-001', source:'计划', planId:1, project:'城东综合体二期', contractor:'华筑建设有限公司', type:'日常检查', date:'2026-10-29', inspector:'李强', templateCode:'MB-日常-003', ver:'V1.2',
+    items:[
+      { seq:1, category:'人员资质', task:'核查特种作业人员持证上岗情况', standard:'特种作业人员100%持有效证件上岗，证件在有效期内', required:true, result:'合格', level:'', desc:'', photos:[] },
+      { seq:2, category:'临时用电', task:'检查配电箱防雨措施落实情况', standard:'配电箱应具备防雨措施，箱体完好、接地可靠', required:true, result:'不合格', level:'一般', desc:'东侧二级配电箱未落实防雨措施，箱体顶部盖板缺失', photos:['现场照片1.jpg'] },
+      { seq:3, category:'消防管理', task:'检查灭火器配备与有效期', standard:'灭火器压力正常、在有效期内、摆放位置醒目', required:true, result:'合格', level:'', desc:'', photos:[] },
+      { seq:4, category:'高处作业', task:'检查临边洞口防护设施', standard:'临边洞口设置定型化防护，警示标识齐全', required:false, result:'合格', level:'', desc:'', photos:[] },
+      { seq:5, category:'临时用电', task:'检查电缆敷设是否规范', standard:'电缆架空或埋地敷设，无破损、无泡水', required:false, result:'合格', level:'', desc:'', photos:[] },
+      { seq:6, category:'文明施工', task:'检查现场材料堆放', standard:'材料分类码放整齐，通道畅通', required:false, result:'合格', level:'', desc:'', photos:[] }
+    ], status:'待整改', rectIds:[1], archivedAt:'', logs:[] }
+];
+let ccRecordSeq = 2;
+let ccRects = [
+  { id:1, code:'ZG-20261029-001', recordId:1, itemSeq:2, project:'城东综合体二期', contractor:'华筑建设有限公司', problem:'配电箱未落实防雨措施，箱体顶部盖板缺失', level:'一般', requirement:'', assignee:'', deadline:'2026-10-30 18:00', verifier:'', assigner:'', status:'待分配', overdue:false, rounds:[], penId:null, logs:[] },
+  { id:2, code:'ZG-20261020-003', recordId:0, itemSeq:0, project:'城东综合体二期', contractor:'华筑建设有限公司', problem:'基坑临边防护栏杆缺失两段', level:'严重', requirement:'按方案恢复临边防护栏杆并挂设安全警示标识', assignee:'陈建国', deadline:'2026-10-24 18:00', verifier:'周凯', assigner:'王敏', status:'整改中', overdue:true, rounds:[{ type:'提交', result:'已完成防护栏杆恢复，共18米', opinion:'', by:'陈建国', time:'2026-10-25 10:20', attachments:['整改照片1.jpg','整改照片2.jpg'] }], penId:null, logs:[] }
+];
+let ccRectSeq = 3;
+let ccPens = [
+  { id:1, code:'CF-20261029-001', source:'验证不通过', sourceId:1, project:'城东综合体二期', contractor:'华筑建设有限公司', person:'陈建国', company:'', type:'警告', amount:'', fact:'整改任务 ZG-20261029-001 首次验证不通过（演示数据）', basis:'《承包商安全管理办法》第18条', decision:'对责任人陈建国给予警告，限期完成整改', execReq:'', status:'待审批', appeal:null, approvals:[], blacklistId:null, logs:[] },
+  { id:2, code:'CF-20261025-002', source:'人工发起', sourceId:null, project:'城东综合体二期', contractor:'华筑建设有限公司', person:'', company:'华筑建设有限公司', type:'列入黑名单', amount:'', fact:'重复发生严重违规且逾期未整改', basis:'《承包商安全管理办法》第25条', decision:'将华筑建设有限公司列入承包商黑名单，有效期一年', execReq:'立即停止新项目投标资格', status:'执行中', appeal:{ status:'未申诉', reason:'', result:'' }, approvals:[{ node:'一级审批', approver:'刘峰', result:'通过', opinion:'同意', time:'2026-10-26 10:00' }], blacklistId:1, logs:[] }
+];
+let ccPenSeq = 3;
+let ccBlacklists = [
+  { id:1, code:'HMD-20261025-001', objType:'企业', name:'华筑建设有限公司', srcPen:2, effectDate:'2026-10-26', expireDate:'2027-10-25', status:'有效', reason:'重复严重违规且逾期未整改', way:'自动创建' }
+];
+let ccBlackSeq = 2;
+let ccLogs = [
+  { time:'2026-10-15 09:00', operator:'王敏', role:'监管管理员', action:'发布模板版本', object:'MB-日常-003 V1.2', summary:'发布V1.2，V1.0自动归档', src:'配置中心' },
+  { time:'2026-10-29 09:30', operator:'李强', role:'检查人', action:'提交检查', object:'JC-20261029-001', summary:'6项：合格5、不合格1，结论不合格', src:'移动端' },
+  { time:'2026-10-29 09:31', operator:'系统', role:'系统任务', action:'生成整改任务', object:'ZG-20261029-001', summary:'由不合格明细自动生成，待分配', src:'系统' }
+];
+let ccAppeals = [];
+let ccAppealSeq = 1;
+// 便捷函数
+function ccTpl(id){ return ccTemplates.find(t => t.id === id); }
+function ccTplVer(id){ const t = ccTpl(id); return t ? t.versions.find(v => v.status === '生效') : null; }
+function ccNowVer(t){ const v = t.versions.find(x => x.status === '生效'); return v ? v.ver : '—'; }
+
+// 配置中心其他配置数据（内存数组）
+let ccCheckTypes = [
+  { id:1, code:'JCLX-01', name:'日常检查', enabled:true, sort:1 },
+  { id:2, code:'JCLX-02', name:'专项检查', enabled:true, sort:2 },
+  { id:3, code:'JCLX-03', name:'抽查', enabled:true, sort:3 },
+  { id:4, code:'JCLX-04', name:'综合检查', enabled:false, sort:4 }
+];
+let ccCheckTypeSeq = 5;
+let ccPenTypes = [
+  { id:1, code:'CFLX-01', name:'警告', desc:'书面警告并责令限期整改', field:'', enabled:true },
+  { id:2, code:'CFLX-02', name:'罚款', desc:'按处罚依据处以罚款', field:'罚款金额', enabled:true },
+  { id:3, code:'CFLX-03', name:'停工整改', desc:'责令停工，完成整改并验收合格后申请复工', field:'执行要求', enabled:true },
+  { id:4, code:'CFLX-04', name:'清退出场', desc:'清退出场，限制再次入场', field:'执行要求', enabled:true },
+  { id:5, code:'CFLX-05', name:'列入黑名单', desc:'列入承包商黑名单，限制投标', field:'', enabled:true }
+];
+let ccPenTypeSeq = 6;
+let ccAutoRules = [
+  { id:1, name:'验证不通过自动警告', event:'验证不通过', condition:'同一整改任务首次验证不通过', penType:'警告', enabled:true },
+  { id:2, name:'整改超期自动罚款', event:'整改超期', condition:'整改任务超期≥1天', penType:'罚款', enabled:true },
+  { id:3, name:'重复严重违规列入黑名单', event:'验证不通过', condition:'严重问题重复发生且逾期未整改', penType:'列入黑名单', enabled:false }
+];
+let ccAutoRuleSeq = 4;
+let ccBlackRules = [
+  { id:1, name:'人员黑名单-超期未整改', objType:'人员', condition:'整改任务超期超过7天', validPeriod:'1年', enabled:true },
+  { id:2, name:'企业黑名单-重复严重违规', objType:'企业', condition:'12个月内发生3次及以上严重违规', validPeriod:'1年', enabled:true },
+  { id:3, name:'双罚规则-管理人员连带', objType:'双罚', condition:'企业列入黑名单时连带项目经理', validPeriod:'6个月', enabled:true }
+];
+let ccBlackRuleSeq = 4;
+let ccFlows = [
+  { id:1, name:'普通处罚审批流', penTypes:'警告、罚款', amountRange:'罚款 ≤ 5000元', node1:'部门负责人', approver1:'刘峰', node2:'安全总监', approver2:'刘峰', enabled:true },
+  { id:2, name:'重大处罚审批流', penTypes:'停工整改、清退出场、列入黑名单', amountRange:'罚款 > 5000元', node1:'部门负责人', approver1:'刘峰', node2:'安全总监', approver2:'刘峰', enabled:true }
+];
+let ccFlowSeq = 3;
+let ccNotices = [
+  { id:1, event:'检查计划到期提醒', roles:'检查人', days:1, site:true, enabled:true },
+  { id:2, event:'整改任务超期预警', roles:'整改责任人、监管管理员', days:1, site:true, enabled:true },
+  { id:3, event:'处罚审批待办提醒', roles:'审批人', days:0, site:true, enabled:true }
+];
+let ccNoticeSeq = 4;
+
+// 操作留痕
+function ccLog(operator, role, action, object, summary, src) {
+  ccLogs.unshift({ time: formatNow(), operator, role, action, object, summary, src: src || '配置中心' });
+}
+function ccToLocal(s){ return s ? s.replace(' ', 'T') : ''; }
+function ccFromLocal(s){ return s ? s.replace('T', ' ') : ''; }
+function ccNextVer(ver) {
+  const m = /V(\d+)\.(\d+)/.exec(ver || '');
+  if (!m) return 'V1.0';
+  return 'V' + m[1] + '.' + (parseInt(m[2], 10) + 1);
+}
+function ccSwitchHtml(on, fn) {
+  return `<label class="switch"><input type="checkbox" ${on ? 'checked' : ''} onchange="${fn}"><span class="slider"></span></label>`;
+}
+
+// ===== 配置中心：页签切换与分发渲染 =====
+let ccConfigTab = 'tpl';
+let ccTplFilter = { kw: '', type: '', status: '' };
+
+function switchCcConfigTab(tab) {
+  ccConfigTab = tab;
+  document.querySelectorAll('#page-ccConfig .tab').forEach(t =>
+    t.classList.toggle('active', t.dataset.cctab === tab));
+  renderCcConfig();
+}
+function renderCcConfig() {
+  ({ tpl: renderCcTplList, type: renderCcTypes, pentype: renderCcPenTypes,
+     auto: renderCcAutoRules, black: renderCcBlackRules, flow: renderCcFlows,
+     notice: renderCcNotices })[ccConfigTab]();
+}
+
+// ===== 配置中心：清单模板 =====
+function renderCcTplList() {
+  const kw = (document.getElementById('ccFilterKw') ? document.getElementById('ccFilterKw').value : ccTplFilter.kw).trim();
+  const type = document.getElementById('ccFilterType') ? document.getElementById('ccFilterType').value : ccTplFilter.type;
+  const status = document.getElementById('ccFilterStatus') ? document.getElementById('ccFilterStatus').value : ccTplFilter.status;
+  ccTplFilter = { kw, type, status };
+  const list = ccTemplates.filter(t =>
+    (!kw || t.code.includes(kw) || t.name.includes(kw)) &&
+    (!type || t.type === type) &&
+    (!status || (status === '已开启') === t.enabled));
+  const typeOpts = ccCheckTypes.slice().sort((a, b) => a.sort - b.sort)
+    .map(x => `<option value="${x.name}" ${ccTplFilter.type === x.name ? 'selected' : ''}>${x.name}</option>`).join('');
+  const rows = list.map(t => {
+    const active = t.versions.find(v => v.status === '生效');
+    const draft = t.versions.find(v => v.status === '草稿');
+    const planCount = ccPlans.filter(p => p.templateId === t.id).length;
+    return `<tr>
+      <td>${t.code}</td>
+      <td>${t.name}</td>
+      <td>${t.type}</td>
+      <td>${ccNowVer(t)}</td>
+      <td>${active && active.items ? active.items.length : 0}</td>
+      <td><span class="link" onclick="openCcTplPlans(${t.id})">${planCount}</span></td>
+      <td><span class="tag ${t.enabled ? 'tag-green' : 'tag-gray'}">${t.enabled ? '已开启' : '已关闭'}</span></td>
+      <td>${active ? active.effectStart || '—' : '—'}</td>
+      <td class="sticky-col">
+        <span class="link" onclick="openCcTplDetail(${t.id})">查看</span>
+        ${draft
+          ? `<span class="link" onclick="openCcTplModal('edit', ${t.id})">编辑</span>`
+          : `<span class="link" onclick="openCcTplModal('newver', ${t.id})">创建新版本</span>`}
+        <span class="link" onclick="ccTplToggle(${t.id})">${t.enabled ? '关闭' : '开启'}</span>
+        <span class="link link-danger" onclick="ccTplDelete(${t.id})">删除</span>
+      </td>
+    </tr>`;
+  }).join('');
+  document.getElementById('ccConfigBody').innerHTML = `
+    <div class="toolbar">
+      <div class="filters">
+        <input type="text" id="ccFilterKw" placeholder="清单编号 / 名称" value="${ccTplFilter.kw}">
+        <select id="ccFilterType">
+          <option value="">全部类型</option>${typeOpts}
+        </select>
+        <select id="ccFilterStatus">
+          <option value="">全部状态</option>
+          <option ${ccTplFilter.status === '已开启' ? 'selected' : ''}>已开启</option>
+          <option ${ccTplFilter.status === '已关闭' ? 'selected' : ''}>已关闭</option>
+        </select>
+        <button class="btn btn-plain" onclick="renderCcTplList()">查询</button>
+        <button class="btn btn-plain" onclick="resetCcTplFilter()">重置</button>
+      </div>
+      <button class="btn btn-primary" onclick="openCcTplModal('new')">+ 新建清单</button>
+    </div>
+    <div class="table-wrap">
+      <table style="min-width:1100px;">
+        <thead>
+          <tr>
+            <th>清单编号</th><th>清单名称</th><th>检查类型</th><th>当前版本</th>
+            <th>检查项任务数</th><th>引用计划数</th><th>状态</th><th>生效时间</th><th class="sticky-col">操作</th>
+          </tr>
+        </thead>
+        <tbody>${rows || '<tr><td colspan="9"><div class="mo-empty">暂无清单模板</div></td></tr>'}</tbody>
+      </table>
+    </div>`;
+}
+function resetCcTplFilter() {
+  ccTplFilter = { kw: '', type: '', status: '' };
+  renderCcTplList();
+}
+
+// 新建/编辑清单模板弹窗
+let ccTplEdit = { mode: 'new', tplId: null };
+function ccTplTypeOptions(cur) {
+  return ccCheckTypes.slice().sort((a, b) => a.sort - b.sort)
+    .map(x => `<option ${cur === x.name ? 'selected' : ''}>${x.name}</option>`).join('');
+}
+function ccTplItemRowHtml(it) {
+  it = it || {};
+  return `<tr>
+    <td class="cc-seq"></td>
+    <td><input type="text" class="cc-it-cat" value="${it.category || ''}" placeholder="如 临时用电" style="width:100%;box-sizing:border-box;"></td>
+    <td><textarea class="cc-it-task" rows="2" maxlength="200" placeholder="检查项任务（不超过200字）" style="width:100%;box-sizing:border-box;">${it.task || ''}</textarea></td>
+    <td><textarea class="cc-it-std" rows="2" maxlength="1000" placeholder="检查标准（不超过1000字）" style="width:100%;box-sizing:border-box;">${it.standard || ''}</textarea></td>
+    <td><select class="cc-it-req"><option value="1" ${it.required !== false ? 'selected' : ''}>是</option><option value="0" ${it.required === false ? 'selected' : ''}>否</option></select></td>
+    <td><span class="link" onclick="ccTplAddItem()">＋</span><span class="link link-danger" onclick="ccTplDelItem(this)">－</span></td>
+  </tr>`;
+}
+function ccTplRenumber() {
+  document.querySelectorAll('#ccTplItemRows .cc-seq').forEach((td, i) => td.textContent = i + 1);
+}
+function ccTplAddItem() {
+  document.getElementById('ccTplItemRows').insertAdjacentHTML('beforeend', ccTplItemRowHtml({ required: true }));
+  ccTplRenumber();
+}
+function ccTplDelItem(btn) {
+  const tbody = document.getElementById('ccTplItemRows');
+  btn.closest('tr').remove();
+  if (!tbody.children.length) tbody.innerHTML = ccTplItemRowHtml({});
+  ccTplRenumber();
+}
+function openCcTplModal(mode, tplId) {
+  ccTplEdit = { mode, tplId: tplId || null };
+  const t = tplId ? ccTpl(tplId) : null;
+  let ver = 'V1.0', initItems = [{}], name = '', type = ccCheckTypes.find(x => x.enabled) ? ccCheckTypes.find(x => x.enabled).name : '', start = '', end = '';
+  if (mode === 'edit' && t) {
+    const d = t.versions.find(v => v.status === '草稿');
+    if (!d) { alert('该清单没有可编辑的草稿版本'); return; }
+    ver = d.ver; name = t.name; type = t.type;
+    start = d.effectStart || ''; end = d.effectEnd || '';
+    initItems = (d.items && d.items.length) ? d.items : [{}];
+    document.getElementById('ccTplModalTitle').textContent = `编辑清单（${t.code} 草稿 ${ver}）`;
+  } else if (mode === 'newver' && t) {
+    const a = t.versions.find(v => v.status === '生效');
+    ver = ccNextVer(a ? a.ver : t.versions[t.versions.length - 1].ver);
+    name = t.name; type = t.type;
+    if (a) { start = a.effectStart || ''; end = a.effectEnd || ''; initItems = a.items && a.items.length ? a.items.map(x => ({ ...x })) : [{}]; }
+    document.getElementById('ccTplModalTitle').textContent = `创建新版本（${t.code}）`;
+  } else {
+    document.getElementById('ccTplModalTitle').textContent = '新建清单';
+  }
+  document.getElementById('ccTplName').value = name;
+  document.getElementById('ccTplType').innerHTML = ccTplTypeOptions(type);
+  document.getElementById('ccTplVer').value = ver;
+  document.getElementById('ccTplStart').value = ccToLocal(start);
+  document.getElementById('ccTplEnd').value = ccToLocal(end);
+  document.getElementById('ccTplItemRows').innerHTML = initItems.map(ccTplItemRowHtml).join('');
+  ccTplRenumber();
+  document.getElementById('ccTplModal').classList.remove('hidden');
+}
+function closeCcTplModal() { document.getElementById('ccTplModal').classList.add('hidden'); }
+function ccCollectTplForm() {
+  const items = [];
+  document.querySelectorAll('#ccTplItemRows tr').forEach((tr, i) => {
+    const category = tr.querySelector('.cc-it-cat').value.trim();
+    const task = tr.querySelector('.cc-it-task').value.trim();
+    const standard = tr.querySelector('.cc-it-std').value.trim();
+    const required = tr.querySelector('.cc-it-req').value === '1';
+    if (category || task || standard) items.push({ seq: i + 1, category, task, standard, required });
+  });
+  return {
+    name: document.getElementById('ccTplName').value.trim(),
+    type: document.getElementById('ccTplType').value,
+    ver: document.getElementById('ccTplVer').value,
+    start: ccFromLocal(document.getElementById('ccTplStart').value),
+    end: ccFromLocal(document.getElementById('ccTplEnd').value),
+    items
+  };
+}
+function ccValidateTplForm(f, forPublish) {
+  if (!f.name) return '请输入清单名称';
+  if (!f.type) return '请选择检查类型';
+  if (forPublish) {
+    if (!f.start) return '请选择生效开始时间';
+    if (!f.items.length || f.items.some(it => !it.category || !it.task || !it.standard))
+      return '发布前至少需要一个完整检查项任务（检查类别、任务、标准均必填）';
+  }
+  return '';
+}
+function ccApplyTplForm(f, publish) {
+  let t, v;
+  if (ccTplEdit.mode === 'new') {
+    t = { id: ccTemplateSeq, code: 'MB-' + f.type + '-' + String(ccTemplateSeq).padStart(3, '0'), name: f.name, type: f.type, enabled: false, versions: [] };
+    ccTemplateSeq++;
+    ccTemplates.push(t);
+  } else {
+    t = ccTpl(ccTplEdit.tplId);
+  }
+  if (ccTplEdit.mode === 'edit') {
+    v = t.versions.find(x => x.ver === f.ver && x.status === '草稿');
+    t.name = f.name; t.type = f.type;
+    v.effectStart = f.start; v.effectEnd = f.end; v.items = f.items;
+  } else {
+    v = { ver: f.ver, status: '草稿', effectStart: f.start, effectEnd: f.end, items: f.items, archivedAt: '', operator: '王敏' };
+    t.versions.push(v);
+  }
+  if (publish) {
+    t.versions.forEach(x => { if (x !== v && x.status === '生效') { x.status = '已归档'; x.archivedAt = formatNow(); } });
+    v.status = '生效';
+    t.enabled = true;
+  }
+  return { t, v };
+}
+function saveCcTpl() {
+  const f = ccCollectTplForm();
+  const err = ccValidateTplForm(f, false);
+  if (err) { alert(err); return; }
+  const { t, v } = ccApplyTplForm(f, false);
+  ccLog('王敏', '监管管理员', '保存清单草稿', t.code + ' ' + v.ver, `保存草稿，检查项${f.items.length}个`);
+  closeCcTplModal();
+  renderCcTplList();
+  if (ccTplDetailId === t.id && !document.getElementById('ccTplDetailDrawer').classList.contains('hidden')) renderCcTplDetail();
+}
+let ccTplPubData = null;
+function publishCcTpl() {
+  const f = ccCollectTplForm();
+  const err = ccValidateTplForm(f, true);
+  if (err) { alert(err); return; }
+  let archived = [];
+  if (ccTplEdit.mode !== 'new') {
+    const t = ccTpl(ccTplEdit.tplId);
+    archived = t.versions.filter(x => x.status === '生效')
+      .map(x => `<div>将归档：${x.ver}（${x.effectStart || '—'} ~ ${x.effectEnd || '长期'}）</div>`).join('');
+  }
+  ccTplPubData = f;
+  document.getElementById('ccTplPubInfo').innerHTML = `
+    <div style="line-height:2.2;">
+      <div>版本号：<b>${f.ver}</b></div>
+      <div>检查项数：<b>${f.items.length}</b> 个</div>
+      <div>生效范围：${f.start || '—'} ~ ${f.end || '长期'}</div>
+      ${archived || '<div>将归档：无（首个生效版本）</div>'}
+    </div>
+    <div style="color:#999;font-size:12px;margin-top:8px;">确认发布后该版本立即生效，同清单原生效版本自动归档。</div>`;
+  document.getElementById('ccTplPubModal').classList.remove('hidden');
+}
+function closeCcTplPubConfirm() {
+  ccTplPubData = null;
+  document.getElementById('ccTplPubModal').classList.add('hidden');
+}
+function confirmCcTplPublish() {
+  if (!ccTplPubData) return;
+  const f = ccTplPubData;
+  const { t, v } = ccApplyTplForm(f, true);
+  ccLog('王敏', '监管管理员', '发布模板版本', t.code + ' ' + v.ver, `发布${v.ver}，检查项${f.items.length}个${t.versions.some(x => x.status === '已归档' && x.archivedAt === formatNow()) ? '，旧版本自动归档' : ''}`);
+  ccTplPubData = null;
+  document.getElementById('ccTplPubModal').classList.add('hidden');
+  closeCcTplModal();
+  renderCcTplList();
+  if (ccTplDetailId === t.id && !document.getElementById('ccTplDetailDrawer').classList.contains('hidden')) { ccTplDetailVer = v.ver; renderCcTplDetail(); }
+}
+
+// 清单模板详情抽屉
+let ccTplDetailId = null, ccTplDetailVer = null;
+function openCcTplDetail(id) {
+  ccTplDetailId = id;
+  const t = ccTpl(id);
+  const active = t.versions.find(v => v.status === '生效');
+  ccTplDetailVer = active ? active.ver : t.versions[t.versions.length - 1].ver;
+  renderCcTplDetail();
+  document.getElementById('ccTplDetailDrawer').classList.remove('hidden');
+}
+function closeCcTplDetail() {
+  ccTplDetailId = null;
+  document.getElementById('ccTplDetailDrawer').classList.add('hidden');
+}
+function ccTplViewVer(ver) { ccTplDetailVer = ver; renderCcTplDetail(); }
+const ccVerTagClass = { '生效': 'tag-green', '已归档': 'tag-gray', '草稿': 'tag-orange' };
+function renderCcTplDetail() {
+  const t = ccTpl(ccTplDetailId);
+  if (!t) return;
+  const v = t.versions.find(x => x.ver === ccTplDetailVer) || t.versions[t.versions.length - 1];
+  const readonly = v.status === '已归档';
+  const active = t.versions.find(x => x.status === '生效');
+  const plans = ccPlans.filter(p => p.templateId === t.id);
+  document.getElementById('ccTplDetailTitle').textContent = `清单模板详情（${t.code}）`;
+  document.getElementById('ccTplDetailBody').innerHTML = `
+    ${readonly ? '<div style="background:#fff7e6;border:1px solid #ffd591;color:#fa8c16;border-radius:4px;padding:8px 12px;margin-bottom:14px;">只读历史快照，内容不可编辑</div>' : ''}
+    <div class="drawer-section-title">基础信息</div>
+    <div class="info-grid" style="grid-template-columns:120px 1fr 120px 1fr;">
+      <div class="ig-label">清单编号</div><div>${t.code}</div>
+      <div class="ig-label">清单名称</div><div>${t.name}</div>
+      <div class="ig-label">检查类型</div><div>${t.type}</div>
+      <div class="ig-label">状态</div><div><span class="tag ${t.enabled ? 'tag-green' : 'tag-gray'}">${t.enabled ? '已开启' : '已关闭'}</span></div>
+      <div class="ig-label">当前版本</div><div>${ccNowVer(t)}</div>
+      <div class="ig-label">检查项任务数</div><div>${active && active.items ? active.items.length : 0}</div>
+    </div>
+    <div class="drawer-section-title">版本时间线</div>
+    <div class="timeline">
+      ${t.versions.slice().reverse().map(x => `
+        <div class="t-node ${x.status === '生效' ? 'done' : ''}">
+          <div class="t-dot"></div>
+          <div class="t-head">
+            <span class="t-node-name">${x.ver}</span>
+            <span class="tag ${ccVerTagClass[x.status] || 'tag-blue'}">${x.status}</span>
+            ${x.ver === v.ver ? '<span style="color:#1890ff;font-size:12px;">（查看中）</span>' : `<span class="link" onclick="ccTplViewVer('${x.ver}')">查看</span>`}
+          </div>
+          <div class="t-time">生效范围：${x.effectStart || '—'} ~ ${x.effectEnd || '长期'}</div>
+          ${x.archivedAt ? `<div class="t-time">归档时间：${x.archivedAt}</div>` : ''}
+          <div class="t-time">操作人：${x.operator || '—'}</div>
+        </div>`).join('')}
+    </div>
+    <div class="drawer-section-title">检查项任务（${v.ver}）</div>
+    ${v.items && v.items.length ? `
+      <div class="table-wrap" style="border:1px solid #f0f0f0;border-radius:6px;margin-bottom:18px;">
+        <table>
+          <thead><tr><th style="width:44px;">序号</th><th style="width:120px;">检查类别</th><th>检查项任务</th><th>检查标准</th><th style="width:76px;">是否必检</th></tr></thead>
+          <tbody>${v.items.map((it, i) => `
+            <tr><td>${i + 1}</td><td>${it.category}</td><td>${it.task}</td><td>${it.standard}</td><td>${it.required ? '是' : '否'}</td></tr>`).join('')}
+          </tbody>
+        </table>
+      </div>` : '<div class="mo-empty" style="padding:24px 0;">该版本暂无检查项任务</div>'}
+    <div class="drawer-section-title">引用计划（${plans.length}）</div>
+    ${plans.length ? `
+      <div class="table-wrap" style="border:1px solid #f0f0f0;border-radius:6px;">
+        <table>
+          <thead><tr><th>计划编号</th><th>检查维度／对象</th><th>执行频次／时间</th><th>状态</th></tr></thead>
+          <tbody>${plans.map(p => `
+            <tr>
+              <td><span class="link" onclick="ccGoPlan()">${p.code}</span></td>
+              <td>${p.dimension}／${p.target}</td>
+              <td>${p.freq === '单次' ? '单次／' + p.execTime : p.cycleRule + ' ' + p.execTime}</td>
+              <td><span class="tag ${p.status === '执行中' ? 'tag-blue' : 'tag-orange'}">${p.status}</span></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>` : '<div class="mo-empty" style="padding:24px 0;">暂无引用计划</div>'}`;
+  document.getElementById('ccTplNewVerBtn').style.display = readonly ? 'none' : '';
+  document.getElementById('ccTplDetailToggleBtn').textContent = t.enabled ? '关闭清单' : '开启清单';
+}
+function ccTplToggleFromDetail() {
+  ccTplToggle(ccTplDetailId);
+  renderCcTplDetail();
+}
+function ccTplCreateNewVer() {
+  const id = ccTplDetailId;
+  openCcTplModal('newver', id);
+}
+function ccTplToggle(id) {
+  const t = ccTpl(id);
+  t.enabled = !t.enabled;
+  ccLog('王敏', '监管管理员', t.enabled ? '开启清单' : '关闭清单', t.code, t.enabled ? '清单已开启，可被新计划关联' : '清单已关闭，不可被新计划关联，已有引用保留');
+  if (ccConfigTab === 'tpl') renderCcTplList();
+}
+function ccTplDelete(id) {
+  const t = ccTpl(id);
+  const refs = ccRecords.filter(r => r.templateCode === t.code);
+  if (refs.length) {
+    document.getElementById('ccTplBlockBody').innerHTML = `
+      <div style="line-height:2;">该清单已被 ${refs.length} 条检查记录引用，不允许删除。引用检查记录：</div>
+      <div style="margin-top:8px;">${refs.map(r => `<div style="line-height:2;">· <span class="link" onclick="ccGoRecord('${r.code}')">${r.code}</span>（${r.project}）</div>`).join('')}</div>`;
+    document.getElementById('ccTplBlockModal').classList.remove('hidden');
+    return;
+  }
+  if (!confirm(`确认删除清单「${t.name}（${t.code}）」？删除后不可恢复。`)) return;
+  ccTemplates = ccTemplates.filter(x => x.id !== id);
+  ccLog('王敏', '监管管理员', '删除清单', t.code, `删除清单「${t.name}」，历史版本与引用信息保留审计`);
+  renderCcTplList();
+}
+function closeCcTplBlock() { document.getElementById('ccTplBlockModal').classList.add('hidden'); }
+
+// 引用计划弹窗
+function openCcTplPlans(id) {
+  const t = ccTpl(id);
+  const plans = ccPlans.filter(p => p.templateId === id);
+  document.getElementById('ccTplPlansTitle').textContent = `引用计划（${t.code}）`;
+  document.getElementById('ccTplPlansBody').innerHTML = plans.length ? `
+    <div class="table-wrap" style="border:1px solid #f0f0f0;border-radius:6px;">
+      <table>
+        <thead><tr><th>计划编号</th><th>检查维度／对象</th><th>执行频次／时间</th><th>状态</th></tr></thead>
+        <tbody>${plans.map(p => `
+          <tr>
+            <td><span class="link" onclick="ccGoPlan()">${p.code}</span></td>
+            <td>${p.dimension}／${p.target}</td>
+            <td>${p.freq === '单次' ? '单次／' + p.execTime : p.cycleRule + ' ' + p.execTime}</td>
+            <td><span class="tag ${p.status === '执行中' ? 'tag-blue' : 'tag-orange'}">${p.status}</span></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>` : '<div class="mo-empty">暂无引用计划</div>';
+  document.getElementById('ccTplPlansModal').classList.remove('hidden');
+}
+function closeCcTplPlans() { document.getElementById('ccTplPlansModal').classList.add('hidden'); }
+function ccGoPlan() {
+  closeCcTplPlans();
+  closeCcTplDetail();
+  switchPage('ccPlan');
+}
+function ccGoRecord() {
+  closeCcTplBlock();
+  switchPage('ccRecord');
+}
+
+// ===== 配置中心：检查类型 =====
+function renderCcTypes() {
+  const list = ccCheckTypes.slice().sort((a, b) => a.sort - b.sort);
+  document.getElementById('ccConfigBody').innerHTML = `
+    <div class="toolbar">
+      <div class="filters" style="color:#999;font-size:13px;">检查类型字典，被历史数据引用的类型不可物理删除</div>
+      <button class="btn btn-primary" onclick="openCcTypeModal()">+ 新增</button>
+    </div>
+    <div class="table-wrap">
+      <table style="min-width:720px;">
+        <thead><tr><th>编码</th><th>名称</th><th>排序</th><th>启停用</th><th>操作</th></tr></thead>
+        <tbody>${list.map(x => `
+          <tr>
+            <td>${x.code}</td><td>${x.name}</td><td>${x.sort}</td>
+            <td>${ccSwitchHtml(x.enabled, `ccTypeToggle(${x.id})`)}</td>
+            <td><span class="link" onclick="openCcTypeModal(${x.id})">编辑</span></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+let ccTypeEditId = null;
+function openCcTypeModal(id) {
+  ccTypeEditId = id || null;
+  const x = id ? ccCheckTypes.find(t => t.id === id) : null;
+  document.getElementById('ccTypeModalTitle').textContent = x ? '编辑检查类型' : '新增检查类型';
+  document.getElementById('ccTypeCode').value = x ? x.code : '';
+  document.getElementById('ccTypeName').value = x ? x.name : '';
+  document.getElementById('ccTypeSort').value = x ? x.sort : ccCheckTypes.length + 1;
+  document.getElementById('ccTypeModal').classList.remove('hidden');
+}
+function closeCcTypeModal() { document.getElementById('ccTypeModal').classList.add('hidden'); }
+function saveCcType() {
+  const code = document.getElementById('ccTypeCode').value.trim();
+  const name = document.getElementById('ccTypeName').value.trim();
+  const sort = parseInt(document.getElementById('ccTypeSort').value, 10) || 99;
+  if (!code || !name) { alert('请填写编码和名称'); return; }
+  if (ccTypeEditId) {
+    const x = ccCheckTypes.find(t => t.id === ccTypeEditId);
+    Object.assign(x, { code, name, sort });
+    ccLog('王敏', '监管管理员', '编辑检查类型', code, `名称：${name}，排序：${sort}`);
+  } else {
+    ccCheckTypes.push({ id: ccCheckTypeSeq++, code, name, sort, enabled: true });
+    ccLog('王敏', '监管管理员', '新增检查类型', code, `名称：${name}，排序：${sort}`);
+  }
+  closeCcTypeModal();
+  renderCcTypes();
+}
+function ccTypeToggle(id) {
+  const x = ccCheckTypes.find(t => t.id === id);
+  x.enabled = !x.enabled;
+  ccLog('王敏', '监管管理员', x.enabled ? '启用检查类型' : '停用检查类型', x.code, `「${x.name}」${x.enabled ? '已启用' : '已停用'}`);
+  renderCcTypes();
+}
+
+// ===== 配置中心：处罚类型 =====
+function renderCcPenTypes() {
+  document.getElementById('ccConfigBody').innerHTML = `
+    <div class="toolbar">
+      <div class="filters" style="color:#999;font-size:13px;">罚款启用“罚款金额”字段，停工整改/清退出场启用“执行要求”字段</div>
+      <button class="btn btn-primary" onclick="openCcPenTypeModal()">+ 新增</button>
+    </div>
+    <div class="table-wrap">
+      <table style="min-width:860px;">
+        <thead><tr><th>编码</th><th>名称</th><th>说明</th><th>动态字段要求</th><th>启停用</th><th>操作</th></tr></thead>
+        <tbody>${ccPenTypes.map(x => `
+          <tr>
+            <td>${x.code}</td><td>${x.name}</td><td>${x.desc || '—'}</td>
+            <td>${x.field ? `<span class="tag tag-blue">${x.field}</span>` : '—'}</td>
+            <td>${ccSwitchHtml(x.enabled, `ccPenTypeToggle(${x.id})`)}</td>
+            <td><span class="link" onclick="openCcPenTypeModal(${x.id})">编辑</span></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+let ccPenTypeEditId = null;
+function openCcPenTypeModal(id) {
+  ccPenTypeEditId = id || null;
+  const x = id ? ccPenTypes.find(t => t.id === id) : null;
+  document.getElementById('ccPenTypeModalTitle').textContent = x ? '编辑处罚类型' : '新增处罚类型';
+  document.getElementById('ccPenTypeCode').value = x ? x.code : '';
+  document.getElementById('ccPenTypeName').value = x ? x.name : '';
+  document.getElementById('ccPenTypeDesc').value = x ? x.desc : '';
+  document.getElementById('ccPenTypeField').value = x ? x.field : '';
+  document.getElementById('ccPenTypeModal').classList.remove('hidden');
+}
+function closeCcPenTypeModal() { document.getElementById('ccPenTypeModal').classList.add('hidden'); }
+function saveCcPenType() {
+  const code = document.getElementById('ccPenTypeCode').value.trim();
+  const name = document.getElementById('ccPenTypeName').value.trim();
+  if (!code || !name) { alert('请填写编码和名称'); return; }
+  const data = { code, name, desc: document.getElementById('ccPenTypeDesc').value.trim(), field: document.getElementById('ccPenTypeField').value };
+  if (ccPenTypeEditId) {
+    const x = ccPenTypes.find(t => t.id === ccPenTypeEditId);
+    Object.assign(x, data);
+    ccLog('王敏', '监管管理员', '编辑处罚类型', code, `名称：${name}，动态字段：${data.field || '无'}`);
+  } else {
+    ccPenTypes.push({ id: ccPenTypeSeq++, enabled: true, ...data });
+    ccLog('王敏', '监管管理员', '新增处罚类型', code, `名称：${name}，动态字段：${data.field || '无'}`);
+  }
+  closeCcPenTypeModal();
+  renderCcPenTypes();
+}
+function ccPenTypeToggle(id) {
+  const x = ccPenTypes.find(t => t.id === id);
+  x.enabled = !x.enabled;
+  ccLog('王敏', '监管管理员', x.enabled ? '启用处罚类型' : '停用处罚类型', x.code, `「${x.name}」${x.enabled ? '已启用' : '已停用'}`);
+  renderCcPenTypes();
+}
+
+// ===== 配置中心：自动处罚规则 =====
+function renderCcAutoRules() {
+  document.getElementById('ccConfigBody').innerHTML = `
+    <div class="toolbar">
+      <div class="filters" style="color:#999;font-size:13px;">同一整改任务的同一触发事件按规则只生成一条有效处罚，避免重复触发</div>
+      <button class="btn btn-primary" onclick="openCcAutoRuleModal()">+ 新增</button>
+    </div>
+    <div class="table-wrap">
+      <table style="min-width:900px;">
+        <thead><tr><th>规则名</th><th>触发事件</th><th>条件</th><th>处罚类型</th><th>启用状态</th><th>操作</th></tr></thead>
+        <tbody>${ccAutoRules.map(x => `
+          <tr>
+            <td>${x.name}</td>
+            <td><span class="tag ${x.event === '验证不通过' ? 'tag-orange' : 'tag-red'}">${x.event}</span></td>
+            <td>${x.condition}</td><td>${x.penType}</td>
+            <td>${ccSwitchHtml(x.enabled, `ccAutoRuleToggle(${x.id})`)}</td>
+            <td><span class="link" onclick="openCcAutoRuleModal(${x.id})">编辑</span></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+let ccAutoRuleEditId = null;
+function ccAutoRulePenTypeOptions(cur) {
+  return ccPenTypes.map(x => `<option ${cur === x.name ? 'selected' : ''}>${x.name}</option>`).join('');
+}
+function openCcAutoRuleModal(id) {
+  ccAutoRuleEditId = id || null;
+  const x = id ? ccAutoRules.find(t => t.id === id) : null;
+  document.getElementById('ccAutoRuleModalTitle').textContent = x ? '编辑自动处罚规则' : '新增自动处罚规则';
+  document.getElementById('ccAutoRuleName').value = x ? x.name : '';
+  document.getElementById('ccAutoRuleEvent').value = x ? x.event : '验证不通过';
+  document.getElementById('ccAutoRuleCond').value = x ? x.condition : '';
+  document.getElementById('ccAutoRulePenType').innerHTML = ccAutoRulePenTypeOptions(x ? x.penType : '');
+  document.getElementById('ccAutoRuleEnabled').checked = x ? x.enabled : true;
+  document.getElementById('ccAutoRuleModal').classList.remove('hidden');
+}
+function closeCcAutoRuleModal() { document.getElementById('ccAutoRuleModal').classList.add('hidden'); }
+function saveCcAutoRule() {
+  const data = {
+    name: document.getElementById('ccAutoRuleName').value.trim(),
+    event: document.getElementById('ccAutoRuleEvent').value,
+    condition: document.getElementById('ccAutoRuleCond').value.trim(),
+    penType: document.getElementById('ccAutoRulePenType').value,
+    enabled: document.getElementById('ccAutoRuleEnabled').checked
+  };
+  if (!data.name || !data.condition || !data.penType) { alert('请填写规则名、条件和处罚类型'); return; }
+  alert(`规则摘要：${data.name}\n触发事件：${data.event}\n条件：${data.condition}\n处罚类型：${data.penType}\n启用：${data.enabled ? '是' : '否'}`);
+  if (ccAutoRuleEditId) {
+    const x = ccAutoRules.find(t => t.id === ccAutoRuleEditId);
+    Object.assign(x, data);
+    ccLog('王敏', '监管管理员', '编辑自动处罚规则', data.name, `触发：${data.event}，处罚：${data.penType}`);
+  } else {
+    ccAutoRules.push({ id: ccAutoRuleSeq++, ...data });
+    ccLog('王敏', '监管管理员', '新增自动处罚规则', data.name, `触发：${data.event}，处罚：${data.penType}`);
+  }
+  closeCcAutoRuleModal();
+  renderCcAutoRules();
+}
+function ccAutoRuleToggle(id) {
+  const x = ccAutoRules.find(t => t.id === id);
+  x.enabled = !x.enabled;
+  ccLog('王敏', '监管管理员', x.enabled ? '启用自动处罚规则' : '停用自动处罚规则', x.name, x.enabled ? '已启用' : '已停用');
+  renderCcAutoRules();
+}
+
+// ===== 配置中心：黑名单规则 =====
+function renderCcBlackRules() {
+  document.getElementById('ccConfigBody').innerHTML = `
+    <div class="toolbar">
+      <div class="filters" style="color:#999;font-size:13px;">人员、企业、双罚分别建立规则；同一处罚与同一对象只生成一条有效黑名单记录</div>
+      <button class="btn btn-primary" onclick="openCcBlackRuleModal()">+ 新增</button>
+    </div>
+    <div class="table-wrap">
+      <table style="min-width:900px;">
+        <thead><tr><th>规则名</th><th>适用对象</th><th>触发条件</th><th>有效期</th><th>启用状态</th><th>操作</th></tr></thead>
+        <tbody>${ccBlackRules.map(x => `
+          <tr>
+            <td>${x.name}</td>
+            <td><span class="tag ${x.objType === '企业' ? 'tag-blue' : x.objType === '双罚' ? 'tag-orange' : 'tag-green'}">${x.objType}</span></td>
+            <td>${x.condition}</td><td>${x.validPeriod}</td>
+            <td>${ccSwitchHtml(x.enabled, `ccBlackRuleToggle(${x.id})`)}</td>
+            <td><span class="link" onclick="openCcBlackRuleModal(${x.id})">编辑</span></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+let ccBlackRuleEditId = null;
+function openCcBlackRuleModal(id) {
+  ccBlackRuleEditId = id || null;
+  const x = id ? ccBlackRules.find(t => t.id === id) : null;
+  document.getElementById('ccBlackRuleModalTitle').textContent = x ? '编辑黑名单规则' : '新增黑名单规则';
+  document.getElementById('ccBlackRuleName').value = x ? x.name : '';
+  document.getElementById('ccBlackRuleObj').value = x ? x.objType : '人员';
+  document.getElementById('ccBlackRuleCond').value = x ? x.condition : '';
+  document.getElementById('ccBlackRulePeriod').value = x ? x.validPeriod : '';
+  document.getElementById('ccBlackRuleEnabled').checked = x ? x.enabled : true;
+  document.getElementById('ccBlackRuleModal').classList.remove('hidden');
+}
+function closeCcBlackRuleModal() { document.getElementById('ccBlackRuleModal').classList.add('hidden'); }
+function saveCcBlackRule() {
+  const data = {
+    name: document.getElementById('ccBlackRuleName').value.trim(),
+    objType: document.getElementById('ccBlackRuleObj').value,
+    condition: document.getElementById('ccBlackRuleCond').value.trim(),
+    validPeriod: document.getElementById('ccBlackRulePeriod').value.trim(),
+    enabled: document.getElementById('ccBlackRuleEnabled').checked
+  };
+  if (!data.name || !data.condition || !data.validPeriod) { alert('请填写规则名、触发条件和有效期'); return; }
+  if (ccBlackRuleEditId) {
+    const x = ccBlackRules.find(t => t.id === ccBlackRuleEditId);
+    Object.assign(x, data);
+    ccLog('王敏', '监管管理员', '编辑黑名单规则', data.name, `对象：${data.objType}，有效期：${data.validPeriod}`);
+  } else {
+    ccBlackRules.push({ id: ccBlackRuleSeq++, ...data });
+    ccLog('王敏', '监管管理员', '新增黑名单规则', data.name, `对象：${data.objType}，有效期：${data.validPeriod}`);
+  }
+  closeCcBlackRuleModal();
+  renderCcBlackRules();
+}
+function ccBlackRuleToggle(id) {
+  const x = ccBlackRules.find(t => t.id === id);
+  x.enabled = !x.enabled;
+  ccLog('王敏', '监管管理员', x.enabled ? '启用黑名单规则' : '停用黑名单规则', x.name, x.enabled ? '已启用' : '已停用');
+  renderCcBlackRules();
+}
+
+// ===== 配置中心：审批流程 =====
+function renderCcFlows() {
+  document.getElementById('ccConfigBody').innerHTML = `
+    <div class="toolbar">
+      <div class="filters" style="color:#999;font-size:13px;">固定两级审批示例：节点1 部门负责人 → 节点2 安全总监</div>
+      <button class="btn btn-primary" onclick="openCcFlowModal()">+ 新增</button>
+    </div>
+    <div class="table-wrap">
+      <table style="min-width:960px;">
+        <thead><tr><th>流程名称</th><th>适用处罚类型</th><th>金额区间</th><th>节点</th><th>启用状态</th><th>操作</th></tr></thead>
+        <tbody>${ccFlows.map(x => `
+          <tr>
+            <td>${x.name}</td><td>${x.penTypes}</td><td>${x.amountRange || '—'}</td>
+            <td>节点1 ${x.node1}（${x.approver1}）→ 节点2 ${x.node2}（${x.approver2}）</td>
+            <td>${ccSwitchHtml(x.enabled, `ccFlowToggle(${x.id})`)}</td>
+            <td><span class="link" onclick="openCcFlowModal(${x.id})">配置</span></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+let ccFlowEditId = null;
+function ccApproverOptions(cur) {
+  return CC_PEOPLE.approver.map(p => `<option ${cur === p ? 'selected' : ''}>${p}</option>`).join('');
+}
+function openCcFlowModal(id) {
+  ccFlowEditId = id || null;
+  const x = id ? ccFlows.find(t => t.id === id) : null;
+  document.getElementById('ccFlowModalTitle').textContent = x ? '配置审批流程' : '新增审批流程';
+  document.getElementById('ccFlowName').value = x ? x.name : '';
+  document.getElementById('ccFlowPenTypes').value = x ? x.penTypes : '';
+  document.getElementById('ccFlowAmount').value = x ? x.amountRange : '';
+  document.getElementById('ccFlowNode1').value = x ? x.node1 : '部门负责人';
+  document.getElementById('ccFlowNode2').value = x ? x.node2 : '安全总监';
+  document.getElementById('ccFlowApprover1').innerHTML = ccApproverOptions(x ? x.approver1 : '');
+  document.getElementById('ccFlowApprover2').innerHTML = ccApproverOptions(x ? x.approver2 : '');
+  document.getElementById('ccFlowEnabled').checked = x ? x.enabled : true;
+  document.getElementById('ccFlowModal').classList.remove('hidden');
+}
+function closeCcFlowModal() { document.getElementById('ccFlowModal').classList.add('hidden'); }
+function saveCcFlow() {
+  const data = {
+    name: document.getElementById('ccFlowName').value.trim(),
+    penTypes: document.getElementById('ccFlowPenTypes').value.trim(),
+    amountRange: document.getElementById('ccFlowAmount').value.trim(),
+    node1: document.getElementById('ccFlowNode1').value.trim(),
+    approver1: document.getElementById('ccFlowApprover1').value,
+    node2: document.getElementById('ccFlowNode2').value.trim(),
+    approver2: document.getElementById('ccFlowApprover2').value,
+    enabled: document.getElementById('ccFlowEnabled').checked
+  };
+  if (!data.name || !data.penTypes || !data.node1 || !data.node2) { alert('请填写流程名称、适用处罚类型和节点'); return; }
+  if (ccFlowEditId) {
+    const x = ccFlows.find(t => t.id === ccFlowEditId);
+    Object.assign(x, data);
+    ccLog('王敏', '监管管理员', '配置审批流程', data.name, `节点1 ${data.node1}（${data.approver1}）→ 节点2 ${data.node2}（${data.approver2}）`);
+  } else {
+    ccFlows.push({ id: ccFlowSeq++, ...data });
+    ccLog('王敏', '监管管理员', '新增审批流程', data.name, `节点1 ${data.node1}（${data.approver1}）→ 节点2 ${data.node2}（${data.approver2}）`);
+  }
+  closeCcFlowModal();
+  renderCcFlows();
+}
+function ccFlowToggle(id) {
+  const x = ccFlows.find(t => t.id === id);
+  x.enabled = !x.enabled;
+  ccLog('王敏', '监管管理员', x.enabled ? '启用审批流程' : '停用审批流程', x.name, x.enabled ? '已启用' : '已停用');
+  renderCcFlows();
+}
+
+// ===== 配置中心：通知规则 =====
+function renderCcNotices() {
+  document.getElementById('ccConfigBody').innerHTML = `
+    <div class="toolbar">
+      <div class="filters" style="color:#999;font-size:13px;">事件触发站内通知，支持提前提醒</div>
+      <button class="btn btn-primary" onclick="openCcNoticeModal()">+ 新增</button>
+    </div>
+    <div class="table-wrap">
+      <table style="min-width:900px;">
+        <thead><tr><th>事件</th><th>接收角色</th><th>提前提醒天数</th><th>站内通知</th><th>启用状态</th><th>操作</th></tr></thead>
+        <tbody>${ccNotices.map(x => `
+          <tr>
+            <td>${x.event}</td><td>${x.roles}</td><td>${x.days}</td>
+            <td>${x.site ? '<span class="tag tag-green">开启</span>' : '<span class="tag tag-gray">关闭</span>'}</td>
+            <td>${ccSwitchHtml(x.enabled, `ccNoticeToggle(${x.id})`)}</td>
+            <td><span class="link" onclick="openCcNoticeModal(${x.id})">编辑</span></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+let ccNoticeEditId = null;
+function openCcNoticeModal(id) {
+  ccNoticeEditId = id || null;
+  const x = id ? ccNotices.find(t => t.id === id) : null;
+  document.getElementById('ccNoticeModalTitle').textContent = x ? '编辑通知规则' : '新增通知规则';
+  document.getElementById('ccNoticeEvent').value = x ? x.event : '';
+  document.getElementById('ccNoticeRoles').value = x ? x.roles : '';
+  document.getElementById('ccNoticeDays').value = x ? x.days : 1;
+  document.getElementById('ccNoticeSite').checked = x ? x.site : true;
+  document.getElementById('ccNoticeEnabled').checked = x ? x.enabled : true;
+  document.getElementById('ccNoticeModal').classList.remove('hidden');
+}
+function closeCcNoticeModal() { document.getElementById('ccNoticeModal').classList.add('hidden'); }
+function saveCcNotice() {
+  const data = {
+    event: document.getElementById('ccNoticeEvent').value.trim(),
+    roles: document.getElementById('ccNoticeRoles').value.trim(),
+    days: parseInt(document.getElementById('ccNoticeDays').value, 10) || 0,
+    site: document.getElementById('ccNoticeSite').checked,
+    enabled: document.getElementById('ccNoticeEnabled').checked
+  };
+  if (!data.event || !data.roles) { alert('请填写事件和接收角色'); return; }
+  if (ccNoticeEditId) {
+    const x = ccNotices.find(t => t.id === ccNoticeEditId);
+    Object.assign(x, data);
+    ccLog('王敏', '监管管理员', '编辑通知规则', data.event, `接收角色：${data.roles}，提前${data.days}天`);
+  } else {
+    ccNotices.push({ id: ccNoticeSeq++, ...data });
+    ccLog('王敏', '监管管理员', '新增通知规则', data.event, `接收角色：${data.roles}，提前${data.days}天`);
+  }
+  alert('保存成功');
+  closeCcNoticeModal();
+  renderCcNotices();
+}
+function ccNoticeToggle(id) {
+  const x = ccNotices.find(t => t.id === id);
+  x.enabled = !x.enabled;
+  ccLog('王敏', '监管管理员', x.enabled ? '启用通知规则' : '停用通知规则', x.event, x.enabled ? '已启用' : '已停用');
+  renderCcNotices();
+}
+
 // 初始渲染
 renderTable('archive');
 renderSafetyTable();
@@ -7822,6 +9054,7 @@ renderEmg2Mats();
 renderEmg2Devs();
 renderEmg2Configs();
 renderEmg2Records();
+renderCcConfig();
 
 // 新增弹窗遮罩点击关闭
 [['toolViewModal', closeToolView], ['toolWarnModal', closeToolWarn], ['clModal', closeClModal],
@@ -7834,7 +9067,11 @@ renderEmg2Records();
  ['emg2MatModal', closeEmg2MatModal], ['emg2DevModal', closeEmg2DevModal], ['emg2Cl2Modal', closeEmg2Cl2Modal],
  ['emg2ClPickModal', closeEmg2ClPick], ['emg2ScopeModal', closeEmg2ScopeModal], ['emg2ViewModal', closeEmg2View],
  ['emg2QrModal', closeEmg2Qr], ['emg2OrgModal', closeEmg2OrgModal], ['emg2DetailDrawer', closeEmg2Detail],
- ['emg2ScanModal', closeEmg2Scan], ['emg2CheckModal', closeEmg2Check], ['emg2RecordModal', closeEmg2Record]]
+ ['emg2ScanModal', closeEmg2Scan], ['emg2CheckModal', closeEmg2Check], ['emg2RecordModal', closeEmg2Record],
+ ['ccTplModal', closeCcTplModal], ['ccTplPubModal', closeCcTplPubConfirm], ['ccTplDetailDrawer', closeCcTplDetail],
+ ['ccTplPlansModal', closeCcTplPlans], ['ccTplBlockModal', closeCcTplBlock],
+ ['ccTypeModal', closeCcTypeModal], ['ccPenTypeModal', closeCcPenTypeModal], ['ccAutoRuleModal', closeCcAutoRuleModal],
+ ['ccBlackRuleModal', closeCcBlackRuleModal], ['ccFlowModal', closeCcFlowModal], ['ccNoticeModal', closeCcNoticeModal]]
 .forEach(([id, fn]) => document.getElementById(id).addEventListener('click', function (e) {
   if (e.target === this) fn();
 }));
