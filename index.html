@@ -1234,22 +1234,6 @@
       </div>
     </div>
     <!-- 移动端通用确认弹窗（M-06 提交统计 / 下发 / 整改提交 / 验收二次确认） -->
-    <div class="modal-mask hidden" id="ccmConfirmModal">
-      <div class="modal" style="width:360px;">
-        <div class="modal-header">
-          <span id="ccmConfirmTitle">操作确认</span>
-          <span class="modal-close" onclick="closeCcmConfirm()">✕</span>
-        </div>
-        <div class="modal-body" id="ccmConfirmBody" style="font-size:13px;line-height:2;"></div>
-        <div class="modal-footer">
-          <button class="btn btn-plain" onclick="closeCcmConfirm()">取消</button>
-          <button class="btn btn-primary" id="ccmConfirmOkBtn" onclick="ccmConfirmOk()">确定</button>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</div>
     <div class="card page hidden" id="page-ccMobile2">
       <div class="mo-phone">
         <div class="mo-phone-head ccm-head">
@@ -1280,10 +1264,22 @@
         </div>
       </div>
     </div>
+    <div class="modal-mask hidden" id="ccmConfirmModal">
+      <div class="modal" style="width:360px;">
+        <div class="modal-header">
+          <span id="ccmConfirmTitle">操作确认</span>
+          <span class="modal-close" onclick="closeCcmConfirm()">✕</span>
+        </div>
+        <div class="modal-body" id="ccmConfirmBody" style="font-size:13px;line-height:2;"></div>
+        <div class="modal-footer">
+          <button class="btn btn-plain" onclick="closeCcmConfirm()">取消</button>
+          <button class="btn btn-primary" id="ccmConfirmOkBtn" onclick="ccmConfirmOk()">确定</button>
+        </div>
+      </div>
+    </div>
 
   </div>
 </div>
-
 <!-- 到期提醒配置弹窗（新增/编辑） -->
 <div class="modal-mask hidden" id="remindModal">
   <div class="modal">
