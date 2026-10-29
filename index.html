@@ -11457,13 +11457,14 @@ function renderCcRectDetail() {
   const r = ccRectById(ccRectDetailId);
   if (!r) return;
   const rec = ccRectRecord(r);
+  const plan = rec && rec.planId ? ccPlans.find(p => p.id === rec.planId) : null;
   const item = ccRectRecItem(r);
   const pen = r.penId ? ccPens.find(p => p.id === r.penId) : null;
   const assignLog = r.logs.find(l => l.action === '分配整改任务');
   const subs = r.rounds.filter(x => x.type === '提交');
   const vers = r.rounds.filter(x => x.type === '验证');
   const logs = r.logs.slice().sort((a, b) => b.time.localeCompare(a.time));
-  document.getElementById('ccRectDetailTitle').textContent = `整改详情（${r.code}）`;
+  document.getElementById('ccRectDetailTitle').textContent = '整改详情';
   const roundCard = (x, idx) => `
     <div style="border:1px solid #f0f0f0;border-radius:6px;padding:10px 14px;margin-bottom:8px;font-size:13px;line-height:1.9;">
       <div><span class="tag ${x.type === '提交' ? 'tag-blue' : (x.result === '通过' ? 'tag-green' : 'tag-red')}">第${idx + 1}轮${x.type}</span>
@@ -11474,22 +11475,16 @@ function renderCcRectDetail() {
       ${x.attachments && x.attachments.length ? `<div style="color:#1890ff;">${x.attachments.map(a => '🖼 ' + ccEsc(a)).join('　')}</div>` : ''}
     </div>`;
   document.getElementById('ccRectDetailBody').innerHTML = `
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-      <span style="font-size:16px;font-weight:600;">${r.code}</span>
-      <span class="tag ${ccRectStatusClass[r.status] || 'tag-gray'}">${r.status}</span>
-      <span class="tag ${ccLevelClass[r.level] || 'tag-gray'}">${r.level}</span>
-      ${ccRectRiskHtml(r)}
-    </div>
     <div class="drawer-section-title">问题来源（只读快照）</div>
     <div class="info-grid" style="grid-template-columns:130px 1fr 130px 1fr;">
-      <div class="ig-label">原检查编号</div>
-      <div>${rec ? `<span class="link" onclick="closeCcRectDetail();openCcRecordDetail(${rec.id})">${rec.code}</span>` : '<span style="color:#999;">—</span>'}</div>
-      <div class="ig-label">明细序号</div><div>${r.itemSeq || '—'}</div>
+      <div class="ig-label">检查计划名称</div>
+      <div>${plan ? ccEsc(plan.name || '—') : '<span style="color:#999;">—</span>'}</div>
+      <div class="ig-label">检查计划编号</div><div>${plan ? plan.code : '—'}</div>
       <div class="ig-label">检查项目与标准</div>
       <div class="ig-full" style="grid-column:span 3;">${item ? `${ccEsc(item.task)}｜标准：${ccEsc(item.standard)}` : '<span style="color:#999;">—</span>'}</div>
       <div class="ig-label">原问题描述</div>
       <div class="ig-full" style="grid-column:span 3;">${ccEsc(r.problem)}</div>
-      <div class="ig-label">严重等级</div><div><span class="tag ${ccLevelClass[r.level] || 'tag-gray'}">${r.level}</span>（系统复制，只读）</div>
+      <div class="ig-label">严重等级</div><div><span class="tag ${ccLevelClass[r.level] || 'tag-gray'}">${r.level}</span></div>
       <div class="ig-label">原始影像</div>
       <div>${item && item.photos.length ? item.photos.map(p => '🖼 ' + ccEsc(p)).join('　') : '<span style="color:#999;">—</span>'}</div>
     </div>
@@ -11498,12 +11493,12 @@ function renderCcRectDetail() {
       <div class="ig-label">整改要求</div>
       <div class="ig-full" style="grid-column:span 3;">${ccEsc(r.requirement) || '<span style="color:#999;">待分配时填写</span>'}</div>
       <div class="ig-label">责任人</div><div>${ccEsc(r.assignee || '—')}</div>
-      <div class="ig-label">截止日期</div><div>${r.deadline || '—'}　${ccRectRiskHtml(r)}</div>
+      <div class="ig-label">截止日期</div><div>${r.deadline || '—'}</div>
       <div class="ig-label">验证人</div><div>${ccEsc(r.verifier || '—')}</div>
       <div class="ig-label">分配人</div><div>${ccEsc(r.assigner || '—')}</div>
       <div class="ig-label">分配时间</div><div>${assignLog ? assignLog.time : '—'}</div>
     </div>
-    <div class="drawer-section-title">整改提交（${subs.length} 轮，追加不覆盖）</div>
+    <div class="drawer-section-title">整改提交（${subs.length} 轮）</div>
     ${subs.length ? subs.map(roundCard).join('') : '<div class="mo-empty" style="padding:10px 0;">责任人尚未提交整改结果</div>'}
     <div class="drawer-section-title">验证记录（${vers.length} 轮）</div>
     ${vers.length ? vers.map(roundCard).join('') : '<div class="mo-empty" style="padding:10px 0;">暂无验证记录</div>'}
