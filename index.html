@@ -3519,7 +3519,7 @@
   </div>
 </div>
 
-<!-- 承包商检查：处罚记录-查看弹窗 -->
+<!-- 承包商检查：处罚记录-查看弹窗（人为添加来源） -->
 <div class="modal-mask hidden" id="ccPenRecViewModal">
   <div class="modal" style="width:880px;max-width:92vw;">
     <div class="modal-header">
@@ -3530,6 +3530,17 @@
     <div class="modal-footer">
       <button class="btn btn-primary" onclick="closeCcPenRecView()">关闭</button>
     </div>
+  </div>
+</div>
+
+<!-- 承包商检查：处罚记录-详情抽屉（系统判定来源，右侧滑出） -->
+<div class="modal-mask drawer-mask hidden" id="ccPenRecDetailDrawer">
+  <div class="drawer" style="width:980px;max-width:74vw;">
+    <div class="drawer-header">
+      <span id="ccPenRecDetailTitle">处罚记录详情</span>
+      <span class="modal-close" onclick="closeCcPenRecDetail()">✕</span>
+    </div>
+    <div class="drawer-body" id="ccPenRecDetailBody"></div>
   </div>
 </div>
 
@@ -11909,7 +11920,37 @@ function ccPenRecAppealsHtml(p) {
 function ccPenRecViewHtml(p) {
   const sp = p.sysPenId ? ccSysPens.find(x => x.id === p.sysPenId) : null;
   const stage = ccPenRecStage(p);
-  let html = `
+  // 系统判定来源：系统判定信息 → 问题来源/整改要求/整改流程 → 合并的「处罚信息」（含处理结果）→ 申诉记录
+  if (sp) {
+    const rect = sp.rectId ? ccRectById(sp.rectId) : null;
+    return `
+    <div class="drawer-section-title">系统判定信息</div>
+    <div class="info-grid" style="grid-template-columns:110px 1fr 110px 1fr;margin-bottom:14px;">
+      <div class="ig-label">处罚来源</div><div><span class="tag ${sp.source === '整改超时' ? 'tag-red' : 'tag-orange'}">${sp.source}</span></div>
+      <div class="ig-label">状态</div><div><span class="tag ${sp.status === '待处理' ? 'tag-orange' : 'tag-green'}">${sp.status}</span></div>
+      <div class="ig-label">处罚人</div><div>${ccEsc(sp.person)}</div>
+      <div class="ig-label">所属公司</div><div>${ccEsc(sp.company)}</div>
+      <div class="ig-label">生成时间</div><div>${sp.genTime}</div>
+      <div class="ig-label">对应整改任务</div><div>${rect ? rect.code : '—'}</div>
+    </div>
+    ${rect ? ccRectDetailSectionsHtml(rect) : '<div style="color:#999;">来源整改任务已不存在。</div>'}
+    <div class="drawer-section-title" style="margin-top:4px;">处罚信息</div>
+    <div class="info-grid" style="grid-template-columns:110px 1fr 110px 1fr;">
+      <div class="ig-label">处罚来源</div><div><span class="tag ${p.source === '系统判定' ? 'tag-orange' : 'tag-gray'}">${p.source}</span></div>
+      <div class="ig-label">处罚类型</div><div>${ccEsc(p.type)}</div>
+      <div class="ig-label">处罚对象</div><div>${ccEsc(p.target)}</div>
+      <div class="ig-label">处罚时间</div><div>${p.time}</div>
+      <div class="ig-label">是否处罚</div><div>${sp.handle ? sp.handle.punish : '—'}</div>
+      <div class="ig-label">申诉有效期</div><div>${p.appealDeadline || '—'}</div>
+      <div class="ig-label">所属阶段</div><div><span class="tag ${ccPenRecStageClass[stage] || 'tag-gray'}">${stage}</span></div>
+      <div class="ig-label">操作人</div><div>${ccEsc(p.operator)}</div>
+      <div class="ig-label">处罚原因</div><div class="ig-full" style="grid-column:span 3;">${ccEsc(p.reason)}</div>
+      <div class="ig-label">处罚描述</div><div class="ig-full" style="grid-column:span 3;">${sp.handle ? ccEsc(sp.handle.desc) : '—'}</div>
+      <div class="ig-label">操作时间</div><div>${p.opTime}</div><div></div><div></div>
+    </div>
+    ${ccPenRecAppealsHtml(p)}`;
+  }
+  return `
     <div class="drawer-section-title">处罚信息</div>
     <div class="info-grid" style="grid-template-columns:110px 1fr 110px 1fr;">
       <div class="ig-label">处罚来源</div><div><span class="tag ${p.source === '系统判定' ? 'tag-orange' : 'tag-gray'}">${p.source}</span></div>
@@ -11921,25 +11962,25 @@ function ccPenRecViewHtml(p) {
       <div class="ig-label">所属阶段</div><div><span class="tag ${ccPenRecStageClass[stage] || 'tag-gray'}">${stage}</span></div>
       <div class="ig-label">操作人</div><div>${ccEsc(p.operator)}</div>
       <div class="ig-label">操作时间</div><div>${p.opTime}</div>
-    </div>`;
-  if (sp) {
-    const rect = sp.rectId ? ccRectById(sp.rectId) : null;
-    html += `
-    <div class="drawer-section-title" style="margin-top:16px;">系统判定信息</div>` +
-    ccSysPenInfoHtml(sp) +
-    (rect ? ccRectDetailSectionsHtml(rect) : '<div style="color:#999;">来源整改任务已不存在。</div>');
-  }
-  html += ccPenRecAppealsHtml(p);
-  return html;
+    </div>
+    ${ccPenRecAppealsHtml(p)}`;
 }
 function openCcPenRecView(id) {
   const p = ccPenRecords.find(x => x.id === id);
   if (!p) return;
+  // 系统判定来源：右侧滑出抽屉展示
+  if (p.sysPenId && ccSysPens.find(x => x.id === p.sysPenId)) {
+    document.getElementById('ccPenRecDetailTitle').textContent = `处罚记录详情（${p.source}）`;
+    document.getElementById('ccPenRecDetailBody').innerHTML = ccPenRecViewHtml(p);
+    document.getElementById('ccPenRecDetailDrawer').classList.remove('hidden');
+    return;
+  }
   document.getElementById('ccPenRecViewTitle').textContent = `处罚记录查看（${p.source}）`;
   document.getElementById('ccPenRecViewBody').innerHTML = ccPenRecViewHtml(p);
   document.getElementById('ccPenRecViewModal').classList.remove('hidden');
 }
 function closeCcPenRecView() { document.getElementById('ccPenRecViewModal').classList.add('hidden'); }
+function closeCcPenRecDetail() { document.getElementById('ccPenRecDetailDrawer').classList.add('hidden'); }
 
 // Tab2 申诉（承包商端）：查看的全部信息 + 申诉理由 + 证据附件
 let ccPenRecAppealId = null;
@@ -15691,7 +15732,7 @@ document.getElementById('menu').addEventListener('click', function (e) {
  ['ccRectDetailDrawer', closeCcRectDetail], ['ccVerifyModal', closeCcVerifyModal],
  ['ccUrgeModal', closeCcUrgeModal], ['ccBlockModal', closeCcBlockModal], ['ccPenCreateModal', closeCcPenCreate],
  ['ccSysPenDetailDrawer', closeCcSysPenDetail], ['ccSysPenHandleModal', closeCcSysPenHandle],
- ['ccPenRecViewModal', closeCcPenRecView], ['ccPenRecCreateModal', closeCcPenRecCreate],
+ ['ccPenRecViewModal', closeCcPenRecView], ['ccPenRecDetailDrawer', closeCcPenRecDetail], ['ccPenRecCreateModal', closeCcPenRecCreate],
  ['ccPenRecAppealModal', closeCcPenRecAppeal], ['ccPenRecAppealHandleModal', closeCcPenRecAppealHandle],
  ['ccPenDetailDrawer', closeCcPenDetail], ['ccPenApproveModal', closeCcPenApprove], ['ccPenRejectModal', closeCcPenReject],
  ['ccPenFinishModal', closeCcPenFinish], ['ccAppealSubmitModal', closeCcAppealSubmit], ['ccAppealHandleModal', closeCcAppealHandle],
