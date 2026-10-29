@@ -1193,8 +1193,43 @@
     <!-- 承包商检查：审计中心 -->
     <div class="card page hidden" id="page-ccAudit"><div id="ccAuditBody"></div></div>
 
-    <!-- 承包商检查：移动端（占位） -->
-    <div class="card page hidden" id="page-ccMobile"><div class="mo-empty">功能建设中</div></div>
+    <!-- 承包商检查：移动端（现场执行闭环 M-01 ~ M-12） -->
+    <div class="card page hidden" id="page-ccMobile">
+      <div class="mo-phone">
+        <div class="mo-phone-head ccm-head">
+          <span class="ccm-back" id="ccmBackBtn" onclick="ccmBack()" style="visibility:hidden;">‹</span>
+          <span id="ccmHeadTitle" style="flex:1;text-align:center;">承包商检查移动端</span>
+          <select id="ccmRoleSel" onchange="ccmChangeRole(this.value)" title="演示角色切换" style="max-width:132px;">
+            <option value="inspector">检查人·李强</option>
+            <option value="supervisor">监管·王敏</option>
+            <option value="rectifier">责任人·陈建国</option>
+            <option value="verifier">验证人·周凯</option>
+          </select>
+        </div>
+        <div class="mo-phone-body" id="ccmBody"></div>
+        <div class="ccm-foot" id="ccmFoot" style="display:none;"></div>
+        <div class="ccm-nav" id="ccmNav">
+          <div class="ccm-nav-item active" data-nav="home" onclick="ccmGoNav('home')"><span class="ni">🏠</span>工作台</div>
+          <div class="ccm-nav-item" data-nav="task" onclick="ccmGoNav('task')"><span class="ni">📋</span>任务</div>
+          <div class="ccm-nav-item" data-nav="msg" onclick="ccmGoNav('msg')"><span class="ni">🔔</span>消息</div>
+          <div class="ccm-nav-item" data-nav="me" onclick="ccmGoNav('me')"><span class="ni">👤</span>我的</div>
+        </div>
+      </div>
+    </div>
+    <!-- 移动端通用确认弹窗（M-06 提交统计 / 下发 / 整改提交 / 验收二次确认） -->
+    <div class="modal-mask hidden" id="ccmConfirmModal">
+      <div class="modal" style="width:360px;">
+        <div class="modal-header">
+          <span id="ccmConfirmTitle">操作确认</span>
+          <span class="modal-close" onclick="closeCcmConfirm()">✕</span>
+        </div>
+        <div class="modal-body" id="ccmConfirmBody" style="font-size:13px;line-height:2;"></div>
+        <div class="modal-footer">
+          <button class="btn btn-plain" onclick="closeCcmConfirm()">取消</button>
+          <button class="btn btn-primary" id="ccmConfirmOkBtn" onclick="ccmConfirmOk()">确定</button>
+        </div>
+      </div>
+    </div>
 
   </div>
 </div>
@@ -3838,6 +3873,48 @@
   .mo-card .mc-label { color: #999; width: 92px; flex-shrink: 0; }
   .mo-card .mc-value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .mo-empty { text-align: center; color: #999; padding: 60px 0; }
+
+  /* 承包商检查移动端（M-01 ~ M-12） */
+  .ccm-head { display: flex; align-items: center; gap: 6px; text-align: left; }
+  .ccm-back { cursor: pointer; color: #1890ff; font-size: 20px; width: 22px; flex-shrink: 0; line-height: 1; }
+  .ccm-nav { display: flex; background: #fff; border-top: 1px solid #f0f0f0; flex-shrink: 0; }
+  .ccm-nav-item { flex: 1; text-align: center; padding: 7px 0 6px; font-size: 12px; color: #666; cursor: pointer; }
+  .ccm-nav-item.active { color: #1890ff; font-weight: 600; }
+  .ccm-nav-item .ni { display: block; font-size: 16px; line-height: 1.5; }
+  .ccm-foot { gap: 10px; padding: 10px 12px; background: #fff; }
+  .ccm-foot .btn { flex: 1; }
+  .ccm-todo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .ccm-todo { background: #fff; border: 1px solid #f0f0f0; border-radius: 8px; padding: 12px; cursor: pointer; }
+  .ccm-todo:hover { border-color: #1890ff; }
+  .ccm-todo .num { font-size: 22px; font-weight: 700; }
+  .ccm-todo .t { font-size: 12px; color: #666; margin-top: 2px; }
+  .ccm-banner { background: #fff1f0; border: 1px solid #ffa39e; border-radius: 8px; padding: 10px 12px; font-size: 12px; color: #cf1322; margin-bottom: 12px; cursor: pointer; line-height: 1.7; }
+  .ccm-banner.blue { background: #e6f7ff; border-color: #91d5ff; color: #0958d9; }
+  .ccm-seg { display: flex; border: 1px solid #d9d9d9; border-radius: 6px; overflow: hidden; margin-top: 8px; }
+  .ccm-seg button { flex: 1; border: none; background: #fff; padding: 10px 0; font-size: 14px; cursor: pointer; color: #666; }
+  .ccm-seg.small button { padding: 7px 0; font-size: 12px; }
+  .ccm-seg button.on.pass { background: #52c41a; color: #fff; }
+  .ccm-seg button.on.fail { background: #f5222d; color: #fff; }
+  .ccm-seg button.on.lv0 { background: #999; color: #fff; }
+  .ccm-seg button.on.lv1 { background: #1890ff; color: #fff; }
+  .ccm-seg button.on.lv2 { background: #fa8c16; color: #fff; }
+  .ccm-seg button.on.lv3 { background: #722ed1; color: #fff; }
+  .ccm-chip { display: inline-block; padding: 4px 11px; border-radius: 13px; background: #fff; border: 1px solid #d9d9d9; font-size: 12px; color: #666; margin-right: 6px; cursor: pointer; }
+  .ccm-chip.on { background: #1890ff; color: #fff; border-color: #1890ff; }
+  .ccm-prob { margin-top: 10px; border-top: 1px dashed #ffd6d6; padding-top: 10px; }
+  .ccm-prob textarea { width: 100%; box-sizing: border-box; border: 1px solid #d9d9d9; border-radius: 4px; padding: 6px 8px; font-size: 13px; resize: vertical; }
+  .ccm-lbl { font-size: 12px; color: #666; margin-bottom: 4px; }
+  .ccm-lbl.required::before, .ccm-form-item label.required::before { content: '* '; color: #f5222d; }
+  .ccm-photo-item { display: inline-flex; align-items: center; gap: 6px; background: #f5f5f5; border-radius: 4px; padding: 4px 8px; font-size: 12px; margin: 4px 6px 0 0; }
+  .ccm-readonly { background: #fafafa; border: 1px solid #f0f0f0; border-radius: 6px; padding: 8px 10px; font-size: 12px; color: #666; line-height: 1.9; }
+  .ccm-msg-item { background: #fff; border: 1px solid #f0f0f0; border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; cursor: pointer; }
+  .ccm-msg-item .mt { font-weight: 600; font-size: 13px; display: flex; justify-content: space-between; gap: 8px; }
+  .ccm-msg-item .mc { font-size: 12px; color: #666; line-height: 1.7; margin-top: 4px; }
+  .ccm-msg-item .mm { font-size: 11px; color: #999; margin-top: 4px; display: flex; justify-content: space-between; }
+  .ccm-dot { width: 8px; height: 8px; border-radius: 50%; background: #f5222d; display: inline-block; margin-right: 4px; }
+  .ccm-form-item { margin-bottom: 12px; }
+  .ccm-form-item label { display: block; font-size: 12px; color: #666; margin-bottom: 4px; }
+  .ccm-form-item textarea, .ccm-form-item select, .ccm-form-item input { width: 100%; box-sizing: border-box; border: 1px solid #d9d9d9; border-radius: 4px; padding: 7px 8px; font-size: 13px; background: #fff; }
 </style>
 
 <script>
@@ -12051,6 +12128,1030 @@ function ccTraceGoRect(id) { closeCcRectDetail(); switchPage('ccRect'); openCcRe
 function ccTraceGoPen(id) { closeCcPenDetail(); switchPage('ccPen'); openCcPenDetail(id); }
 function ccTraceGoBlack(id) { closeCcBlackDetail(); switchPage('ccBlack'); openCcBlackDetail(id); }
 
+// ===== 承包商检查：移动端（M-01 ~ M-12，现场执行闭环） =====
+const CCM_ROLES = [
+  { key: 'inspector', name: '李强', role: '检查人', org: '安全管理部' },
+  { key: 'supervisor', name: '王敏', role: '监管人员', org: '安全管理部' },
+  { key: 'rectifier', name: '陈建国', role: '整改责任人', org: '华筑建设有限公司' },
+  { key: 'verifier', name: '周凯', role: '验证人', org: '安全管理部' }
+];
+const CCM_PERMS = {
+  inspector: { can: ['接收并填写本人/部门检查任务', '保存本地草稿', '提交检查结果'], cannot: ['下发他人整改任务', '修改检查清单', '验收整改'] },
+  supervisor: { can: ['查看来源检查与全链状态', '下发整改任务', '催办整改', '查看全部任务'], cannot: ['以责任人身份提交整改', '以验证人身份验收'] },
+  rectifier: { can: ['查看本人整改任务', '提交整改结果与现场附件', '查看验收退回原因'], cannot: ['下发本人任务', '验收本人整改', '修改原问题描述'] },
+  verifier: { can: ['查看被指派验证任务', '提交验收结论与意见', '上传现场验收附件'], cannot: ['修改责任人提交内容', '代替检查人修改检查底表'] }
+};
+const CCM_TITLES = { home: '承包商检查移动端', task: '任务中心', msg: '消息中心', me: '我的', recDetail: '检查任务详情', recExec: '检查执行', submitResult: '提交结果', rectDetail: '整改任务详情', rectAssign: '整改下发', rectSubmit: '整改提交', rectVerify: '现场验收' };
+let ccmRole = 'inspector';
+let ccmView = { name: 'home' };
+let ccmStack = [];
+let ccmTaskTab = 'all';
+let ccmTaskKw = '';
+let ccmTaskStatus = '';
+let ccmExec = null;
+let ccmVerifyRes = '';
+let ccmRectAtt = [];
+let ccmVerifyAtt = [];
+let ccmDrafts = [];
+let ccmDraftSeq = 1;
+let ccmWeakNet = false;
+let ccmSubmitting = false;
+let ccmConfirmCb = null;
+let ccmScroll = {};
+let ccmNotices = [
+  { id: 1, code: 'JC-20261029-001', title: '检查任务待执行', content: '计划 JCJH-202610-001（今日 09:00）：城东综合体二期日常安全检查，关联清单 MB-日常-003 V1.2，请移动端接收执行。', time: '2026-10-29 08:00', read: false },
+  { id: 2, code: 'ZG-20261020-003', title: '整改临期/超期预警', content: '整改任务 ZG-20261020-003（严重）已超期，责任人陈建国请立即组织整改并反馈进展，监管人员已同步预警。', time: '2026-10-25 09:00', read: false },
+  { id: 3, code: 'ZG-20261020-003', title: '整改已提交', content: '整改任务 ZG-20261020-003 已提交整改结果（陈建国，附件2个），请验证人周凯安排现场验收。', time: '2026-10-25 10:21', read: false },
+  { id: 4, code: 'CF-20261029-001', title: '处罚待审批', content: '处罚 CF-20261029-001（警告，来源：验证不通过）待审批，审批人刘峰请前往桌面端处理。', time: '2026-10-29 10:00', read: false },
+  { id: 5, code: 'HMD-20261025-001', title: '黑名单生效', content: '黑名单 HMD-20261025-001 已生效：华筑建设有限公司，有效期 2026-10-26 ~ 2027-10-25，来源处罚 CF-20261025-002。', time: '2026-10-26 09:00', read: true },
+  { id: 6, code: 'ZG-20261020-003', title: '验收退回提醒', content: '验收不通过将退回责任人重新整改，并按自动处罚规则生成待审批处罚，请注意查看整改详情时间线。', time: '2026-10-28 18:00', read: true }
+];
+let ccmNoticeSeq = 7;
+
+function ccmMe() { return CCM_ROLES.find(r => r.key === ccmRole); }
+function ccmField(l, v) { return `<div class="mc-field"><span class="mc-label">${l}</span><span class="mc-value">${v}</span></div>`; }
+function ccmGoneHtml(t) { return `<div class="mo-empty">${t}<br><span class="link" onclick="ccmBack()">返回</span></div>`; }
+function ccmConflictHtml(title, desc) {
+  return `<div class="mo-card" style="cursor:default;border-color:#ffa39e;">
+    <div style="font-weight:600;color:#cf1322;">⚠ ${title}</div>
+    <div style="font-size:12px;color:#666;line-height:1.9;margin-top:6px;">${desc}</div>
+    <div style="font-size:12px;color:#999;margin-top:4px;">不得用旧页面覆盖他人处理结果，请刷新查看最新状态后重试。</div>
+    <button class="btn btn-plain" style="margin-top:10px;width:100%;" onclick="ccmRefreshView()">刷新</button>
+  </div>`;
+}
+// 数据范围（PRD 15.6）：检查人见本人任务，责任人见本人整改，验证人见指派验证，监管见全部
+function ccmVisibleRecords() {
+  const me = ccmMe();
+  if (me.key === 'supervisor') return ccRecords.slice();
+  if (me.key === 'inspector') return ccRecords.filter(r => r.inspector === me.name);
+  return [];
+}
+function ccmCanViewRec(rec) { const me = ccmMe(); return me.key === 'supervisor' || (me.key === 'inspector' && rec.inspector === me.name); }
+function ccmCanCheck(rec) { const me = ccmMe(); return me.key === 'inspector' && rec.inspector === me.name; }
+function ccmVisiblePlans() {
+  const me = ccmMe();
+  if (me.key !== 'inspector') return [];
+  return ccPlans.filter(p => p.status === '待执行' && (p.execType === '部门' || p.execPerson === me.name));
+}
+function ccmVisibleRects() {
+  const me = ccmMe();
+  if (me.key === 'supervisor') return ccRects.slice();
+  if (me.key === 'rectifier') return ccRects.filter(r => r.assignee === me.name);
+  if (me.key === 'verifier') return ccRects.filter(r => r.verifier === me.name);
+  return [];
+}
+function ccmCanViewRect(r) { return ccmVisibleRects().indexOf(r) >= 0; }
+// 本地草稿（仅当前设备，不进入业务流程）
+function ccmRectDraft(rectId) { return ccmDrafts.find(d => d.kind === 'rect' && d.rectId === rectId); }
+function ccmHasRectDraft(rectId) { return !!ccmRectDraft(rectId); }
+function ccmPushNotice(title, code, content) {
+  ccmNotices.unshift({ id: ccmNoticeSeq++, code: code || '', title, content, time: CC_NOW, read: false });
+}
+
+// ---------- 路由 ----------
+function ccmViewKey(v) { v = v || ccmView; return v.name + '|' + (v.id || '') + '|' + (v.recId || '') + '|' + (v.planId || ''); }
+function ccmGo(view, replace) {
+  const body = document.getElementById('ccmBody');
+  ccmScroll[ccmViewKey()] = body ? body.scrollTop : 0;
+  if (!replace) ccmStack.push(ccmView);
+  ccmView = view;
+  ccmRender();
+}
+function ccmDeepGo(view) { ccmStack = []; ccmView = view; ccmRender(); }
+function ccmBack() {
+  const body = document.getElementById('ccmBody');
+  ccmScroll[ccmViewKey()] = body ? body.scrollTop : 0;
+  ccmView = ccmStack.pop() || { name: 'home' };
+  ccmRender();
+}
+function ccmRefreshView() { ccmRender(); }
+function ccmGoNav(tab) { ccmStack = []; ccmExec = null; ccmView = { name: tab }; ccmRender(); }
+function ccmGoTask(tab, status) {
+  ccmTaskTab = tab || 'all'; ccmTaskStatus = status || ''; ccmTaskKw = '';
+  ccmGoNav('task');
+}
+function ccmChangeRole(v) {
+  if (!CCM_ROLES.some(r => r.key === v)) return;
+  ccmRole = v;
+  ccmStack = []; ccmView = { name: 'home' }; ccmExec = null;
+  ccmTaskTab = 'all'; ccmTaskStatus = ''; ccmTaskKw = '';
+  ccmRender();
+}
+function ccmRender() {
+  const body = document.getElementById('ccmBody');
+  if (!body) return;
+  const map = { home: ccmHomeHtml, task: ccmTaskHtml, msg: ccmMsgHtml, me: ccmMeHtml, recDetail: ccmRecDetailHtml, recExec: ccmRecExecHtml, submitResult: ccmSubmitResultHtml, rectDetail: ccmRectDetailHtml, rectAssign: ccmRectAssignHtml, rectSubmit: ccmRectSubmitHtml, rectVerify: ccmRectVerifyHtml, info: ccmInfoHtml };
+  body.innerHTML = (map[ccmView.name] || ccmHomeHtml)();
+  const foot = document.getElementById('ccmFoot');
+  foot.innerHTML = ccmFootHtml();
+  foot.style.display = foot.innerHTML ? 'flex' : 'none';
+  document.getElementById('ccmHeadTitle').textContent = ccmView.name === 'info' ? (ccmView.title || '详情') : (CCM_TITLES[ccmView.name] || '承包商检查移动端');
+  document.getElementById('ccmBackBtn').style.visibility = ccmStack.length ? 'visible' : 'hidden';
+  document.querySelectorAll('#ccmNav .ccm-nav-item').forEach(el => el.classList.toggle('active', el.dataset.nav === ccmView.name));
+  const sel = document.getElementById('ccmRoleSel');
+  if (sel && sel.value !== ccmRole) sel.value = ccmRole;
+  body.scrollTop = ccmScroll[ccmViewKey()] || 0;
+}
+
+// ---------- M-01 工作台 ----------
+function ccmHomeHtml() {
+  const me = ccmMe();
+  const cards = [];
+  if (me.key === 'inspector' || me.key === 'supervisor') {
+    const n = ccmVisibleRecords().filter(r => r.status === '检查中').length + ccmVisiblePlans().length;
+    cards.push({ t: '今日待检查', n, c: '#1890ff', go: "ccmGoTask('check')" });
+  }
+  if (me.key === 'supervisor') cards.push({ t: '待分配整改', n: ccRects.filter(r => r.status === '待分配').length, c: '#fa541c', go: "ccmGoTask('rect','待分配')" });
+  if (me.key === 'rectifier' || me.key === 'supervisor') cards.push({ t: '待整改', n: ccmVisibleRects().filter(r => r.status === '整改中').length, c: '#fa8c16', go: "ccmGoTask('rect','整改中')" });
+  if (me.key === 'verifier' || me.key === 'supervisor') cards.push({ t: '待验证', n: ccmVisibleRects().filter(r => r.status === '待验证').length, c: '#722ed1', go: "ccmGoTask('verify','待验证')" });
+  if (me.key !== 'inspector') cards.push({ t: '已超期', n: ccmVisibleRects().filter(ccRectOverdue).length, c: '#f5222d', go: "ccmGoTask('all','')" });
+  const od = ccmVisibleRects().filter(ccRectOverdue).sort((a, b) => (a.deadline || '').localeCompare(b.deadline || ''));
+  let banner = '';
+  if (od.length) {
+    const r = od[0];
+    banner = `<div class="ccm-banner" onclick="ccmOpenRect(${r.id})">⚠️ <b>紧急任务：整改 ${r.code} 已超期 ${ccRectOverdueDays(r)} 天</b><br>问题：${ccEsc(r.problem)}（截止 ${r.deadline}），点击立即处理。</div>`;
+  } else {
+    const subs = ccmVisibleRects().map(r => ({ r, last: r.rounds.filter(x => x.type === '提交').pop() })).filter(x => x.last)
+      .sort((a, b) => String(b.last.time).localeCompare(String(a.last.time)));
+    if (subs.length) {
+      const s = subs[0];
+      banner = `<div class="ccm-banner blue" onclick="ccmOpenRect(${s.r.id})">🕒 最近提交：${s.r.code}（${ccEsc(s.last.by)}，${s.last.time}），当前状态：${s.r.status}，点击查看。</div>`;
+    }
+  }
+  const roleLine = { inspector: '可接收并填写本人/部门检查任务', supervisor: '可查看全链状态并下发整改', rectifier: '可提交本人整改任务并查看退回原因', verifier: '可提交被指派任务的验收结论' }[me.key];
+  return `
+    <div class="mo-card" style="cursor:default;margin-bottom:12px;">
+      <div class="mc-title"><span>👤 ${me.name}（${me.role}）</span><span class="tag tag-blue">${me.org}</span></div>
+      ${ccmField('当前职责', roleLine)}
+      ${ccmField('演示时间', CC_NOW)}
+    </div>
+    ${banner}
+    <div style="font-size:13px;font-weight:600;margin:2px 0 10px;">我的待办</div>
+    <div class="ccm-todo-grid">${cards.map(c => `
+      <div class="ccm-todo" onclick="${c.go}">
+        <div class="num" style="color:${c.c};">${c.n}</div>
+        <div class="t">${c.t}</div>
+      </div>`).join('')}</div>
+    <div style="font-size:12px;color:#999;margin-top:12px;line-height:1.8;">数据与桌面端共用同一数据源、实时同步；点击待办卡进入带条件的任务列表。</div>`;
+}
+
+// ---------- M-02 任务中心 ----------
+function ccmSetTaskTab(k) { ccmTaskTab = k; ccmRender(); }
+function ccmSetTaskStatus(v) { ccmTaskStatus = v; ccmRender(); }
+function ccmTaskSearch() { ccmTaskKw = document.getElementById('ccmTaskKw').value; ccmRender(); }
+function ccmTaskItems() {
+  const items = [];
+  if (ccmTaskTab === 'all' || ccmTaskTab === 'check') {
+    ccmVisiblePlans().forEach(p => items.push({ kind: 'plan', sort: String(p.execTime), obj: p }));
+    ccmVisibleRecords().filter(r => r.status === '检查中').forEach(r => items.push({ kind: 'rec', sort: r.date + ' 23:59', obj: r }));
+  }
+  if (ccmTaskTab === 'all' || ccmTaskTab === 'rect' || ccmTaskTab === 'verify') {
+    ccmVisibleRects().forEach(r => {
+      if (ccmTaskTab === 'rect' && !(r.status === '待分配' || r.status === '整改中')) return;
+      if (ccmTaskTab === 'verify' && !(r.status === '待验证' || r.status === '已关闭')) return;
+      if (ccmTaskStatus && r.status !== ccmTaskStatus) return;
+      items.push({ kind: 'rect', sort: r.deadline || '9999-12-31', obj: r });
+    });
+  }
+  const kw = (ccmTaskKw || '').trim();
+  const list = kw ? items.filter(it => {
+    const o = it.obj;
+    const text = it.kind === 'plan' ? (o.dimension + o.target) : (it.kind === 'rec' ? (o.project + o.contractor + o.type) : (o.project + o.contractor + o.problem));
+    return o.code.indexOf(kw) >= 0 || String(text).indexOf(kw) >= 0;
+  }) : items;
+  return list.sort((a, b) => String(a.sort).localeCompare(String(b.sort)));
+}
+function ccmTaskEmpty() {
+  const me = ccmMe();
+  if (ccmTaskTab === 'check') return me.key === 'inspector' ? '今日暂无待接收/进行中的检查任务' : (me.key === 'supervisor' ? '暂无检查中的任务' : '当前角色无检查任务权限（PRD 15.6）');
+  if (ccmTaskTab === 'rect') return me.key === 'rectifier' ? '暂无待整改任务' : (me.key === 'supervisor' ? '暂无待分配/整改中任务' : '当前角色无整改任务权限');
+  if (ccmTaskTab === 'verify') return me.key === 'verifier' ? '暂无待验收任务' : (me.key === 'supervisor' ? '暂无待验证任务' : '当前角色无验收任务权限');
+  return '暂无任务';
+}
+function ccmTaskCardHtml(it) {
+  if (it.kind === 'plan') {
+    const p = it.obj;
+    const t = ccTpl(p.templateId);
+    const v = t ? ccTplVer(t.id) : null;
+    return `<div class="mo-card" onclick="ccmOpenPlan(${p.id})">
+      <div class="mc-title"><span>${p.code}</span><span class="tag tag-orange">检查·待接收</span></div>
+      ${ccmField('检查对象', p.dimension + '维度／' + ccEsc(p.target))}
+      ${ccmField('执行时间', p.freq === '单次' ? p.execTime : ccEsc(p.cycleRule || '') + ' ' + p.execTime)}
+      ${ccmField('执行主体', p.execType === '部门' ? ccEsc(p.execDept) + '（部门）' : ccEsc(p.execPerson) + '（个人）')}
+      ${ccmField('清单版本', (t ? t.code + ' ' : '—') + (v ? v.ver : '') + '（' + (v && v.items ? v.items.length : 0) + ' 项）')}
+    </div>`;
+  }
+  if (it.kind === 'rec') {
+    const r = it.obj;
+    const total = r.items.length;
+    const pass = r.items.filter(i => i.result === '合格').length;
+    const fail = r.items.filter(i => i.result === '不合格').length;
+    const filled = r.items.filter(i => i.result).length;
+    const draft = r.status === '检查中' && filled > 0;
+    return `<div class="mo-card" onclick="ccmOpenRec(${r.id})">
+      <div class="mc-title"><span>${r.code}</span><span class="tag ${ccRecStatusClass[r.status] || 'tag-gray'}">${r.status}</span></div>
+      ${ccmField('类型/对象', ccEsc(r.type) + '｜' + ccEsc(r.project || r.contractor))}
+      ${ccmField('执行时间', r.date)}
+      ${ccmField('填写进度', filled >= total ? `合格 ${pass}／不合格 ${fail}` : `已填 ${filled}/${total}`)}
+      ${draft ? '<div style="margin-top:4px;"><span class="tag tag-orange">草稿</span></div>' : ''}
+    </div>`;
+  }
+  const r = it.obj;
+  return `<div class="mo-card" onclick="ccmOpenRect(${r.id})">
+    <div class="mc-title"><span>${r.code}</span><span class="tag ${ccRectStatusClass[r.status] || 'tag-gray'}">${r.status}</span></div>
+    ${ccmField('问题', ccEsc(r.problem))}
+    ${ccmField('项目/承包商', ccEsc(r.project || '—') + '／' + ccEsc(r.contractor || '—'))}
+    ${ccmField('截止', r.deadline || '—')}
+    <div style="display:flex;gap:6px;margin-top:4px;align-items:center;">
+      <span class="tag ${ccLevelClass[r.level] || 'tag-gray'}">${r.level}</span>
+      ${ccRectOverdue(r) ? `<span class="tag tag-red">已超期${ccRectOverdueDays(r)}天</span>` : ''}
+      ${ccmHasRectDraft(r.id) ? '<span class="tag tag-orange">草稿</span>' : ''}
+    </div>
+  </div>`;
+}
+function ccmTaskHtml() {
+  const items = ccmTaskItems();
+  const tabs = [['all', '全部'], ['check', '检查'], ['rect', '整改'], ['verify', '验收']];
+  return `
+    <div style="display:flex;gap:6px;margin-bottom:10px;">
+      <input type="text" id="ccmTaskKw" placeholder="搜索任务编号" value="${ccEsc(ccmTaskKw)}" onkeydown="if(event.keyCode===13)ccmTaskSearch()" style="flex:1;min-width:0;border:1px solid #d9d9d9;border-radius:4px;padding:7px 8px;font-size:13px;">
+      <button class="btn btn-plain" onclick="ccmTaskSearch()">查询</button>
+    </div>
+    <div class="tabs" style="background:#fff;border:none;border-radius:8px;padding:0 8px;margin-bottom:10px;">
+      ${tabs.map(([k, t]) => `<span class="tab ${ccmTaskTab === k ? 'active' : ''}" onclick="ccmSetTaskTab('${k}')">${t}</span>`).join('')}
+    </div>
+    ${ccmTaskTab !== 'check' ? `<select onchange="ccmSetTaskStatus(this.value)" style="width:100%;margin-bottom:10px;border:1px solid #d9d9d9;border-radius:4px;padding:7px 8px;font-size:13px;background:#fff;">
+      <option value="">全部状态</option>
+      ${['待分配', '整改中', '待验证', '已关闭'].map(s => `<option ${ccmTaskStatus === s ? 'selected' : ''}>${s}</option>`).join('')}
+    </select>` : ''}
+    ${items.length ? `<div class="mo-grid">${items.map(ccmTaskCardHtml).join('')}</div>` : `<div class="mo-empty">${ccmTaskEmpty()}</div>`}`;
+}
+function ccmOpenRec(id) {
+  const rec = ccRecords.find(x => x.id === id);
+  if (!rec) return;
+  if (!ccmCanViewRec(rec)) { alert('您没有权限查看该检查任务（数据范围外，PRD 15.6）'); return; }
+  ccmGo({ name: 'recDetail', recId: id });
+}
+function ccmOpenPlan(id) { ccmGo({ name: 'recDetail', planId: id }); }
+
+// ---------- M-03 检查任务详情 / 接收 ----------
+function ccmRecDetailHtml() {
+  const v = ccmView;
+  if (v.planId) {
+    const p = ccPlans.find(x => x.id === v.planId);
+    if (!p) return ccmGoneHtml('该计划任务不存在或已被删除');
+    if (p.status !== '待执行') return ccmConflictHtml('检查任务状态已更新', `计划 ${p.code} 当前状态为「${p.status}」，可能已被他人接收执行，请返回任务中心查看。`);
+    const t = ccTpl(p.templateId);
+    const ver = t ? ccTplVer(t.id) : null;
+    const canRecv = ccmMe().key === 'inspector';
+    return `
+      <div class="mo-card" style="cursor:default;">
+        <div class="mc-title"><span>${p.code}</span><span class="tag tag-orange">待执行</span></div>
+        ${ccmField('项目/承包商', p.dimension === '项目' ? ccEsc(p.target) + '／—' : '—／' + ccEsc(p.target))}
+        ${ccmField('检查范围', p.dimension + '维度／' + ccEsc(p.target))}
+        ${ccmField('关联清单版本', (t ? t.code + ' ' : '—') + (ver ? ver.ver : '') + '（快照）')}
+        ${ccmField('执行时间', p.freq === '单次' ? p.execTime : ccEsc(p.cycleRule || '') + ' ' + p.execTime)}
+        ${ccmField('执行主体', p.execType === '部门' ? ccEsc(p.execDept) + '（部门任务，成员接收后记录实际执行人）' : ccEsc(p.execPerson) + '（个人）')}
+        ${ccmField('检查项任务数', ver && ver.items ? ver.items.length + ' 项（必检 ' + ver.items.filter(i => i.required).length + ' 项）' : '—')}
+      </div>
+      <div style="font-size:12px;color:#999;line-height:1.8;margin-top:10px;">接收后将生成带清单版本快照的检查记录，并记录实际执行人与开始时间；同一任务多人不可重复接收。</div>
+      ${!canRecv ? '<div class="ccm-readonly" style="margin-top:10px;">当前角色无接收检查任务权限（仅检查人可接收，PRD 15.6）。</div>' : ''}`;
+  }
+  const rec = ccRecords.find(x => x.id === v.recId);
+  if (!rec) return ccmGoneHtml('该检查记录不存在或已被删除');
+  if (!ccmCanViewRec(rec)) return '<div class="mo-empty">您没有权限查看该检查任务（数据范围外，PRD 15.6）</div>';
+  const total = rec.items.length;
+  const filled = rec.items.filter(i => i.result).length;
+  const pass = rec.items.filter(i => i.result === '合格').length;
+  const fail = rec.items.filter(i => i.result === '不合格').length;
+  const closed = ccRecClosedCount(rec);
+  const draft = rec.status === '检查中' && filled > 0;
+  return `
+    <div class="mo-card" style="cursor:default;">
+      <div class="mc-title"><span>${rec.code}</span><span class="tag ${ccRecStatusClass[rec.status] || 'tag-gray'}">${rec.status}</span></div>
+      ${draft ? '<div style="margin-bottom:6px;"><span class="tag tag-orange">草稿</span></div>' : ''}
+      ${ccmField('项目/承包商', ccEsc(rec.project || '—') + '／' + ccEsc(rec.contractor || '—'))}
+      ${ccmField('检查类型', ccEsc(rec.type))}
+      ${ccmField('检查范围', rec.project ? '项目／' + ccEsc(rec.project) : '承包商／' + ccEsc(rec.contractor))}
+      ${ccmField('关联清单版本', rec.templateCode + ' ' + rec.ver + '（快照，不可变）')}
+      ${ccmField('执行时间', rec.date)}
+      ${ccmField('执行主体', ccEsc(rec.inspector) + (ccmCanCheck(rec) ? '（本人）' : ''))}
+      ${ccmField('检查项任务数', total + ' 项（必检 ' + rec.items.filter(i => i.required).length + ' 项）')}
+      ${ccmField('填写进度', filled >= total ? `合格 ${pass}／不合格 ${fail}` : `已填 ${filled}/${total}`)}
+      ${rec.rectIds.length ? ccmField('整改进度', closed + '/' + rec.rectIds.length + (closed === rec.rectIds.length ? '（可归档）' : '')) : ''}
+      ${rec.source === '计划' && rec.planId ? ccmField('来源计划', ((ccPlans.find(p => p.id === rec.planId) || {}).code) || '—') : ''}
+    </div>
+    ${rec.status === '检查中' ? '<div style="font-size:12px;color:#999;margin-top:10px;line-height:1.8;">点击下方「继续检查」逐项填写合格/不合格；必检项不可跳过，全部填写并完整登记不合格问题后方可提交。</div>' : ''}`;
+}
+function ccmReceivePlan(planId) {
+  const p = ccPlans.find(x => x.id === planId);
+  if (!p) return;
+  if (ccmMe().key !== 'inspector') { alert('仅检查人可接收检查任务（PRD 15.6）'); return; }
+  if (p.status !== '待执行') { alert('任务状态已更新：该计划已不在待执行状态（可能已被他人接收），请返回刷新'); ccmRender(); return; }
+  const rec = createCcRecord(p);
+  rec.inspector = ccmMe().name;
+  p.instances.push(rec.id);
+  p.status = p.freq === '单次' ? '已完成' : '执行中';
+  rec.logs.push({ time: formatNow(), operator: ccmMe().name, action: '移动端接收任务', summary: `由计划 ${p.code} 接收生成，实际执行人：${ccmMe().name}，进入检查中` });
+  ccLog(ccmMe().name, '检查人', '移动端接收检查任务', p.code, `生成检查记录 ${rec.code}，记录实际执行人 ${ccmMe().name}`, '移动端');
+  renderCcPlans(); renderCcWork(); renderCcRecords();
+  alert(`已接收任务，生成检查记录 ${rec.code}（清单快照 ${rec.templateCode} ${rec.ver}），请逐项检查`);
+  ccmExec = { recId: rec.id, filter: '', items: rec.items.map(i => ({ ...i, photos: i.photos.slice() })) };
+  ccmGo({ name: 'recExec' }, true);
+}
+
+// ---------- M-04/M-05/M-06 检查执行 / 问题登记 / 提交 ----------
+function ccmStartExec(recId) {
+  const rec = ccRecords.find(x => x.id === recId);
+  if (!rec) return;
+  if (!ccmCanCheck(rec)) { alert('您没有权限填写该检查任务（PRD 15.6）'); return; }
+  if (rec.status !== '检查中') { alert('任务状态已更新（当前：' + rec.status + '），请返回任务中心刷新'); return; }
+  ccmExec = { recId, filter: '', items: rec.items.map(i => ({ ...i, photos: i.photos.slice() })) };
+  ccmGo({ name: 'recExec' });
+}
+function ccmProblemHtml(it) {
+  const lvCls = { '轻微': 'lv0', '一般': 'lv1', '严重': 'lv2', '重大': 'lv3' };
+  return `
+  <div class="ccm-prob">
+    <div class="ccm-lbl required">严重等级</div>
+    <div class="ccm-seg small">${['轻微', '一般', '严重', '重大'].map(l => `<button class="${it.level === l ? 'on ' + lvCls[l] : ''}" onclick="ccmSetLevel(${it.seq}, '${l}')">${l}</button>`).join('')}</div>
+    <div class="ccm-lbl required" style="margin-top:8px;">问题描述</div>
+    <textarea rows="3" placeholder="请描述问题位置、事实与偏差（必填）" oninput="ccmSetDesc(${it.seq}, this.value)">${ccEsc(it.desc)}</textarea>
+    <div class="ccm-lbl" style="margin-top:8px;">影像证据（选填，支持拍照/相册，可删除未提交照片）</div>
+    <div>
+      <button class="btn btn-plain" style="font-size:12px;padding:4px 10px;" onclick="ccmAddPhoto(${it.seq}, '拍照')">📷 拍照</button>
+      <button class="btn btn-plain" style="font-size:12px;padding:4px 10px;" onclick="ccmAddPhoto(${it.seq}, '相册')">🖼 相册</button>
+    </div>
+    <div style="margin-top:6px;">${it.photos.map((p, idx) => `<span class="ccm-photo-item">🖼 ${ccEsc(p)} <span class="link link-danger" onclick="ccmDelPhoto(${it.seq}, ${idx})">删</span></span>`).join('')}</div>
+  </div>`;
+}
+function ccmExecItemHtml(it) {
+  return `
+  <div class="phone-item ccm-item" id="ccmItem${it.seq}">
+    <div class="pi-title">${it.seq}. ${ccEsc(it.category)} ${it.required ? '<span class="tag tag-red">必检</span>' : ''}</div>
+    <div style="font-size:13px;line-height:1.8;">任务内容：${ccEsc(it.task)}</div>
+    <div class="pi-std">检查标准：${ccEsc(it.standard)}</div>
+    <div class="ccm-seg">
+      <button class="${it.result === '合格' ? 'on pass' : ''}" onclick="ccmSetResult(${it.seq}, '合格')">✓ 合格</button>
+      <button class="${it.result === '不合格' ? 'on fail' : ''}" onclick="ccmSetResult(${it.seq}, '不合格')">✕ 不合格</button>
+    </div>
+    ${it.result === '不合格' ? ccmProblemHtml(it) : it.result === '合格' ? '<div style="font-size:12px;color:#52c41a;margin-top:8px;">✓ 已判定合格</div>' : '<div style="font-size:12px;color:#999;margin-top:8px;">未填写</div>'}
+  </div>`;
+}
+function ccmRecExecHtml() {
+  const rec = ccRecords.find(x => x.id === ccmExec.recId);
+  if (!rec) return ccmGoneHtml('检查记录不存在或已被删除');
+  if (rec.status !== '检查中') return ccmConflictHtml('任务状态已更新', `检查记录 ${rec.code} 当前状态为「${rec.status}」，可能已被提交或归档；旧页面不得覆盖他人结果，请刷新。`);
+  const items = ccmExec.items;
+  const filled = items.filter(i => i.result).length;
+  const pass = items.filter(i => i.result === '合格').length;
+  const fail = items.filter(i => i.result === '不合格').length;
+  let shown = items;
+  if (ccmExec.filter === 'undo') shown = items.filter(i => !i.result);
+  if (ccmExec.filter === 'fail') shown = items.filter(i => i.result === '不合格');
+  return `
+    <div style="background:#fff;border:1px solid #f0f0f0;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+        <span>已填 <b id="ccmStatFilled">${filled}</b> / ${items.length}</span>
+        <span>合格 <b style="color:#52c41a;" id="ccmStatPass">${pass}</b></span>
+        <span>不合格 <b style="color:#f5222d;" id="ccmStatFail">${fail}</b></span>
+      </div>
+      <div>
+        ${[['', '全部'], ['undo', '仅看未填写'], ['fail', '仅看不合格']].map(([k, t]) => `<span class="ccm-chip ${ccmExec.filter === k ? 'on' : ''}" onclick="ccmSetFilter('${k}')">${t}</span>`).join('')}
+      </div>
+      <div style="color:#999;margin-top:6px;line-height:1.7;">必检项不可跳过；选择「不合格」需登记严重等级与问题描述（AC-08）。</div>
+    </div>
+    ${shown.length ? shown.map(ccmExecItemHtml).join('') : '<div class="mo-empty">当前筛选条件下暂无检查项</div>'}`;
+}
+function ccmExecItemOf(seq) { return ccmExec.items.find(i => i.seq === seq); }
+function ccmSetResult(seq, v) {
+  const it = ccmExecItemOf(seq);
+  if (it.result === '不合格' && v === '合格' && (it.level || it.desc.trim() || it.photos.length)) {
+    if (!confirm('该检查项已登记问题信息（等级/描述/照片），切换为合格将清空这些信息，是否继续？')) return;
+    it.level = ''; it.desc = ''; it.photos = [];
+  }
+  it.result = v;
+  if (v === '合格') { it.level = ''; it.desc = ''; it.photos = []; }
+  ccmRender();
+}
+function ccmSetLevel(seq, v) { ccmExecItemOf(seq).level = v; ccmRender(); }
+function ccmSetDesc(seq, v) { ccmExecItemOf(seq).desc = v; }
+function ccmAddPhoto(seq, from) {
+  const it = ccmExecItemOf(seq);
+  it.photos.push((from === '拍照' ? 'IMG_' : 'PIC_') + ccToday().replace(/-/g, '') + '_' + (it.photos.length + 1) + '.jpg');
+  ccmRender();
+}
+function ccmDelPhoto(seq, idx) { const it = ccmExecItemOf(seq); it.photos.splice(idx, 1); ccmRender(); }
+function ccmSetFilter(f) { ccmExec.filter = f; ccmRender(); }
+function ccmWriteCheckDraft(rec) {
+  rec.items = ccmExec.items.map(i => ({ ...i, photos: i.photos.slice() }));
+  const filled = rec.items.filter(i => i.result).length;
+  rec.logs.push({ time: formatNow(), operator: ccmMe().name, action: '移动端保存检查草稿', summary: `已填 ${filled}/${rec.items.length} 项；草稿仅保存在本设备，业务状态不变（PRD 15.7）` });
+  ccLog(ccmMe().name, '检查人', '移动端保存检查草稿', rec.code, `已填 ${filled}/${rec.items.length} 项（本地草稿，未提交）`, '移动端');
+}
+function ccmSaveDraft() {
+  const rec = ccRecords.find(x => x.id === ccmExec.recId);
+  if (!rec) return;
+  ccmWriteCheckDraft(rec);
+  renderCcRecords(); renderCcWork();
+  alert('草稿已保存（仅本设备本地，未提交，业务状态未变化）');
+  ccmRender();
+}
+function ccmExecSubmit() {
+  if (ccmSubmitting) { alert('请勿重复提交'); return; }
+  const rec = ccRecords.find(x => x.id === ccmExec.recId);
+  if (!rec) return;
+  if (rec.status !== '检查中') { alert('任务状态已更新，请刷新后重试'); return; }
+  const items = ccmExec.items;
+  const unfilled = items.filter(i => !i.result);
+  if (unfilled.length) {
+    alert(`还有 ${unfilled.length} 个检查项未填写结果（必检项不可跳过，REC-02/AC-07）。\n首个未填项：第 ${unfilled[0].seq} 项「${unfilled[0].task}」`);
+    const el = document.getElementById('ccmItem' + unfilled[0].seq);
+    if (el) el.scrollIntoView();
+    return;
+  }
+  const noLevel = items.filter(i => i.result === '不合格' && !i.level);
+  if (noLevel.length) { alert('不合格项必须选择严重等级（AC-08）：第 ' + noLevel.map(i => i.seq).join('、') + ' 项'); return; }
+  const noDesc = items.filter(i => i.result === '不合格' && !i.desc.trim());
+  if (noDesc.length) { alert('不合格项必须填写问题描述（AC-08）：第 ' + noDesc.map(i => i.seq).join('、') + ' 项'); return; }
+  if (ccmWeakNet) { ccmWriteCheckDraft(rec); alert('网络异常：提交失败，已保存本地草稿，请联网后重新提交（业务状态未变化）'); ccmRender(); return; }
+  const pass = items.filter(i => i.result === '合格').length;
+  const fail = items.length - pass;
+  ccmConfirm('提交检查确认', `
+    <div>检查项总数：<b>${items.length}</b> 项</div>
+    <div>合格：<b style="color:#52c41a;">${pass}</b> 项　不合格：<b style="color:#f5222d;">${fail}</b> 项</div>
+    <div>未填写：<b>0</b> 项　将生成整改：<b style="color:#f5222d;">${fail}</b> 条（每条不合格明细一条待分配整改）</div>
+    <div style="color:#999;font-size:12px;margin-top:8px;line-height:1.7;">提交后结果只读并同步桌面端：全部合格将自动归档；存在不合格将逐条生成待分配整改。</div>`, () => ccmDoExecSubmit(), '确认提交');
+}
+function ccmDoExecSubmit() {
+  const rec = ccRecords.find(x => x.id === ccmExec.recId);
+  if (!rec) return;
+  if (rec.status !== '检查中') { alert('任务状态已更新，请刷新后重试'); return; }
+  ccmSubmitting = true;
+  try {
+    rec.items = ccmExec.items.map(i => ({ ...i, photos: i.photos.slice() }));
+    const failItems = rec.items.filter(i => i.result === '不合格');
+    const pass = rec.items.length - failItems.length;
+    if (!failItems.length) {
+      rec.status = '已归档';
+      rec.archivedAt = CC_NOW;
+      rec.logs.push({ time: formatNow(), operator: ccmMe().name, action: '移动端提交检查', summary: `${rec.items.length}项全部合格，自动归档（REC-03）` });
+      ccLog(ccmMe().name, '检查人', '移动端提交检查', rec.code, `${rec.items.length}项全部合格，检查合格已归档`, '移动端');
+      ccRefreshAll();
+      alert('检查合格，已归档');
+      ccmGo({ name: 'submitResult', recId: rec.id, fail: 0, pass: rec.items.length, rectIds: [] }, true);
+      return;
+    }
+    const rects = failItems.map(it => ccCreateRect(rec, it));
+    rec.rectIds = rects.map(r => r.id);
+    rec.status = '待整改';
+    rec.logs.push({ time: formatNow(), operator: ccmMe().name, action: '移动端提交检查', summary: `${rec.items.length}项：合格${pass}、不合格${failItems.length}，结论不合格，生成整改${rects.length}条（REC-04）` });
+    rects.forEach(r => ccLog('系统', '系统任务', '生成整改任务', r.code, `由检查记录 ${rec.code} 第${r.itemSeq}项不合格明细自动生成，待分配`, '系统'));
+    ccLog(ccmMe().name, '检查人', '移动端提交检查', rec.code, `${rec.items.length}项：合格${pass}、不合格${failItems.length}，结论不合格`, '移动端');
+    ccRefreshAll();
+    ccmPushNotice('整改待分配', rects[0].code, `检查 ${rec.code} 发现 ${failItems.length} 项不合格，已生成 ${rects.length} 条待分配整改任务，请监管人员移动端下发。`);
+    ccmGo({ name: 'submitResult', recId: rec.id, fail: failItems.length, pass, rectIds: rects.map(r => r.id) }, true);
+  } finally { ccmSubmitting = false; }
+}
+function ccmSubmitResultHtml() {
+  const v = ccmView;
+  const rec = ccRecords.find(x => x.id === v.recId);
+  if (!rec) return ccmGoneHtml('检查记录不存在');
+  if (!v.fail) {
+    return `<div class="mo-card" style="cursor:default;text-align:center;padding:26px 16px;">
+      <div style="font-size:36px;">✅</div>
+      <div style="font-weight:600;font-size:15px;margin:8px 0;">检查合格，已归档</div>
+      <div style="font-size:12px;color:#999;line-height:1.9;">${rec.code}：${rec.items.length} 项全部合格<br>记录已归档，整链只读，桌面端同步可见。</div>
+    </div>`;
+  }
+  const rects = v.rectIds.map(ccRectById).filter(Boolean);
+  return `<div class="mo-card" style="cursor:default;">
+    <div style="text-align:center;padding:6px 0 12px;">
+      <div style="font-size:36px;">📤</div>
+      <div style="font-weight:600;font-size:15px;margin:8px 0;">检查已提交</div>
+      <div style="font-size:12px;color:#666;">${rec.code}：合格 ${v.pass} 项 / 不合格 ${v.fail} 项，记录状态：待整改</div>
+    </div>
+    <div class="ccm-readonly" style="color:#cf1322;background:#fff1f0;border-color:#ffa39e;">已生成 <b>${rects.length}</b> 条待分配整改：${rects.map(r => r.code).join('、')}。请监管人员下发整改要求、责任人与验证人（可点击「去下发」）。</div>
+    ${rects.map(r => `<div class="mo-card" style="margin-top:10px;" onclick="ccmOpenRect(${r.id})">
+      <div class="mc-title"><span>${r.code}</span><span class="tag tag-red">待分配</span></div>
+      ${ccmField('问题', ccEsc(r.problem))}
+      ${ccmField('严重等级', `<span class="tag ${ccLevelClass[r.level] || 'tag-gray'}">${r.level}</span>`)}
+    </div>`).join('')}
+  </div>`;
+}
+
+// ---------- M-07 整改下发 ----------
+function ccmRectAssignHtml() {
+  const r = ccRectById(ccmView.id);
+  if (!r) return ccmGoneHtml('整改任务不存在或已被删除');
+  if (r.status !== '待分配') return ccmConflictHtml('任务状态已更新', `整改任务 ${r.code} 当前状态为「${r.status}」，可能已被他人下发，请刷新查看最新状态。`);
+  const rec = ccRectRecord(r);
+  const item = ccRectRecItem(r);
+  return `
+    <div style="font-size:13px;font-weight:600;margin-bottom:8px;">问题快照（只读）</div>
+    <div class="ccm-readonly" style="margin-bottom:14px;">
+      <div>来源检查：${rec ? rec.code : '—'}　明细序号：第 ${r.itemSeq} 项</div>
+      <div>检查标准：${item ? ccEsc(item.standard) : '—'}</div>
+      <div>问题描述：${ccEsc(r.problem)}</div>
+      <div>严重等级：<span class="tag ${ccLevelClass[r.level] || 'tag-gray'}">${r.level}</span>（系统复制，下发后不可修改）</div>
+    </div>
+    <div class="ccm-form-item">
+      <label class="required">整改要求</label>
+      <textarea id="ccmAssignReq" rows="3" placeholder="请明确整改措施、完成标准与反馈要求">${ccEsc(r.requirement)}</textarea>
+    </div>
+    <div class="ccm-form-item">
+      <label class="required">责任人</label>
+      <select id="ccmAssignee" onchange="ccmAssigneeChange()">${ccPlanOptionList(CC_PEOPLE.rectifier, r.assignee)}</select>
+      <div id="ccmAssignTip" style="font-size:12px;color:#999;margin-top:4px;"></div>
+    </div>
+    <div class="ccm-form-item">
+      <label class="required">截止日期</label>
+      <input type="datetime-local" id="ccmAssignDeadline" value="${ccToLocal(r.deadline || (ccDstr(ccAddDays(ccParse(CC_NOW), 2)) + ' 18:00'))}">
+    </div>
+    <div class="ccm-form-item">
+      <label class="required">验证人</label>
+      <select id="ccmAssignVerifier">${ccPlanOptionList(CC_PEOPLE.verifier, r.verifier || CC_PEOPLE.verifier[0])}</select>
+    </div>
+    <div style="font-size:12px;color:#999;line-height:1.8;">下发后任务进入「整改中」并通知责任人；下发不改变原问题描述与严重等级（RECT-02）。</div>`;
+}
+function ccmAssigneeChange() {
+  const r = ccRectById(ccmView.id);
+  const tip = document.getElementById('ccmAssignTip');
+  if (!tip) return;
+  const name = document.getElementById('ccmAssignee').value;
+  tip.textContent = name ? `责任人 ${name} 所属企业：${r ? r.contractor : '—'}（承包商人员）` : '';
+}
+function ccmGoAssign(id) {
+  const r = ccRectById(id);
+  if (!r) return;
+  if (ccmMe().key !== 'supervisor') { alert('仅监管人员可下发整改任务（PRD 15.6）'); ccmGo({ name: 'rectDetail', id }); return; }
+  if (r.status !== '待分配') { alert('仅待分配状态可下发，任务状态可能已更新'); return; }
+  ccmGo({ name: 'rectAssign', id });
+}
+function ccmDoAssignSubmit() {
+  if (ccmSubmitting) { alert('请勿重复提交'); return; }
+  const r = ccRectById(ccmView.id);
+  if (!r) return;
+  if (r.status !== '待分配') { alert('任务状态已更新，请刷新后重试'); return; }
+  if (ccmMe().key !== 'supervisor') { alert('仅监管人员可下发整改任务'); return; }
+  const requirement = document.getElementById('ccmAssignReq').value.trim();
+  const assignee = document.getElementById('ccmAssignee').value;
+  const deadline = ccFromLocal(document.getElementById('ccmAssignDeadline').value);
+  const verifier = document.getElementById('ccmAssignVerifier').value;
+  if (!requirement) { alert('请填写整改要求'); return; }
+  if (!assignee) { alert('请选择责任人'); return; }
+  if (!deadline) { alert('请选择截止日期'); return; }
+  if (!verifier) { alert('请选择验证人'); return; }
+  if (ccmWeakNet) { alert('网络异常，已保存本地草稿（请联网后重新下发，业务状态未变化）'); return; }
+  ccmConfirm('下发确认', `
+    <div>整改任务：<b>${r.code}</b></div>
+    <div>责任人：<b>${ccEsc(assignee)}</b>　验证人：<b>${ccEsc(verifier)}</b></div>
+    <div>截止日期：<b>${ccEsc(deadline)}</b></div>
+    <div style="color:#999;font-size:12px;margin-top:6px;line-height:1.7;">下发后进入「整改中」并通知责任人；原问题与严重等级保持不变。</div>`, () => {
+    ccmSubmitting = true;
+    try {
+      ccDoAssign(r.id, { requirement, assignee, deadline, verifier });
+      ccmPushNotice('整改已下发', r.code, `整改任务 ${r.code} 已下发：${r.problem}。要求：${requirement}（截止 ${deadline}），验证人 ${verifier}，请及时整改。`);
+      alert(`整改任务 ${r.code} 已下发，责任人 ${assignee} 已收到通知（RECT-02）`);
+      ccmGo({ name: 'rectDetail', id: r.id }, true);
+    } finally { ccmSubmitting = false; }
+  }, '确认下发');
+}
+
+// ---------- M-08 整改任务详情 ----------
+function ccmRectDetailHtml() {
+  const r = ccRectById(ccmView.id);
+  if (!r) return ccmGoneHtml('整改任务不存在或已被删除');
+  const rec = ccRectRecord(r);
+  const pen = r.penId ? ccPens.find(p => p.id === r.penId) : null;
+  const assignLog = r.logs.find(l => l.action === '分配整改任务');
+  const events = [];
+  if (assignLog) events.push({ t: assignLog.time, tag: '下发', cls: 'tag-blue', text: `整改要求：${ccEsc(r.requirement)}　责任人：${ccEsc(r.assignee)}　验证人：${ccEsc(r.verifier)}　截止：${r.deadline}`, by: assignLog.operator });
+  r.rounds.forEach(x => {
+    if (x.type === '提交') events.push({ t: x.time, tag: '提交整改', cls: 'tag-orange', text: `整改结果：${ccEsc(x.result)}${x.attachments && x.attachments.length ? '　附件：' + x.attachments.map(a => '🖼 ' + ccEsc(a)).join(' ') : ''}`, by: x.by });
+    else events.push({ t: x.time, tag: '验证', cls: x.result === '通过' ? 'tag-green' : 'tag-red', text: `验收结论：${x.result}${x.opinion ? '　意见：' + ccEsc(x.opinion) : ''}`, by: x.by });
+  });
+  events.sort((a, b) => String(a.t).localeCompare(String(b.t)));
+  return `
+    <div class="mo-card" style="cursor:default;">
+      <div class="mc-title"><span>${r.code}</span><span class="tag ${ccRectStatusClass[r.status] || 'tag-gray'}">${r.status}</span></div>
+      <div style="display:flex;gap:6px;margin-bottom:6px;">
+        <span class="tag ${ccLevelClass[r.level] || 'tag-gray'}">${r.level}</span>
+        ${ccRectOverdue(r) ? `<span class="tag tag-red">已超期${ccRectOverdueDays(r)}天</span>` : ccRectDueSoon(r) ? '<span class="tag tag-orange">3日内到期</span>' : '<span class="tag tag-green">正常</span>'}
+      </div>
+      ${ccmField('项目/承包商', ccEsc(r.project || '—') + '／' + ccEsc(r.contractor || '—'))}
+      ${ccmField('问题描述', ccEsc(r.problem))}
+      ${ccmField('整改要求', r.requirement ? ccEsc(r.requirement) : '<span style="color:#999;">待下发填写</span>')}
+      ${ccmField('责任人/验证人', ccEsc(r.assignee || '—') + '／' + ccEsc(r.verifier || '—'))}
+      ${ccmField('截止日期', (r.deadline || '—') + (ccRectOverdue(r) ? `（已超期 ${ccRectOverdueDays(r)} 天）` : ''))}
+      ${rec ? ccmField('来源检查', rec.code + ' 第' + r.itemSeq + '项') : ''}
+    </div>
+    ${pen ? `<div class="mo-card" style="margin-top:10px;" onclick="ccmOpenPen(${pen.id})">
+      <div class="mc-title"><span>关联处罚</span>${ccPenStatusTag(pen.status)}</div>
+      ${ccmField('处罚编号', pen.code + '（' + pen.type + '）')}
+    </div>` : ''}
+    <div style="font-size:13px;font-weight:600;margin:14px 0 8px;">处理时间线</div>
+    ${events.length ? events.map(e => `
+      <div style="border-left:2px solid #e8e8e8;padding:0 0 12px 12px;position:relative;">
+        <span style="position:absolute;left:-5px;top:4px;width:8px;height:8px;border-radius:50%;background:#1890ff;"></span>
+        <div style="font-size:12px;color:#999;">${e.t}　${ccEsc(e.by)}</div>
+        <div style="font-size:13px;line-height:1.8;"><span class="tag ${e.cls}">${e.tag}</span> ${e.text}</div>
+      </div>`).join('') : '<div class="mo-empty" style="padding:20px 0;">暂无处理记录，等待监管人员下发</div>'}`;
+}
+
+// ---------- M-09 整改提交 ----------
+function ccmEnterRectSubmit(id) {
+  const r = ccRectById(id);
+  if (!r) return;
+  if (r.status !== '整改中') { alert('仅整改中状态可提交整改结果'); return; }
+  const d = ccmRectDraft(id);
+  ccmRectAtt = d ? d.attachments.slice() : [];
+  ccmGo({ name: 'rectSubmit', id });
+}
+function ccmEnterRectSubmitDeep(id) {
+  const r = ccRectById(id);
+  if (!r) return;
+  const d = ccmRectDraft(id);
+  ccmRectAtt = d ? d.attachments.slice() : [];
+  ccmDeepGo({ name: 'rectSubmit', id });
+}
+function ccmRectAttHtml() {
+  return ccmRectAtt.map((a, idx) => `<span class="ccm-photo-item">🖼 ${ccEsc(a)} <span class="link link-danger" onclick="ccmRectDelAtt(${idx})">删</span></span>`).join('') || '<span style="font-size:12px;color:#999;">暂无附件</span>';
+}
+function ccmRectAddAtt(from) {
+  ccmRectAtt.push((from === '拍照' ? 'IMG_' : 'PIC_') + ccToday().replace(/-/g, '') + '_' + (ccmRectAtt.length + 1) + '.jpg');
+  document.getElementById('ccmRectAttList').innerHTML = ccmRectAttHtml();
+}
+function ccmRectDelAtt(idx) { ccmRectAtt.splice(idx, 1); document.getElementById('ccmRectAttList').innerHTML = ccmRectAttHtml(); }
+function ccmRectSubmitHtml() {
+  const r = ccRectById(ccmView.id);
+  if (!r) return ccmGoneHtml('整改任务不存在或已被删除');
+  if (r.status !== '整改中') return ccmConflictHtml('任务状态已更新', `整改任务 ${r.code} 当前状态为「${r.status}」，不能重复提交整改结果，请刷新查看最新状态。`);
+  const d = ccmRectDraft(r.id);
+  const fails = r.rounds.filter(x => x.type === '验证' && x.result === '不通过');
+  return `
+    <div style="font-size:13px;font-weight:600;margin-bottom:8px;">原问题与整改要求（只读）</div>
+    <div class="ccm-readonly" style="margin-bottom:${fails.length ? '10px' : '14px'};">
+      <div>问题：${ccEsc(r.problem)}　<span class="tag ${ccLevelClass[r.level] || 'tag-gray'}">${r.level}</span></div>
+      <div>整改要求：${ccEsc(r.requirement)}</div>
+      <div>截止日期：${r.deadline || '—'}${ccRectOverdue(r) ? `（已超期 ${ccRectOverdueDays(r)} 天，请尽快整改）` : ''}　验证人：${ccEsc(r.verifier || '—')}</div>
+    </div>
+    ${fails.length ? `<div class="ccm-readonly" style="margin-bottom:14px;color:#cf1322;background:#fff1f0;border-color:#ffa39e;">上次验收不通过，退回原因：${ccEsc(fails[fails.length - 1].opinion)}（请针对原因整改）</div>` : ''}
+    <div class="ccm-form-item">
+      <label class="required">整改结果</label>
+      <textarea id="ccmRectResult" rows="4" placeholder="请描述整改措施、完成情况与自检结果">${ccEsc(d ? d.result : '')}</textarea>
+    </div>
+    <div class="ccm-form-item">
+      <label class="required">现场附件（至少 1 个，PRD 默认方案）</label>
+      <div>
+        <button class="btn btn-plain" style="font-size:12px;padding:4px 10px;" onclick="ccmRectAddAtt('拍照')">📷 拍照</button>
+        <button class="btn btn-plain" style="font-size:12px;padding:4px 10px;" onclick="ccmRectAddAtt('相册')">🖼 相册</button>
+      </div>
+      <div id="ccmRectAttList" style="margin-top:6px;">${ccmRectAttHtml()}</div>
+    </div>
+    <div style="font-size:12px;color:#999;line-height:1.8;">历史提交与验证保留在任务详情时间线中，不会被本次提交覆盖（RECT-05）。</div>`;
+}
+function ccmWriteRectDraft(r, result) {
+  const old = ccmRectDraft(r.id);
+  const data = { kind: 'rect', rectId: r.id, code: r.code, result, attachments: ccmRectAtt.slice(), time: formatNow() };
+  if (old) Object.assign(old, data); else ccmDrafts.unshift({ id: ccmDraftSeq++, ...data });
+}
+function ccmRectSaveDraft() {
+  const r = ccRectById(ccmView.id);
+  if (!r) return;
+  ccmWriteRectDraft(r, document.getElementById('ccmRectResult').value.trim());
+  alert('草稿已保存（仅本设备本地，未提交，业务状态未变化）');
+}
+function ccmRectSubmitDo() {
+  if (ccmSubmitting) { alert('请勿重复提交'); return; }
+  const r = ccRectById(ccmView.id);
+  if (!r) return;
+  if (r.status !== '整改中') { alert('任务状态已更新，请刷新后重试'); return; }
+  const result = document.getElementById('ccmRectResult').value.trim();
+  if (!result) { alert('请填写整改结果'); return; }
+  if (!ccmRectAtt.length) { alert('请至少上传一个现场附件（拍照或相册选择）后方可提交整改'); return; }
+  if (ccmWeakNet) { ccmWriteRectDraft(r, result); alert('网络异常，已保存本地草稿，请联网后重新提交（业务状态未变化）'); return; }
+  ccmConfirm('提交整改确认', `
+    <div>整改任务：<b>${r.code}</b></div>
+    <div>整改结果：${ccEsc(result)}</div>
+    <div>现场附件：<b>${ccmRectAtt.length}</b> 个</div>
+    <div style="color:#999;font-size:12px;margin-top:6px;line-height:1.7;">提交后进入「待验证」，本轮内容只读，并通知验证人 ${ccEsc(r.verifier)}。</div>`, () => {
+    ccmSubmitting = true;
+    try {
+      ccRectSubmit(r.id, result, ccmRectAtt.slice(), ccmMe().name);
+      ccmDrafts = ccmDrafts.filter(d => !(d.kind === 'rect' && d.rectId === r.id));
+      ccmPushNotice('整改已提交', r.code, `整改任务 ${r.code} 已由 ${ccmMe().name} 提交整改结果（附件 ${ccmRectAtt.length} 个），请验证人 ${r.verifier} 安排现场验收。`);
+      alert(`整改任务 ${r.code} 已提交，进入待验证并通知验证人（RECT-03）`);
+      ccmGo({ name: 'rectDetail', id: r.id }, true);
+    } finally { ccmSubmitting = false; }
+  }, '确认提交');
+}
+
+// ---------- M-10 现场验收 ----------
+function ccmEnterRectVerify(id) {
+  const r = ccRectById(id);
+  if (!r) return;
+  if (r.status !== '待验证') { alert('仅待验证状态可执行验收'); return; }
+  ccmVerifyRes = ''; ccmVerifyAtt = [];
+  ccmGo({ name: 'rectVerify', id });
+}
+function ccmEnterRectVerifyDeep(id) {
+  ccmVerifyRes = ''; ccmVerifyAtt = [];
+  ccmDeepGo({ name: 'rectVerify', id });
+}
+function ccmVerifyAttHtml() {
+  return ccmVerifyAtt.map((a, idx) => `<span class="ccm-photo-item">🖼 ${ccEsc(a)} <span class="link link-danger" onclick="ccmVerifyDelAtt(${idx})">删</span></span>`).join('') || '<span style="font-size:12px;color:#999;">暂无附件</span>';
+}
+function ccmVerifyAddAtt(from) {
+  ccmVerifyAtt.push((from === '拍照' ? 'IMG_' : 'PIC_') + ccToday().replace(/-/g, '') + '_' + (ccmVerifyAtt.length + 1) + '.jpg');
+  document.getElementById('ccmVerifyAttList').innerHTML = ccmVerifyAttHtml();
+}
+function ccmVerifyDelAtt(idx) { ccmVerifyAtt.splice(idx, 1); document.getElementById('ccmVerifyAttList').innerHTML = ccmVerifyAttHtml(); }
+function ccmVerifySetRes(v) {
+  ccmVerifyRes = v;
+  const seg = document.getElementById('ccmVerifySeg');
+  if (seg) { seg.children[0].className = v === '通过' ? 'on pass' : ''; seg.children[1].className = v === '不通过' ? 'on fail' : ''; }
+  const lbl = document.getElementById('ccmVerifyOpinionLabel');
+  if (lbl) lbl.textContent = v === '不通过' ? '退回原因（必填，需明确重新整改的具体原因）' : '验收意见（必填）';
+}
+function ccmRectVerifyHtml() {
+  const r = ccRectById(ccmView.id);
+  if (!r) return ccmGoneHtml('整改任务不存在或已被删除');
+  if (r.status !== '待验证') return ccmConflictHtml('任务状态已更新', `整改任务 ${r.code} 当前状态为「${r.status}」，无法重复验收，请刷新查看最新状态。`);
+  const subs = r.rounds.filter(x => x.type === '提交');
+  const vers = r.rounds.filter(x => x.type === '验证');
+  const pen = r.penId ? ccPens.find(p => p.id === r.penId) : null;
+  return `
+    <div style="font-size:13px;font-weight:600;margin-bottom:8px;">① 原问题（对照）</div>
+    <div class="ccm-readonly" style="margin-bottom:12px;">
+      <div>问题：${ccEsc(r.problem)}　<span class="tag ${ccLevelClass[r.level] || 'tag-gray'}">${r.level}</span></div>
+      <div>整改要求：${ccEsc(r.requirement)}</div>
+      <div>截止：${r.deadline || '—'}${ccRectOverdue(r) ? `（已超期 ${ccRectOverdueDays(r)} 天）` : ''}　责任人：${ccEsc(r.assignee || '—')}</div>
+    </div>
+    <div style="font-size:13px;font-weight:600;margin-bottom:8px;">② 整改情况（${subs.length} 轮提交${vers.length ? '，历史验证 ' + vers.length + ' 次' : ''}）</div>
+    ${subs.map((x, i) => `
+      <div class="mo-card" style="cursor:default;margin-bottom:10px;">
+        <div class="mc-title"><span>第 ${i + 1} 轮整改</span><span class="tag tag-blue">${x.time}</span></div>
+        <div style="font-size:13px;line-height:1.8;">${ccEsc(x.result)}</div>
+        <div style="font-size:12px;color:#666;margin-top:4px;">提交人：${ccEsc(x.by)}　附件：${x.attachments && x.attachments.length ? x.attachments.map(a => '🖼 ' + ccEsc(a)).join(' ') : '—'}</div>
+      </div>`).join('') || '<div class="mo-empty" style="padding:20px 0;">暂无整改提交</div>'}
+    ${vers.length ? vers.map(x => `<div class="ccm-readonly" style="margin-bottom:8px;">历史验证：${x.result}　${ccEsc(x.opinion || '')}（${ccEsc(x.by)}，${x.time}）</div>`).join('') : ''}
+    ${pen ? `<div class="ccm-readonly" style="margin-bottom:12px;color:#fa8c16;background:#fffbe6;border-color:#ffe58f;">该任务曾验证不通过，已自动生成处罚 ${pen.code}（${pen.type}，${pen.status}），审批请在桌面端处理。</div>` : ''}
+    <div style="font-size:13px;font-weight:600;margin:14px 0 8px;">③ 验收操作（通过/不通过均需二次确认）</div>
+    <div class="ccm-seg" id="ccmVerifySeg">
+      <button class="${ccmVerifyRes === '通过' ? 'on pass' : ''}" onclick="ccmVerifySetRes('通过')">✓ 通过</button>
+      <button class="${ccmVerifyRes === '不通过' ? 'on fail' : ''}" onclick="ccmVerifySetRes('不通过')">✕ 不通过</button>
+    </div>
+    <div class="ccm-form-item" style="margin-top:12px;">
+      <label class="required" id="ccmVerifyOpinionLabel">验收意见（必填）</label>
+      <textarea id="ccmVerifyOpinion" rows="3" placeholder="请填写验收意见；选择不通过时必须明确需重新整改的具体原因"></textarea>
+    </div>
+    <div class="ccm-form-item">
+      <label>现场附件（选填）</label>
+      <div>
+        <button class="btn btn-plain" style="font-size:12px;padding:4px 10px;" onclick="ccmVerifyAddAtt('拍照')">📷 拍照</button>
+        <button class="btn btn-plain" style="font-size:12px;padding:4px 10px;" onclick="ccmVerifyAddAtt('相册')">🖼 相册</button>
+      </div>
+      <div id="ccmVerifyAttList" style="margin-top:6px;">${ccmVerifyAttHtml()}</div>
+    </div>`;
+}
+function ccmVerifySubmitDo() {
+  if (ccmSubmitting) { alert('请勿重复提交'); return; }
+  const r = ccRectById(ccmView.id);
+  if (!r) return;
+  if (r.status !== '待验证') { alert('任务状态已更新，请刷新后重试'); return; }
+  if (!ccmVerifyRes) { alert('请选择验收结论（通过/不通过）'); return; }
+  const opinion = document.getElementById('ccmVerifyOpinion').value.trim();
+  if (!opinion) { alert(ccmVerifyRes === '不通过' ? '不通过时必须填写退回原因（需重新整改的具体原因）' : '请填写验收意见'); return; }
+  if (ccmWeakNet) { alert('网络异常，提交失败，请联网后重试（验收未生效，业务状态未变化）'); return; }
+  const isPass = ccmVerifyRes === '通过';
+  ccmConfirm(isPass ? '验收通过确认' : '验收不通过确认', isPass
+    ? `<div>整改任务：<b>${r.code}</b></div><div>验收意见：${ccEsc(opinion)}</div><div style="color:#999;font-size:12px;margin-top:6px;line-height:1.7;">通过后整改关闭并回写检查记录进度；来源检查全部整改关闭后记录置为「已整改」，可归档。</div>`
+    : `<div>整改任务：<b>${r.code}</b></div><div>退回原因：${ccEsc(opinion)}</div><div style="color:#cf1322;font-size:12px;margin-top:6px;line-height:1.7;">不通过将退回责任人重新整改，历史轮次保留，并按自动处罚规则生成待审批处罚、通知责任人。</div>`,
+    () => {
+      ccmSubmitting = true;
+      try {
+        ccDoVerify(r.id, ccmVerifyRes, opinion, ccmVerifyAtt.slice(), ccmMe().name);
+        if (isPass) {
+          ccmPushNotice('验收通过', r.code, `整改任务 ${r.code} 验收通过，已关闭并回写检查记录进度（${ccmMe().name}）。`);
+          alert(`整改任务 ${r.code} 验收通过，已关闭并回写检查记录进度（RECT-04）`);
+        } else {
+          const pen = r.penId ? ccPens.find(p => p.id === r.penId) : null;
+          ccmPushNotice('验收不通过', r.code, `整改任务 ${r.code} 验收不通过，退回原因：${opinion}。${pen ? '已自动生成待审批处罚 ' + pen.code + '。' : ''}责任人已收到通知。`);
+          alert(`验收不通过，任务退回责任人重新整改；已自动生成待审批处罚${pen ? ' ' + pen.code : ''} 并通知责任人（RECT-04/06）`);
+        }
+        ccmGo({ name: 'rectDetail', id: r.id }, true);
+      } finally { ccmSubmitting = false; }
+    }, isPass ? '确认通过' : '确认不通过');
+}
+
+// ---------- 任务入口路由 ----------
+function ccmOpenRect(id) {
+  const r = ccRectById(id);
+  if (!r) { alert('整改任务不存在'); return; }
+  if (!ccmCanViewRect(r)) { alert('您没有权限访问该整改任务（数据范围外，PRD 15.6）'); return; }
+  const me = ccmMe();
+  if (r.status === '待分配') return me.key === 'supervisor' ? ccmGoAssign(id) : ccmGo({ name: 'rectDetail', id });
+  if (r.status === '整改中') return (me.key === 'rectifier' && r.assignee === me.name) ? ccmEnterRectSubmit(id) : ccmGo({ name: 'rectDetail', id });
+  if (r.status === '待验证') return (me.key === 'verifier' && r.verifier === me.name) ? ccmEnterRectVerify(id) : ccmGo({ name: 'rectDetail', id });
+  ccmGo({ name: 'rectDetail', id });
+}
+
+// ---------- M-11 消息 ----------
+function ccmMsgHtml() {
+  const unread = ccmNotices.filter(n => !n.read).length;
+  return `
+    <div style="font-size:12px;color:#999;margin-bottom:10px;line-height:1.7;">业务通知与预警（未读 ${unread} 条，PRD 12.1 事件），点击消息按业务编号深链到对应移动页面。</div>
+    ${ccmNotices.length ? ccmNotices.map(n => `
+      <div class="ccm-msg-item" onclick="ccmOpenNotice(${n.id})">
+        <div class="mt"><span>${n.read ? '' : '<span class="ccm-dot"></span>'}${ccEsc(n.title)}</span><span class="tag ${n.read ? 'tag-gray' : 'tag-red'}">${n.read ? '已读' : '未读'}</span></div>
+        <div class="mc">${ccEsc(n.content)}</div>
+        <div class="mm"><span>${ccEsc(n.code || '系统')}</span><span>${n.time}</span></div>
+      </div>`).join('') : '<div class="mo-empty">暂无消息</div>'}`;
+}
+function ccmOpenNotice(id) {
+  const n = ccmNotices.find(x => x.id === id);
+  if (!n) return;
+  n.read = true;
+  const code = n.code || '';
+  const rect = ccRects.find(x => x.code === code);
+  const rec = ccRecords.find(x => x.code === code);
+  const pen = ccPens.find(x => x.code === code);
+  const bl = ccBlacklists.find(x => x.code === code);
+  if (rect) {
+    if (!ccmCanViewRect(rect)) { alert('您没有权限访问该整改任务（数据范围外，消息链接已拦截，PRD 15.6）'); ccmRender(); return; }
+    const me = ccmMe();
+    if (rect.status === '待分配') ccmDeepGo(me.key === 'supervisor' ? { name: 'rectAssign', id: rect.id } : { name: 'rectDetail', id: rect.id });
+    else if (rect.status === '整改中') (me.key === 'rectifier' && rect.assignee === me.name) ? ccmEnterRectSubmitDeep(rect.id) : ccmDeepGo({ name: 'rectDetail', id: rect.id });
+    else if (rect.status === '待验证') (me.key === 'verifier' && rect.verifier === me.name) ? ccmEnterRectVerifyDeep(rect.id) : ccmDeepGo({ name: 'rectDetail', id: rect.id });
+    else ccmDeepGo({ name: 'rectDetail', id: rect.id });
+    return;
+  }
+  if (rec) {
+    if (!ccmCanViewRec(rec)) { alert('您没有权限查看该检查任务（数据范围外，消息链接已拦截，PRD 15.6）'); ccmRender(); return; }
+    if (rec.status === '检查中' && ccmCanCheck(rec)) { ccmExec = { recId: rec.id, filter: '', items: rec.items.map(i => ({ ...i, photos: i.photos.slice() })) }; ccmDeepGo({ name: 'recExec' }); }
+    else ccmDeepGo({ name: 'recDetail', recId: rec.id });
+    return;
+  }
+  if (pen) { ccmDeepGo({ name: 'info', title: '处罚详情（移动摘要）', html: ccmPenInfoHtml(pen) }); return; }
+  if (bl) { ccmDeepGo({ name: 'info', title: '黑名单详情（移动摘要）', html: ccmBlackInfoHtml(bl) }); return; }
+  ccmRender();
+}
+function ccmPenInfoHtml(p) {
+  return `<div class="mo-card" style="cursor:default;">
+    <div class="mc-title"><span>${p.code}</span>${ccPenStatusTag(p.status)}</div>
+    ${ccmField('处罚对象', ccEsc(p.person || p.company || '—'))}
+    ${ccmField('类型/来源', p.type + '／' + p.source)}
+    ${ccmField('违规事实', ccEsc(p.fact))}
+    ${ccmField('处罚依据', ccEsc(p.basis))}
+    ${ccmField('处罚决定', ccEsc(p.decision))}
+  </div>
+  <div style="font-size:12px;color:#999;margin-top:10px;line-height:1.8;">处罚审批、执行、申诉与黑名单联动请在桌面端「处罚记录」处理（移动端提供只读摘要）。</div>`;
+}
+function ccmBlackInfoHtml(b) {
+  return `<div class="mo-card" style="cursor:default;">
+    <div class="mc-title"><span>${b.code}</span><span class="tag ${b.status === '有效' ? 'tag-red' : 'tag-gray'}">${b.status}</span></div>
+    ${ccmField('对象', b.objType + '／' + ccEsc(b.name))}
+    ${ccmField('有效期', (b.effectDate || '—') + ' ~ ' + (b.expireDate || '—'))}
+    ${ccmField('原因', ccEsc(b.reason))}
+    ${ccmField('产生方式', b.way)}
+  </div>
+  <div style="font-size:12px;color:#999;margin-top:10px;line-height:1.8;">黑名单详情与撤销请在桌面端「黑名单」查看（移动端提供只读摘要）。</div>`;
+}
+function ccmOpenPen(id) {
+  const p = ccPens.find(x => x.id === id);
+  if (!p) return;
+  ccmGo({ name: 'info', title: '处罚详情（移动摘要）', html: ccmPenInfoHtml(p) });
+}
+function ccmInfoHtml() { return ccmView.html || ''; }
+
+// ---------- M-12 我的 / 草稿 / 弱网 / 权限 ----------
+function ccmSetWeakNet(on) { ccmWeakNet = !!on; ccmRender(); }
+function ccmMeHtml() {
+  const me = ccmMe();
+  const perms = CCM_PERMS[me.key];
+  const checkDrafts = ccmVisibleRecords().filter(r => r.status === '检查中' && r.items.some(i => i.result));
+  const rectDrafts = ccmDrafts.filter(d => d.kind === 'rect');
+  const draftRows = [
+    ...checkDrafts.map(r => ({ kind: 'check', id: r.id, code: r.code, desc: `已填 ${r.items.filter(i => i.result).length}/${r.items.length} 项` })),
+    ...rectDrafts.map(d => ({ kind: 'rect', id: d.rectId, code: d.code, desc: (d.result ? d.result.slice(0, 24) + (d.result.length > 24 ? '…' : '') : '（未填写整改结果）') + `，附件${d.attachments.length}个，保存于 ${d.time}` }))
+  ];
+  return `
+    <div class="mo-card" style="cursor:default;text-align:center;padding:18px;">
+      <div style="width:56px;height:56px;border-radius:50%;background:#1890ff;color:#fff;font-size:24px;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;">${me.name[0]}</div>
+      <div style="font-weight:600;font-size:15px;">${me.name}　<span class="tag tag-blue">${me.role}</span></div>
+      <div style="font-size:12px;color:#999;margin-top:6px;">${me.org}</div>
+      <div style="font-size:12px;color:#999;margin-top:4px;">演示角色：顶部下拉可切换　模拟时间：${CC_NOW}</div>
+    </div>
+    <div class="mo-card" style="cursor:default;margin-top:12px;">
+      <div class="mc-title"><span>网络模拟</span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;gap:8px;">
+        <span>模拟弱网（提交拦截并保存本地草稿）</span>
+        ${ccSwitchHtml(ccmWeakNet, 'ccmSetWeakNet(this.checked)')}
+      </div>
+      ${ccmWeakNet ? '<div style="color:#fa8c16;font-size:12px;margin-top:8px;line-height:1.7;">弱网已开启：提交类操作将提示“网络异常，已保存本地草稿”，不改变业务状态。</div>' : ''}
+    </div>
+    <div style="font-size:13px;font-weight:600;margin:14px 0 8px;">离线草稿（${draftRows.length}）<span style="color:#999;font-weight:400;font-size:12px;">仅保存在当前设备，未进入业务流程</span></div>
+    ${draftRows.length ? draftRows.map(d => `
+      <div class="mo-card" style="margin-bottom:10px;cursor:default;">
+        <div class="mc-title"><span>${d.code}</span><span class="tag tag-orange">草稿</span></div>
+        ${ccmField('类型', d.kind === 'check' ? '检查草稿' : '整改草稿')}
+        ${ccmField('内容', ccEsc(d.desc))}
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <button class="btn btn-plain" style="flex:1;" onclick="ccmDraftContinue('${d.kind}', ${d.id})">继续填写</button>
+          <button class="btn btn-plain" style="flex:1;color:#f5222d;" onclick="ccmDraftDelete('${d.kind}', ${d.id})">删除</button>
+        </div>
+      </div>`).join('') : '<div class="mo-empty" style="padding:24px 0;">暂无草稿</div>'}
+    <div style="font-size:13px;font-weight:600;margin:14px 0 8px;">权限说明（PRD 15.6）</div>
+    <div class="mo-card" style="cursor:default;">
+      <div style="font-size:12px;color:#389e0d;line-height:2;">✓ 可执行：${perms.can.join('；')}</div>
+      <div style="font-size:12px;color:#999;line-height:2;margin-top:4px;">✕ 不可执行：${perms.cannot.join('；')}</div>
+    </div>
+    <button class="btn btn-plain" style="width:100%;margin-top:14px;" onclick="ccmLogoutDemo()">退出登录（演示）</button>`;
+}
+function ccmDraftContinue(kind, id) {
+  if (kind === 'check') {
+    const rec = ccRecords.find(x => x.id === id);
+    if (!rec) { alert('对应检查记录不存在'); return; }
+    if (rec.status !== '检查中') { alert('任务状态已更新（当前：' + rec.status + '），草稿无法继续填写'); return; }
+    if (!ccmCanCheck(rec)) { alert('您没有权限继续该检查任务'); return; }
+    ccmExec = { recId: rec.id, filter: '', items: rec.items.map(i => ({ ...i, photos: i.photos.slice() })) };
+    ccmDeepGo({ name: 'recExec' });
+  } else {
+    const r = ccRectById(id);
+    if (!r) { alert('对应整改任务不存在'); return; }
+    if (r.status !== '整改中') { alert('任务状态已更新（当前：' + r.status + '），草稿无法继续填写'); return; }
+    ccmEnterRectSubmitDeep(id);
+  }
+}
+function ccmDraftDelete(kind, id) {
+  if (!confirm('确定删除该本地草稿？删除后不可恢复。')) return;
+  if (kind === 'check') {
+    const rec = ccRecords.find(x => x.id === id);
+    if (rec) {
+      rec.items.forEach(i => { i.result = ''; i.level = ''; i.desc = ''; i.photos = []; });
+      rec.logs.push({ time: formatNow(), operator: ccmMe().name, action: '删除检查草稿', summary: '清空已填结果（本地草稿删除，业务状态未变化）' });
+      renderCcRecords(); renderCcWork();
+    }
+  } else {
+    ccmDrafts = ccmDrafts.filter(d => !(d.kind === 'rect' && d.rectId === id));
+  }
+  ccmRender();
+}
+function ccmLogoutDemo() {
+  const n = ccmVisibleRecords().filter(r => r.status === '检查中' && r.items.some(i => i.result)).length + ccmDrafts.length;
+  if (n > 0) alert(`您有 ${n} 条未提交草稿，退出前请先提交或删除（演示提示，PRD 15.7）`);
+  else alert('演示环境：无需真正退出登录');
+}
+
+// ---------- 通用确认弹窗 / 底部操作栏 ----------
+function ccmConfirm(title, html, cb, okText) {
+  document.getElementById('ccmConfirmTitle').textContent = title;
+  document.getElementById('ccmConfirmBody').innerHTML = html;
+  document.getElementById('ccmConfirmOkBtn').textContent = okText || '确定';
+  ccmConfirmCb = cb || null;
+  document.getElementById('ccmConfirmModal').classList.remove('hidden');
+}
+function closeCcmConfirm() { ccmConfirmCb = null; document.getElementById('ccmConfirmModal').classList.add('hidden'); }
+function ccmConfirmOk() { const cb = ccmConfirmCb; closeCcmConfirm(); if (cb) cb(); }
+function ccmFootHtml() {
+  const v = ccmView;
+  const me = ccmMe();
+  if (v.name === 'recDetail' && v.planId) {
+    const p = ccPlans.find(x => x.id === v.planId);
+    if (p && p.status === '待执行' && me.key === 'inspector') return `<button class="btn btn-primary" onclick="ccmReceivePlan(${p.id})">接收并开始检查</button>`;
+    return '';
+  }
+  if (v.name === 'recDetail' && v.recId) {
+    const rec = ccRecords.find(x => x.id === v.recId);
+    if (rec && rec.status === '检查中' && ccmCanCheck(rec)) return `<button class="btn btn-primary" onclick="ccmStartExec(${rec.id})">继续检查</button>`;
+    if (rec && rec.status === '已整改') return `<button class="btn btn-primary" onclick="ccmArchiveRec(${rec.id})">归档检查记录</button>`;
+    return '';
+  }
+  if (v.name === 'recExec') return `<button class="btn btn-plain" onclick="ccmSaveDraft()">保存草稿</button><button class="btn btn-primary" onclick="ccmExecSubmit()">提交检查</button>`;
+  if (v.name === 'rectAssign') return `<button class="btn btn-primary" onclick="ccmDoAssignSubmit()">确认下发</button>`;
+  if (v.name === 'rectSubmit') return `<button class="btn btn-plain" onclick="ccmRectSaveDraft()">保存草稿</button><button class="btn btn-primary" onclick="ccmRectSubmitDo()">提交整改</button>`;
+  if (v.name === 'rectVerify') return `<button class="btn btn-primary" onclick="ccmVerifySubmitDo()">提交验收</button>`;
+  if (v.name === 'rectDetail') {
+    const r = ccRectById(v.id);
+    if (!r) return '';
+    if (r.status === '待分配' && me.key === 'supervisor') return `<button class="btn btn-primary" onclick="ccmGoAssign(${r.id})">去下发</button>`;
+    if (r.status === '整改中' && me.key === 'rectifier' && r.assignee === me.name) return `<button class="btn btn-primary" onclick="ccmEnterRectSubmit(${r.id})">去提交</button>`;
+    if (r.status === '待验证' && me.key === 'verifier' && r.verifier === me.name) return `<button class="btn btn-primary" onclick="ccmEnterRectVerify(${r.id})">去验收</button>`;
+    return '';
+  }
+  if (v.name === 'submitResult' && v.fail && v.rectIds && v.rectIds.length && me.key === 'supervisor')
+    return `<button class="btn btn-primary" onclick="ccmGoAssign(${v.rectIds[0]})">去下发</button>`;
+  return '';
+}
+function ccmArchiveRec(id) {
+  const rec = ccRecords.find(x => x.id === id);
+  if (!rec) return;
+  if (rec.status !== '已整改') { alert('仅「已整改」状态可归档'); return; }
+  ccArchiveRecord(id);
+  ccmRender();
+}
+
 // 初始渲染
 renderTable('archive');
 renderSafetyTable();
@@ -12080,6 +13181,13 @@ renderCcPens();
 renderCcAppeals();
 renderCcBlacks();
 renderCcAudits();
+ccmRender();
+
+// 打开移动端菜单时刷新移动视图（与桌面端数据保持同步）
+document.getElementById('menu').addEventListener('click', function (e) {
+  const li = e.target.closest('li');
+  if (li && li.dataset.page === 'ccMobile') ccmRender();
+});
 
 // 新增弹窗遮罩点击关闭
 [['toolViewModal', closeToolView], ['toolWarnModal', closeToolWarn], ['clModal', closeClModal],
@@ -12104,7 +13212,7 @@ renderCcAudits();
  ['ccUrgeModal', closeCcUrgeModal], ['ccBlockModal', closeCcBlockModal], ['ccPenCreateModal', closeCcPenCreate],
  ['ccPenDetailDrawer', closeCcPenDetail], ['ccPenApproveModal', closeCcPenApprove], ['ccPenRejectModal', closeCcPenReject],
  ['ccPenFinishModal', closeCcPenFinish], ['ccAppealSubmitModal', closeCcAppealSubmit], ['ccAppealHandleModal', closeCcAppealHandle],
- ['ccBlackDetailDrawer', closeCcBlackDetail]]
+ ['ccBlackDetailDrawer', closeCcBlackDetail], ['ccmConfirmModal', closeCcmConfirm]]
 .forEach(([id, fn]) => document.getElementById(id).addEventListener('click', function (e) {
   if (e.target === this) fn();
 }));
