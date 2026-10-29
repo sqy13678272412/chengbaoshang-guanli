@@ -14701,7 +14701,6 @@ function c2mOpenReport(seq) {
     </div>
     <div style="font-size:13px;font-weight:600;margin-bottom:8px;">整改信息</div>
     <div class="mo-card" style="cursor:default;padding:10px 12px;">
-      <div class="ccm-lbl required">整改人（按检查维度：${p.dimension}维度，每个${nodeLabel}选择一名整改人）</div>
       ${nodes.map((n, i) => {
         const prev = (prevTargets.find(t => t.name === n) || {}).assignee || '';
         return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
