@@ -3452,7 +3452,6 @@
     </div>
     <div class="drawer-body" id="ccRecDetailBody"></div>
     <div class="drawer-footer">
-      <button class="btn btn-plain" id="ccRecArchiveBtn" onclick="ccArchiveRecord(ccRecDetailId)">归档</button>
       <button class="btn btn-primary" onclick="closeCcRecordDetail()">关闭</button>
     </div>
   </div>
@@ -8961,7 +8960,7 @@ let ccTemplateSeq = 4;
 let ccPlans = [
   { id:1, code:'JCJH-202610-001', name:'城东综合体二期日常安全检查', dimension:'项目', target:'城东综合体二期', templateId:1, ver:'V1.2', freq:'单次', execTime:'2026-10-29 09:00', cycleType:'', cycleRule:'', cycleStart:'', cycleEnd:'', skipWeekend:false, execNow:false, execType:'个人', execDept:'', execPerson:'李强', status:'待执行', instances:[1], cancelReason:'', remark:'' },
   { id:2, code:'JCJH-202610-006', name:'华筑建设每周综合安全检查', dimension:'承包商', target:'华筑建设有限公司', templateId:1, ver:'V1.2', freq:'周期', execTime:'09:00', cycleType:'按周', cycleRule:'每1周', cycleStart:'2026-10-26 00:00', cycleEnd:'2026-12-31 23:59', skipWeekend:false, execNow:false, execType:'部门', execDept:'安全管理部', execPerson:'', status:'执行中', instances:[], cancelReason:'', remark:'' },
-  { id:3, code:'JCJH-202610-009', name:'城东综合体二期消防设施巡检', dimension:'项目', target:'城东综合体二期', templateId:2, ver:'V1.0', freq:'周期', execTime:'08:30', cycleType:'按天', cycleRule:'每2天', cycleStart:'2026-10-28 00:00', cycleEnd:'2026-11-30 23:59', skipWeekend:true, execNow:false, execType:'个人', execDept:'', execPerson:'赵宁', status:'执行中', instances:[], cancelReason:'', remark:'' },
+  { id:3, code:'JCJH-202610-009', name:'城东综合体二期消防设施巡检', dimension:'项目', target:'城东综合体二期', templateId:2, ver:'V1.0', freq:'周期', execTime:'08:30', cycleType:'按天', cycleRule:'每1天', cycleStart:'2026-10-26 00:00', cycleEnd:'2026-10-29 23:59', skipWeekend:true, execNow:false, execType:'个人', execDept:'', execPerson:'赵宁', status:'执行中', instances:[2,3], cancelReason:'', remark:'' },
   { id:4, code:'JCJH-202610-012', name:'宏远建筑临电专项安全检查', dimension:'承包商', target:'宏远建筑有限公司', templateId:1, ver:'V1.2', freq:'单次', execTime:'2026-11-02 09:00', cycleType:'', cycleRule:'', cycleStart:'', cycleEnd:'', skipWeekend:false, execNow:false, execType:'部门', execDept:'安全管理部', execPerson:'', status:'待执行', instances:[], cancelReason:'', remark:'' }
 ];
 let ccPlanSeq = 5;
@@ -8974,14 +8973,39 @@ let ccRecords = [
       { seq:4, task:'检查临边洞口防护设施', standard:'临边洞口设置定型化防护，警示标识齐全', required:false, needPhoto:false, result:'合格', level:'', desc:'', photos:[] },
       { seq:5, task:'检查电缆敷设是否规范', standard:'电缆架空或埋地敷设，无破损、无泡水', required:false, needPhoto:false, result:'合格', level:'', desc:'', photos:[] },
       { seq:6, task:'检查现场材料堆放', standard:'材料分类码放整齐，通道畅通', required:false, needPhoto:false, result:'合格', level:'', desc:'', photos:[] }
-    ], status:'待整改', rectIds:[1], archivedAt:'', logs:[] }
+    ], status:'待整改', rectIds:[1], archivedAt:'', logs:[] },
+  { id:2, code:'JC-20261026-002', source:'计划', planId:3, project:'城东综合体二期', contractor:'', type:'专项检查', date:'2026-10-26', slotDate:'2026-10-26', inspector:'赵宁', templateCode:'MB-专项-001', ver:'V1.0',
+    items:[
+      { seq:1, task:'检查脚手架基础承载与排水', standard:'基础平整夯实，垫板齐全，排水通畅', required:true, needPhoto:false, result:'合格', level:'', desc:'', photos:[] },
+      { seq:2, task:'检查连墙件设置', standard:'连墙件按方案设置，无缺失无松动', required:true, needPhoto:false, result:'合格', level:'', desc:'', photos:[] }
+    ], status:'已归档', rectIds:[], archivedAt:'2026-10-26 10:05', logs:[] },
+  { id:3, code:'JC-20261028-003', source:'计划', planId:3, project:'城东综合体二期', contractor:'', type:'专项检查', date:'2026-10-28', slotDate:'2026-10-27', inspector:'赵宁', templateCode:'MB-专项-001', ver:'V1.0',
+    items:[
+      { seq:1, task:'检查脚手架基础承载与排水', standard:'基础平整夯实，垫板齐全，排水通畅', required:true, needPhoto:false, result:'合格', level:'', desc:'', photos:[] },
+      { seq:2, task:'检查连墙件设置', standard:'连墙件按方案设置，无缺失无松动', required:true, needPhoto:false, result:'不合格', level:'一般', desc:'连墙件缺失2处，与方案不符', photos:['连墙件缺失位置.jpg'] }
+    ], status:'整改中', rectIds:[3], archivedAt:'', logs:[] }
 ];
-let ccRecordSeq = 2;
+let ccRecordSeq = 4;
 let ccRects = [
-  { id:1, code:'ZG-20261029-001', recordId:1, itemSeq:2, project:'城东综合体二期', contractor:'华筑建设有限公司', problem:'配电箱未落实防雨措施，箱体顶部盖板缺失', level:'一般', requirement:'', assignee:'', deadline:'2026-10-30 18:00', verifier:'', assigner:'', status:'待分配', overdue:false, rounds:[], penId:null, logs:[] },
-  { id:2, code:'ZG-20261020-003', recordId:0, itemSeq:0, project:'城东综合体二期', contractor:'华筑建设有限公司', problem:'基坑临边防护栏杆缺失两段', level:'严重', requirement:'按方案恢复临边防护栏杆并挂设安全警示标识', assignee:'陈建国', deadline:'2026-10-24 18:00', verifier:'周凯', assigner:'王敏', status:'整改中', overdue:true, rounds:[{ type:'提交', result:'已完成防护栏杆恢复，共18米', opinion:'', by:'陈建国', time:'2026-10-25 10:20', attachments:['整改照片1.jpg','整改照片2.jpg'] }], penId:null, logs:[] }
+  { id:1, code:'ZG-20261029-001', recordId:1, itemSeq:2, project:'城东综合体二期', contractor:'华筑建设有限公司', problem:'配电箱未落实防雨措施，箱体顶部盖板缺失', level:'一般', requirement:'限期恢复防雨措施，加装固定卡扣并复查', assignee:'陈建国', deadline:'2026-10-30 18:00', verifier:'周凯', assigner:'王敏', status:'已关闭', overdue:false,
+    rounds:[
+      { type:'提交', result:'已恢复防雨措施，补装顶部盖板', opinion:'', by:'陈建国', time:'2026-10-29 10:00', attachments:['整改照片1.jpg'] },
+      { type:'验证', result:'不通过', opinion:'防雨盖板未固定牢靠，存在脱落风险', by:'周凯', time:'2026-10-29 10:40', attachments:[] },
+      { type:'提交', result:'已加装固定卡扣并完成防雨处理', opinion:'', by:'陈建国', time:'2026-10-29 11:30', attachments:['整改照片2.jpg'] },
+      { type:'验证', result:'通过', opinion:'复查合格，防雨措施落实', by:'周凯', time:'2026-10-29 12:00', attachments:[] }
+    ], penId:null, logs:[] },
+  { id:2, code:'ZG-20261020-003', recordId:0, itemSeq:0, project:'城东综合体二期', contractor:'华筑建设有限公司', problem:'基坑临边防护栏杆缺失两段', level:'严重', requirement:'按方案恢复临边防护栏杆并挂设安全警示标识', assignee:'陈建国', deadline:'2026-10-24 18:00', verifier:'周凯', assigner:'王敏', status:'已关闭', overdue:true,
+    rounds:[
+      { type:'提交', result:'已完成防护栏杆恢复，共18米', opinion:'', by:'陈建国', time:'2026-10-25 10:20', attachments:['整改照片1.jpg','整改照片2.jpg'] },
+      { type:'验证', result:'不通过', opinion:'防护栏杆搭设间距超限，需按方案加设立杆', by:'周凯', time:'2026-10-27 09:00', attachments:[] }
+    ], penId:null, logs:[] },
+  { id:3, code:'ZG-20261028-002', recordId:3, itemSeq:2, project:'城东综合体二期', contractor:'华筑建设有限公司', problem:'连墙件缺失2处，与方案不符', level:'一般', requirement:'按方案补设连墙件并挂设标识', assignee:'陈建国', deadline:'2026-10-30 18:00', verifier:'周凯', assigner:'王敏', status:'待验证', overdue:false,
+    rounds:[
+      { type:'提交', result:'已补设连墙件2处并挂设标识', opinion:'', by:'陈建国', time:'2026-10-29 09:10', attachments:['整改照片3.jpg'] }
+    ], penId:null, logs:[] },
+  { id:4, code:'ZG-20261027-002', recordId:0, itemSeq:0, project:'城东综合体二期', contractor:'华筑建设有限公司', problem:'安全通道堆放杂物，通行不畅', level:'轻微', requirement:'立即清理并保持通道畅通', assignee:'', deadline:'2026-10-28 18:00', verifier:'', assigner:'', status:'待分配', overdue:false, rounds:[], penId:null, logs:[] }
 ];
-let ccRectSeq = 3;
+let ccRectSeq = 5;
 let ccPens = [
   { id:1, code:'CF-20261029-001', source:'验证不通过', sourceId:1, project:'城东综合体二期', contractor:'华筑建设有限公司', person:'陈建国', company:'', type:'警告', amount:'', fact:'整改任务 ZG-20261029-001 首次验证不通过（演示数据）', basis:'《承包商安全管理办法》第18条', decision:'对责任人陈建国给予警告，限期完成整改', execReq:'', status:'待审批', appeal:null, approvals:[], blacklistId:null, logs:[] },
   { id:2, code:'CF-20261025-002', source:'人工发起', sourceId:null, project:'城东综合体二期', contractor:'华筑建设有限公司', person:'', company:'华筑建设有限公司', type:'列入黑名单', amount:'', fact:'重复发生严重违规且逾期未整改', basis:'《承包商安全管理办法》第25条', decision:'将华筑建设有限公司列入承包商黑名单，有效期一年', execReq:'立即停止新项目投标资格', status:'执行中', appeal:{ status:'未申诉', reason:'', result:'' }, approvals:[{ node:'一级审批', approver:'刘峰', result:'通过', opinion:'同意', time:'2026-10-26 10:00' }], blacklistId:1, logs:[] }
@@ -10039,9 +10063,9 @@ function renderCcWork() {
       <div style="border:1px solid #f0f0f0;border-radius:6px;padding:14px 16px;">
         <div style="font-weight:600;margin-bottom:10px;">整改闭环</div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center;">
-          <div style="cursor:pointer;" onclick="ccWorkGoRecord('待整改')">
+          <div style="cursor:pointer;" onclick="ccWorkGoRecord('未检查')">
             <div style="font-size:22px;font-weight:600;color:#fa541c;">${rectTodoRecs}</div>
-            <div style="color:#999;font-size:12px;">待整改检查（个）</div>
+            <div style="color:#999;font-size:12px;">未检查记录（个）</div>
           </div>
           <div style="cursor:pointer;" onclick="switchPage('ccRect')">
             <div style="font-size:22px;font-weight:600;color:#1890ff;">${closeRate}%</div>
@@ -10396,37 +10420,51 @@ function ccPlanSlots(p) {
   if (p.freq === '单次') {
     if (p.execTime && p.execTime <= CC_NOW) slots.push(p.execTime);
   } else if (p.cycleStart) {
-    slots = ccGenDates(rule, p.cycleStart, p.cycleEnd, p.execTime, p.skipWeekend, 500, false)
-      .map(x => x.date).filter(d => d <= CC_NOW);
+    const all = ccGenDates(rule, p.cycleStart, p.cycleEnd, p.execTime, p.skipWeekend, 500, false).map(x => x.date);
+    slots = all.filter(d => d <= CC_NOW);
+    const nxt = all.find(d => d > CC_NOW);
+    if (nxt) slots.push(nxt);
   }
   const recs = (p.instances || []).map(id => ccRecords.find(r => r.id === id)).filter(Boolean)
     .sort((a, b) => (a.date + a.code).localeCompare(b.date + b.code));
-  let ri = 0;
-  const out = slots.map(s => {
+  const used = {};
+  const rows = slots.map(s => {
+    const sDate = s.slice(0, 10);
     let rec = null;
-    if (ri < recs.length && recs[ri].date <= s.slice(0, 10)) { rec = recs[ri]; ri++; }
+    for (const r of recs) {
+      if (used[r.id]) continue;
+      const hit = r.slotDate ? r.slotDate === sDate : r.date <= sDate;
+      if (hit) { rec = r; used[r.id] = 1; break; }
+    }
     return { slot: s, rec };
   });
-  while (ri < recs.length) { out.push({ slot: recs[ri].date, rec: recs[ri] }); ri++; }
-  return out;
+  recs.forEach(r => { if (!used[r.id]) rows.push({ slot: (r.slotDate || r.date) + ' 09:00', rec: r }); });
+  return rows;
 }
 function ccPlanSubRowHtml(p) {
   const slots = ccPlanSlots(p);
+  const today = CC_NOW.slice(0, 10);
+  const execLabel = p.execType === '部门' ? ccEsc(p.execDept) + '（部门）' : (p.execType === '个人' ? ccEsc(p.execPerson) + '（人）' : '—');
   const body = slots.length ? slots.map(s => {
     const r = s.rec;
-    if (!r) return `<tr>
-      <td>—</td><td>${s.slot}</td>
-      <td><span class="tag tag-gray">预期未检查</span></td>
-      <td>—</td><td>—</td><td>—</td>
-    </tr>`;
+    const sDate = s.slot.slice(0, 10);
+    if (!r) {
+      const overdue = sDate < today;
+      return `<tr>
+        <td>${execLabel}</td><td>${s.slot}</td>
+        <td><span class="tag ${overdue ? 'tag-red' : 'tag-blue'}">${overdue ? '逾期待检查' : '待检查'}</span></td>
+        <td>—</td><td>—</td><td class="sticky-col">—</td>
+      </tr>`;
+    }
+    const late = r.date > sDate;
     const bad = r.items.filter(i => i.result === '不合格').length;
     const closed = ccRecClosedCount(r);
     return `<tr>
-      <td>${ccEsc(r.inspector)}</td><td>${s.slot}</td>
-      <td><span class="tag ${ccRecStatusClass[r.status] || 'tag-gray'}">${r.status}</span></td>
+      <td>${ccEsc(r.inspector) || execLabel}</td><td>${late ? r.date + '（补检）' : s.slot}</td>
+      <td><span class="tag ${late ? 'tag-orange' : 'tag-green'}">${late ? '逾期已检查' : '已检查'}</span></td>
       <td>${r.items.length}项${bad ? `（<span style="color:#f5222d;">不合格${bad}项</span>）` : ''}</td>
       <td>${r.rectIds.length ? `${r.rectIds.length}项（已关闭${closed}项）` : '—'}</td>
-      <td><span class="link" onclick="openCcPlanRecCheck(${r.id})">查看检查</span></td>
+      <td class="sticky-col"><span class="link" onclick="openCcPlanRecCheck(${r.id})">查看检查</span></td>
     </tr>`;
   }).join('') : '<tr><td colspan="6"><div class="mo-empty">截至当前暂无检查记录</div></td></tr>';
   return `<tr>
@@ -10434,7 +10472,7 @@ function ccPlanSubRowHtml(p) {
       <div style="padding:10px 20px 14px 46px;">
         <div class="table-wrap" style="border:1px solid #e8e8e8;border-radius:6px;">
           <table style="min-width:760px;">
-            <thead><tr><th>检查人</th><th>检查时间</th><th>状态</th><th>检查项</th><th>整改项</th><th>操作</th></tr></thead>
+            <thead><tr><th>检查人</th><th>检查时间</th><th>状态</th><th>检查项</th><th>整改项</th><th class="sticky-col">操作</th></tr></thead>
             <tbody>${body}</tbody>
           </table>
         </div>
@@ -10605,57 +10643,51 @@ function ccPlanGoRecord(recId) {
 }
 
 // ===== 7. 检查记录 =====
-let ccRecFilter = { kw: '', type: '', status: '', concl: '' };
+let ccRecFilter = { kw: '', type: '', status: '' };
+function ccRecDispStatus(r) { return r.status === '检查中' ? '未检查' : '已检查'; }
+function ccRecPlan(r) { return r.planId ? ccPlans.find(p => p.id === r.planId) : null; }
+function ccRecTpl(r) { return ccTemplates.find(x => x.code === r.templateCode) || null; }
 function renderCcRecords() {
   const kw = (document.getElementById('ccRecFilterKw') ? document.getElementById('ccRecFilterKw').value : ccRecFilter.kw).trim();
   const type = document.getElementById('ccRecFilterType') ? document.getElementById('ccRecFilterType').value : ccRecFilter.type;
   const status = document.getElementById('ccRecFilterStatus') ? document.getElementById('ccRecFilterStatus').value : ccRecFilter.status;
-  const concl = document.getElementById('ccRecFilterConcl') ? document.getElementById('ccRecFilterConcl').value : ccRecFilter.concl;
-  ccRecFilter = { kw, type, status, concl };
+  ccRecFilter = { kw, type, status };
   const list = ccRecords.filter(r => {
-    const c = ccRecConclusion(r);
-    return (!kw || r.code.includes(kw) || r.project.includes(kw) || r.contractor.includes(kw)) &&
-      (!type || r.type === type) &&
-      (!status || r.status === status) &&
-      (!concl || c === concl);
+    const plan = ccRecPlan(r);
+    const t = ccRecTpl(r);
+    const kwTxt = (plan ? plan.code + (plan.name || '') : '') + r.type + r.inspector + (r.project || '') + (r.contractor || '') + (t ? t.name : '');
+    return (!kw || kwTxt.includes(kw)) && (!type || r.type === type) && (!status || ccRecDispStatus(r) === status);
   });
   const typeOpts = ccCheckTypes.slice().sort((a, b) => a.sort - b.sort).filter(x => x.enabled)
     .map(x => `<option ${type === x.name ? 'selected' : ''}>${x.name}</option>`).join('');
   const rows = list.map(r => {
-    const c = ccRecConclusion(r);
-    const total = r.rectIds.length, closed = ccRecClosedCount(r);
-    const ops = [`<span class="link" onclick="openCcRecordDetail(${r.id})">查看</span>`];
-    if (r.status === '检查中') ops.push(`<span class="link" onclick="openCcExec(${r.id})">继续检查</span>`);
-    if (r.status === '已整改') ops.push(`<span class="link" onclick="ccArchiveRecord(${r.id})">归档</span>`);
+    const plan = ccRecPlan(r);
+    const t = ccRecTpl(r);
+    const disp = ccRecDispStatus(r);
     return `<tr>
-      <td>${r.code}</td>
-      <td><span class="tag ${r.source === '计划' ? 'tag-blue' : 'tag-orange'}">${r.source}</span></td>
-      <td>${ccEsc(r.project || '—')}</td>
-      <td>${ccEsc(r.contractor || '—')}</td>
+      <td>${plan ? plan.code : '—'}</td>
+      <td>${plan ? ccEsc(plan.name || '—') : '—'}</td>
       <td>${r.type}</td>
+      <td>${plan ? (plan.freq === '单次' ? '单次任务' : '周期任务') : '—'}</td>
       <td>${r.date}</td>
-      <td>${r.inspector}</td>
-      <td>${c ? `<span class="tag ${c === '合格' ? 'tag-green' : 'tag-red'}">${c}</span>` : '—'}</td>
-      <td>${total ? closed + '/' + total : '—'}</td>
-      <td><span class="tag ${ccRecStatusClass[r.status] || 'tag-gray'}">${r.status}</span></td>
-      <td class="sticky-col">${ops.join('')}</td>
+      <td>${ccEsc(r.inspector)}</td>
+      <td>${plan ? `<span class="tag ${plan.dimension === '项目' ? 'tag-blue' : 'tag-green'}">${plan.dimension}维度</span>` : '—'}</td>
+      <td>${plan ? ccEsc(plan.target) : ccEsc(r.project || r.contractor || '—')}</td>
+      <td>${t ? ccEsc(t.name) : '—'}</td>
+      <td><span class="tag ${disp === '已检查' ? 'tag-green' : 'tag-orange'}">${disp}</span></td>
+      <td class="sticky-col"><span class="link" onclick="openCcRecordDetail(${r.id})">详情</span></td>
     </tr>`;
   }).join('');
   document.getElementById('ccRecordBody').innerHTML = `
     <div class="toolbar">
       <div class="filters">
-        <input type="text" id="ccRecFilterKw" placeholder="编号 / 项目 / 承包商" value="${ccEsc(kw)}">
+        <input type="text" id="ccRecFilterKw" placeholder="计划编号 / 名称 / 项目 / 承包商" value="${ccEsc(kw)}">
         <select id="ccRecFilterType">
           <option value="">全部类型</option>${typeOpts}
         </select>
         <select id="ccRecFilterStatus">
           <option value="">全部状态</option>
-          ${['检查中', '待整改', '整改中', '已整改', '已归档'].map(s => `<option ${status === s ? 'selected' : ''}>${s}</option>`).join('')}
-        </select>
-        <select id="ccRecFilterConcl">
-          <option value="">全部结论</option>
-          <option ${concl === '合格' ? 'selected' : ''}>合格</option>
-          <option ${concl === '不合格' ? 'selected' : ''}>不合格</option>
+          ${['已检查', '未检查'].map(s => `<option ${status === s ? 'selected' : ''}>${s}</option>`).join('')}
         </select>
         <button class="btn btn-plain" onclick="renderCcRecords()">查询</button>
         <button class="btn btn-plain" onclick="resetCcRecFilter()">重置</button>
@@ -10666,8 +10698,8 @@ function renderCcRecords() {
       <table style="min-width:1280px;">
         <thead>
           <tr>
-            <th>编号</th><th>来源</th><th>项目</th><th>承包商</th><th>类型</th><th>检查日期</th><th>检查人</th>
-            <th>结论</th><th>整改进度</th><th>状态</th><th class="sticky-col">操作</th>
+            <th>所属计划编号</th><th>所属计划名称</th><th>检查类型</th><th>执行频次</th><th>检查时间</th><th>检查人</th>
+            <th>检查维度</th><th>项目/承包商</th><th>检查清单名称</th><th>状态</th><th class="sticky-col">操作</th>
           </tr>
         </thead>
         <tbody>${rows || '<tr><td colspan="11"><div class="mo-empty">暂无检查记录</div></td></tr>'}</tbody>
@@ -10675,11 +10707,10 @@ function renderCcRecords() {
     </div>`;
 }
 function resetCcRecFilter() {
-  ccRecFilter = { kw: '', type: '', status: '', concl: '' };
+  ccRecFilter = { kw: '', type: '', status: '' };
   const kw = document.getElementById('ccRecFilterKw'); if (kw) kw.value = '';
   const tp = document.getElementById('ccRecFilterType'); if (tp) tp.value = '';
   const st = document.getElementById('ccRecFilterStatus'); if (st) st.value = '';
-  const cl = document.getElementById('ccRecFilterConcl'); if (cl) cl.value = '';
   renderCcRecords();
 }
 
@@ -10891,123 +10922,139 @@ function confirmCcExecSubmit() {
 }
 
 // 检查记录详情抽屉
-let ccRecDetailId = null, ccRecDetailTab = 'detail';
+let ccRecDetailId = null;
 function openCcRecordDetail(id) {
   ccRecDetailId = id;
-  ccRecDetailTab = 'detail';
   renderCcRecordDetail();
   document.getElementById('ccRecordDetailDrawer').classList.remove('hidden');
 }
 function closeCcRecordDetail() { ccRecDetailId = null; document.getElementById('ccRecordDetailDrawer').classList.add('hidden'); }
-function ccRecSwitchTab(tab) {
-  ccRecDetailTab = tab;
-  renderCcRecordDetail();
-}
 function renderCcRecordDetail() {
   const rec = ccRecords.find(x => x.id === ccRecDetailId);
   if (!rec) return;
-  const total = rec.items.length;
+  const plan = ccRecPlan(rec);
+  const t = ccRecTpl(rec);
+  const disp = ccRecDispStatus(rec);
   const pass = rec.items.filter(i => i.result === '合格').length;
   const fail = rec.items.filter(i => i.result === '不合格').length;
-  const unfilled = total - pass - fail;
-  const concl = ccRecConclusion(rec);
-  const rectTotal = rec.rectIds.length;
-  const rectClosed = ccRecClosedCount(rec);
-  const rate = rectTotal ? Math.round(rectClosed / rectTotal * 100) : 0;
-  const remaining = rectTotal - rectClosed;
   document.getElementById('ccRecDetailTitle').textContent = `检查记录详情（${rec.code}）`;
-  const statCard = (label, num, color) => `
-    <div style="border:1px solid #f0f0f0;border-radius:6px;padding:10px 14px;text-align:center;">
-      <div style="font-size:20px;font-weight:600;color:${color};">${num}</div>
-      <div style="color:#999;font-size:12px;">${label}</div>
+  const f = (label, val) => `<div style="border:1px solid #f0f0f0;border-radius:6px;padding:8px 10px;"><div style="color:#999;font-size:12px;margin-bottom:2px;">${label}</div><div style="font-size:13px;word-break:break-all;">${val}</div></div>`;
+  const cards = rec.items.map(it => {
+    const bad = it.result === '不合格';
+    return `<div ${bad ? `onclick="ccRecItemFlow(${rec.id}, ${it.seq})" title="点击查看整改全流程"` : ''} style="cursor:${bad ? 'pointer' : 'default'};border:1px solid ${bad ? '#ffa39e' : '#b7eb8f'};background:${bad ? '#fff1f0' : '#f6ffed'};border-radius:8px;padding:12px 14px;margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px;">
+        <span style="font-weight:600;font-size:13px;">${it.seq}. ${ccEsc(it.task)}</span>
+        <span class="tag ${bad ? 'tag-red' : 'tag-green'}">${it.result || '未填写'}</span>
+      </div>
+      <div style="font-size:12px;color:#666;line-height:1.8;">检查标准：${ccEsc(it.standard)}</div>
+      ${bad ? `<div style="font-size:12px;color:#cf1322;line-height:1.8;margin-top:4px;border-top:1px dashed #ffa39e;padding-top:6px;">
+        <span class="tag ${ccLevelClass[it.level] || 'tag-orange'}">${it.level || '未填等级'}</span>
+        <div style="margin-top:4px;">问题描述：${ccEsc(it.desc || '—')}</div>
+        <div>图片：${it.photos.length ? it.photos.map(p => '🖼 ' + ccEsc(p)).join('　') : '—'}</div>
+        <div style="color:#1890ff;margin-top:2px;">点击卡片查看「提出 → 整改 → 验收」全流程 ›</div>
+      </div>` : ''}
     </div>`;
-  const tabBtn = (key, label) => `<span class="av-tab ${ccRecDetailTab === key ? 'active' : ''}" onclick="ccRecSwitchTab('${key}')">${label}${key === 'rect' && rectTotal ? `（${rectTotal}）` : ''}</span>`;
-  let tabBody = '';
-  if (ccRecDetailTab === 'detail') {
-    const sorted = rec.items.slice().sort((a, b) => (b.result === '不合格') - (a.result === '不合格') || a.seq - b.seq);
-    tabBody = `<div class="table-wrap" style="border:1px solid #f0f0f0;border-radius:6px;">
-      <table>
-        <thead><tr><th style="width:44px;">序号</th><th style="width:180px;">检查项任务</th><th>检查标准</th><th style="width:64px;">必检</th><th style="width:76px;">结果</th><th style="width:220px;">问题登记</th></tr></thead>
-        <tbody>${sorted.map(it => `
-          <tr style="${it.result === '不合格' ? 'background:#fff1f0;' : ''}">
-            <td>${it.seq}</td><td>${ccEsc(it.task)}</td>
-            <td style="font-size:12px;color:#666;">${ccEsc(it.standard)}</td>
-            <td>${it.required ? '<span class="tag tag-red">必检</span>' : '否'}</td>
-            <td>${it.result ? `<span class="tag ${it.result === '合格' ? 'tag-green' : 'tag-red'}">${it.result}</span>` : '<span style="color:#fa8c16;">未填写</span>'}</td>
-            <td style="font-size:12px;">${it.result === '不合格'
-              ? `<div><span class="tag ${it.level === '重大' || it.level === '严重' ? 'tag-red' : 'tag-orange'}">${it.level || '未填等级'}</span></div>
-                 <div style="margin-top:4px;color:#666;">${ccEsc(it.desc || '未填描述')}</div>
-                 <div style="margin-top:2px;color:#1890ff;">${it.photos.map(p => '🖼 ' + ccEsc(p)).join('　')}</div>`
-              : '<span style="color:#ccc;">—</span>'}</td>
-          </tr>`).join('')}</tbody>
-      </table>
-    </div>`;
-  } else if (ccRecDetailTab === 'rect') {
-    const rects = rec.rectIds.map(ccRectById).filter(Boolean);
-    tabBody = rects.length ? `<div class="table-wrap" style="border:1px solid #f0f0f0;border-radius:6px;">
-      <table>
-        <thead><tr><th>整改编号</th><th>问题描述</th><th>严重等级</th><th>截止时间</th><th>状态</th></tr></thead>
-        <tbody>${rects.map(r => `
-          <tr>
-            <td><span class="link" onclick="ccGoRectPage()">${r.code}</span></td>
-            <td>${ccEsc(r.problem)}</td>
-            <td><span class="tag ${r.level === '重大' || r.level === '严重' ? 'tag-red' : 'tag-orange'}">${r.level}</span></td>
-            <td>${r.deadline}</td>
-            <td><span class="tag ${ccRectClosed(r) ? 'tag-green' : r.status === '待分配' ? 'tag-red' : r.status === '整改中' ? 'tag-orange' : 'tag-blue'}">${r.status}</span></td>
-          </tr>`).join('')}</tbody>
-      </table>
-    </div>` : '<div class="mo-empty" style="padding:24px 0;">该记录未生成整改任务</div>';
-  } else if (ccRecDetailTab === 'snap') {
-    tabBody = `
-      <div style="font-size:13px;color:#666;margin-bottom:10px;">清单快照：<b>${rec.templateCode} ${rec.ver}</b>（创建时版本，不受后续版本变更影响，REC-01）</div>
-      <div class="table-wrap" style="border:1px solid #f0f0f0;border-radius:6px;">
-        <table>
-          <thead><tr><th style="width:44px;">序号</th><th>检查项任务</th><th>检查标准</th><th style="width:70px;">是否必检</th></tr></thead>
-          <tbody>${rec.items.map(it => `<tr><td>${it.seq}</td><td>${ccEsc(it.task)}</td><td>${ccEsc(it.standard)}</td><td>${it.required ? '是' : '否'}</td></tr>`).join('')}</tbody>
-        </table>
-      </div>`;
-  } else {
-    const logs = rec.logs.map(l => ({ time: l.time, operator: l.operator, action: l.action, summary: l.summary }));
-    ccLogs.filter(l => l.object === rec.code).forEach(l => logs.push({ time: l.time, operator: l.operator, action: l.action, summary: l.summary }));
-    logs.sort((a, b) => b.time.localeCompare(a.time));
-    tabBody = logs.length ? `<div class="table-wrap" style="border:1px solid #f0f0f0;border-radius:6px;">
-      <table>
-        <thead><tr><th style="width:150px;">时间</th><th style="width:90px;">操作人</th><th style="width:120px;">动作</th><th>说明</th></tr></thead>
-        <tbody>${logs.map(l => `<tr><td>${l.time}</td><td>${l.operator}</td><td>${ccEsc(l.action)}</td><td>${ccEsc(l.summary)}</td></tr>`).join('')}</tbody>
-      </table>
-    </div>` : '<div class="mo-empty" style="padding:24px 0;">暂无操作日志</div>';
-  }
+  }).join('');
   document.getElementById('ccRecDetailBody').innerHTML = `
-    <div style="border:1px solid #f0f0f0;border-radius:6px;padding:14px 16px;margin-bottom:16px;">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
-        <span style="font-size:16px;font-weight:600;">${rec.code}</span>
-        <span class="tag ${ccRecStatusClass[rec.status] || 'tag-gray'}">${rec.status}</span>
-        ${concl ? `<span class="tag ${concl === '合格' ? 'tag-green' : 'tag-red'}">整体结论：${concl}</span>` : '<span style="color:#999;font-size:13px;">整体结论：—（未完成全部明细）</span>'}
-      </div>
-      <div style="color:#666;font-size:13px;line-height:2;margin-bottom:10px;">
-        项目：${ccEsc(rec.project || '—')}　承包商：${ccEsc(rec.contractor || '—')}　检查人：${ccEsc(rec.inspector)}　检查日期：${rec.date}
-        　清单快照：${rec.templateCode} ${rec.ver}　来源：${rec.source}${rec.planId ? '（计划 ' + (ccPlans.find(p => p.id === rec.planId) || {}).code + '）' : ''}
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;">
-        ${statCard('检查项总数', total, '#333')}
-        ${statCard('合格', pass, '#52c41a')}
-        ${statCard('不合格', fail, '#f5222d')}
-        ${statCard('违规项数', rec.status === '检查中' ? '—' : fail, '#fa541c')}
-      </div>
-      <div style="font-size:13px;color:#666;margin-bottom:4px;">整改进度：${rectClosed}/${rectTotal}${rectTotal ? `（${rate}%）` : ''}</div>
-      <div style="height:8px;background:#f0f0f0;border-radius:4px;overflow:hidden;margin-bottom:8px;">
-        <div style="height:100%;width:${rate}%;background:${rate === 100 ? '#52c41a' : '#1890ff'};"></div>
-      </div>
-      ${remaining > 0 ? `<div style="color:#fa8c16;font-size:12px;">还有 ${remaining} 条整改未关闭，归档条件未满足（REC-06）。</div>` : rectTotal ? '<div style="color:#52c41a;font-size:12px;">全部整改已关闭，归档条件已满足（REC-06）。</div>' : (rec.status === '已归档' ? '<div style="color:#999;font-size:12px;">该记录已归档，整链只读。</div>' : '')}
+    <div class="drawer-section-title">基础信息</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;">
+      ${f('所属计划编号', plan ? plan.code : '—')}
+      ${f('所属计划名称', plan ? ccEsc(plan.name || '—') : '—')}
+      ${f('检查类型', ccEsc(rec.type))}
+      ${f('执行频次', plan ? (plan.freq === '单次' ? '单次任务' : '周期任务') : '—')}
+      ${f('检查时间', rec.date)}
+      ${f('检查人', ccEsc(rec.inspector))}
+      ${f('检查维度', plan ? plan.dimension + '维度' : '—')}
+      ${f('项目/承包商', plan ? ccEsc(plan.target) : ccEsc(rec.project || rec.contractor || '—'))}
+      ${f('检查清单名称', t ? `${ccEsc(t.name)} ${rec.ver}` : '—')}
+      ${f('状态', `<span class="tag ${disp === '已检查' ? 'tag-green' : 'tag-orange'}">${disp}</span>`)}
     </div>
-    <div class="av-tabs">${tabBtn('detail', '检查明细')}${tabBtn('rect', '整改任务')}${tabBtn('snap', '模板快照')}${tabBtn('log', '操作日志')}</div>
-    <div class="av-tab-body">${tabBody}</div>`;
-  const btn = document.getElementById('ccRecArchiveBtn');
-  const canArchive = rec.status === '已整改' && remaining === 0;
-  btn.disabled = !canArchive;
-  btn.style.opacity = canArchive ? '1' : '.45';
-  btn.style.cursor = canArchive ? 'pointer' : 'not-allowed';
-  btn.textContent = rectTotal && remaining > 0 && rec.status !== '已归档' ? `归档（剩余 ${remaining} 条未关闭）` : '归档';
+    <div class="drawer-section-title">检查详情（合格 ${pass} 项 / 不合格 ${fail} 项）</div>
+    ${cards || '<div class="mo-empty" style="padding:20px 0;">暂无检查项</div>'}`;
+}
+// 不合格项整改全流程（提出 → 整改上报 → 整改处理 → 验收），竖向时间线
+function ccRecItemFlow(recId, seq) {
+  const rec = ccRecords.find(x => x.id === recId);
+  if (!rec) return;
+  const it = rec.items.find(i => i.seq === seq);
+  if (!it) return;
+  const rep = c2mReps.find(rp => rp.recId === recId && rp.itemSeq === seq) || null;
+  const rect = ccRects.find(r => r.recordId === recId && r.itemSeq === seq) || null;
+  const fld = (label, val) => `<div style="display:flex;font-size:12px;line-height:2;"><span style="flex:none;width:84px;color:#999;">${label}</span><span style="flex:1;word-break:break-all;">${val}</span></div>`;
+  const node = (icon, title, time, body, color) => `
+    <div style="display:flex;gap:10px;">
+      <div style="flex:none;display:flex;flex-direction:column;align-items:center;">
+        <span style="width:26px;height:26px;border-radius:50%;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;flex:none;">${icon}</span>
+        <span style="flex:1;width:2px;background:#e8e8e8;margin-top:2px;"></span>
+      </div>
+      <div style="flex:1;min-width:0;padding-bottom:18px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:8px;">
+          <span style="font-weight:600;font-size:13px;">${title}</span>
+          <span style="color:#999;font-size:12px;flex:none;">${time || ''}</span>
+        </div>
+        ${body}
+      </div>
+    </div>`;
+  const pending = (txt) => `<div style="font-size:12px;color:#999;background:#fafafa;border-radius:4px;padding:6px 10px;">${txt}</div>`;
+  // 节点1：提出
+  const n1 = node('①', '问题提出（检查登记）', rec.date, `
+    ${fld('严重等级', `<span class="tag ${ccLevelClass[it.level] || 'tag-orange'}">${it.level || '—'}</span>`)}
+    ${fld('问题描述', ccEsc(it.desc || '—'))}
+    ${fld('图片', it.photos.length ? it.photos.map(p => '🖼 ' + ccEsc(p)).join('　') : '—')}
+    ${fld('检查人', ccEsc(rec.inspector))}`, '#f5222d');
+  const nodes = [n1];
+  if (rep) {
+    // 移动端2整改上报数据：固定四节点
+    nodes.push(node('②', '整改上报', rep.reportTime, `
+      ${fld('整改人', rep.targets.map(t2 => `${ccEsc(t2.name)}：${ccEsc(t2.assignee || '—')}`).join('；'))}
+      ${fld('整改要求', ccEsc(rep.requirement || '—'))}
+      ${fld('整改截至期限', ccEsc(rep.deadline || '—'))}`, '#fa8c16'));
+    nodes.push(rep.fixTime
+      ? node('③', '整改处理', rep.fixTime, `
+        ${fld('整改描述', ccEsc(rep.fixDesc || '—'))}
+        ${fld('整改图片', rep.fixPhotos.length ? rep.fixPhotos.map(p => '🖼 ' + ccEsc(p)).join('　') : '—')}`, '#1890ff')
+      : node('③', '整改处理', '', pending('待整改'), '#d9d9d9'));
+    nodes.push(rep.verifyTime
+      ? node('④', '验收', rep.verifyTime, `
+        ${fld('验收结论', `<span class="tag ${rep.verifyRes === '通过' ? 'tag-green' : 'tag-red'}">${ccEsc(rep.verifyRes || '—')}</span>`)}
+        ${fld('验收意见', ccEsc(rep.verifyOpinion || '—'))}`, rep.verifyRes === '通过' ? '#52c41a' : '#f5222d')
+      : node('④', '验收', '', pending('待验收'), '#d9d9d9'));
+  } else if (rect) {
+    // 桌面端整改任务数据：按 rounds 逐轮展示完整流程
+    nodes.push(node('②', '整改上报（任务下发）', '', `
+      ${fld('整改人', ccEsc(rect.assignee || '待分配'))}
+      ${fld('整改要求', ccEsc(rect.requirement || '—'))}
+      ${fld('整改截至期限', ccEsc(rect.deadline || '—'))}`, '#fa8c16'));
+    const rounds = rect.rounds || [];
+    const fixN = rounds.filter(x => x.type === '提交').length;
+    const verN = rounds.filter(x => x.type === '验证').length;
+    let fi = 0, vi = 0, hasVer = false;
+    if (!rounds.length) {
+      nodes.push(node('③', '整改处理', '', pending('待整改'), '#d9d9d9'));
+      nodes.push(node('④', '验收', '', pending('待验收'), '#d9d9d9'));
+    } else {
+      rounds.forEach(rd => {
+        if (rd.type === '提交') {
+          fi++;
+          nodes.push(node('③', '整改处理' + (fixN > 1 ? `（第${fi}次）` : ''), rd.time, `
+            ${fld('整改描述', ccEsc(rd.result || '—'))}
+            ${fld('整改图片', (rd.attachments || []).length ? rd.attachments.map(p => '🖼 ' + ccEsc(p)).join('　') : '—')}`, '#1890ff'));
+        } else if (rd.type === '验证') {
+          vi++; hasVer = true;
+          nodes.push(node('④', '验收' + (verN > 1 ? `（第${vi}次）` : ''), rd.time, `
+            ${fld('验收结论', `<span class="tag ${rd.result === '通过' ? 'tag-green' : 'tag-red'}">${ccEsc(rd.result || '—')}</span>`)}
+            ${fld('验收意见', ccEsc(rd.opinion || '—'))}
+            ${fld('验收人', ccEsc(rect.verifier || '—'))}`, rd.result === '通过' ? '#52c41a' : '#f5222d'));
+        }
+      });
+      if (!hasVer) nodes.push(node('④', '验收', '', pending('待验收'), '#d9d9d9'));
+    }
+  } else {
+    nodes.push(node('②', '整改上报', '', pending('暂未整改上报'), '#d9d9d9'));
+    nodes.push(node('③', '整改处理', '', pending('待整改'), '#d9d9d9'));
+    nodes.push(node('④', '验收', '', pending('待验收'), '#d9d9d9'));
+  }
+  openCcBlock(`整改全流程（第 ${seq} 项：${ccEsc(it.task)}）`, `<div style="max-width:640px;">${nodes.join('')}</div>`);
 }
 function ccGoRectPage() {
   closeCcRecordDetail();
@@ -11072,6 +11119,14 @@ function openCcBlock(title, html) {
 }
 function closeCcBlockModal() { document.getElementById('ccBlockModal').classList.add('hidden'); }
 
+// 整改任务展示状态：未整改 / 已整改 / 验收未通过 / 验收已通过
+function ccRectFlowStatus(r) {
+  const vers = (r.rounds || []).filter(x => x.type === '验证');
+  if (r.status === '已关闭') return vers.length && vers[vers.length - 1].result === '不通过' ? '验收未通过' : '验收已通过';
+  if (r.status === '待验证') return '已整改';
+  return '未整改';
+}
+const ccRectFlowStatusClass = { '未整改': 'tag-orange', '已整改': 'tag-blue', '验收未通过': 'tag-red', '验收已通过': 'tag-green' };
 let ccRectFilter = { kw: '', status: '', overdue: '', level: '' };
 function renderCcRects() {
   const kw = (document.getElementById('ccRectFilterKw') ? document.getElementById('ccRectFilterKw').value : ccRectFilter.kw).trim();
@@ -11083,10 +11138,9 @@ function renderCcRects() {
     const rec = ccRectRecord(r);
     const hitKw = !kw || r.code.includes(kw) || r.problem.includes(kw) || r.project.includes(kw) || r.contractor.includes(kw) || (rec && rec.code.includes(kw));
     const hitOverdue = !overdue || (overdue === 'overdue' ? ccRectOverdue(r) : ccRectDueSoon(r));
-    return hitKw && (!status || r.status === status) && hitOverdue && (!level || r.level === level);
+    return hitKw && (!status || ccRectFlowStatus(r) === status) && hitOverdue && (!level || r.level === level);
   });
   const rows = list.map(r => {
-    const rec = ccRectRecord(r);
     const pen = r.penId ? ccPens.find(p => p.id === r.penId) : null;
     const ops = [`<span class="link" onclick="openCcRectDetail(${r.id})">查看</span>`];
     if (r.status === '待分配') ops.push(`<span class="link" onclick="openCcAssignModal(${r.id})">分配</span>`);
@@ -11095,27 +11149,24 @@ function renderCcRects() {
     if (pen) ops.push(`<span class="link" onclick="openCcPenDetail(${pen.id})">查看处罚</span>`);
     else ops.push(`<span class="link" onclick="openCcRectPen(${r.id})">发起处罚</span>`);
     ops.push(`<span class="link link-danger" onclick="ccDeleteRect(${r.id})">删除</span>`);
+    const st = ccRectFlowStatus(r);
     return `<tr>
       <td>${r.code}</td>
-      <td>${rec ? `<span class="link" onclick="openCcRecordDetail(${rec.id})">${rec.code}</span>` : '<span style="color:#999;">—</span>'}</td>
-      <td>${ccEsc(r.project)}</td>
-      <td>${ccEsc(r.contractor)}</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${ccEsc(r.problem)}">${ccEsc(r.problem)}</td>
       <td><span class="tag ${ccLevelClass[r.level] || 'tag-gray'}">${r.level}</span></td>
-      <td>${ccEsc(r.assignee || '—')}</td>
+      <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${ccEsc(r.problem)}">${ccEsc(r.problem)}</td>
+      <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${ccEsc(r.requirement || '')}">${ccEsc(r.requirement || '—')}</td>
       <td>${r.deadline || '—'}</td>
-      <td><span class="tag ${ccRectStatusClass[r.status] || 'tag-gray'}">${r.status}</span></td>
-      <td>${ccRectRiskHtml(r)}</td>
+      <td><span class="tag ${ccRectFlowStatusClass[st] || 'tag-gray'}">${st}</span></td>
       <td class="sticky-col">${ops.join('')}</td>
     </tr>`;
   }).join('');
   document.getElementById('ccRectBody').innerHTML = `
     <div class="toolbar">
       <div class="filters">
-        <input type="text" id="ccRectFilterKw" placeholder="编号 / 问题 / 项目 / 承包商" value="${ccEsc(kw)}">
+        <input type="text" id="ccRectFilterKw" placeholder="整改编号 / 问题 / 项目 / 承包商" value="${ccEsc(kw)}">
         <select id="ccRectFilterStatus">
           <option value="">全部状态</option>
-          ${['待分配', '整改中', '待验证', '已关闭'].map(s => `<option ${status === s ? 'selected' : ''}>${s}</option>`).join('')}
+          ${['未整改', '已整改', '验收未通过', '验收已通过'].map(s => `<option ${status === s ? 'selected' : ''}>${s}</option>`).join('')}
         </select>
         <select id="ccRectFilterOverdue">
           <option value="">全部期限</option>
@@ -11132,14 +11183,13 @@ function renderCcRects() {
       <button class="btn btn-plain" onclick="alert('原型占位：导出整改任务清单')">导出</button>
     </div>
     <div class="table-wrap">
-      <table style="min-width:1380px;">
+      <table style="min-width:1100px;">
         <thead>
           <tr>
-            <th>整改编号</th><th>来源检查</th><th>项目</th><th>承包商</th><th>问题</th><th>严重等级</th>
-            <th>责任人</th><th>截止日</th><th>进度状态</th><th>超期</th><th class="sticky-col">操作</th>
+            <th>整改编号</th><th>严重等级</th><th>问题描述</th><th>整改要求</th><th>整改截至期限</th><th>状态</th><th class="sticky-col">操作</th>
           </tr>
         </thead>
-        <tbody>${rows || '<tr><td colspan="11"><div class="mo-empty">暂无整改任务</div></td></tr>'}</tbody>
+        <tbody>${rows || '<tr><td colspan="7"><div class="mo-empty">暂无整改任务</div></td></tr>'}</tbody>
       </table>
     </div>`;
 }
