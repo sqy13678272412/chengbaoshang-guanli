@@ -3128,13 +3128,22 @@
 
 <!-- 承包商检查：新建/编辑检查计划 -->
 <div class="modal-mask hidden" id="ccPlanModal">
-  <div class="modal wide" style="width:1060px;">
+  <div class="modal wide" style="width:960px;">
     <div class="modal-header">
       <span id="ccPlanModalTitle">新建检查计划</span>
       <span class="modal-close" onclick="closeCcPlanModal()">✕</span>
     </div>
     <div class="modal-body">
       <div class="modal-body grid" style="padding:0;">
+        <div class="form-item span-2">
+          <label class="required">检查计划名称</label>
+          <input type="text" id="ccPlanName" maxlength="50" placeholder="请输入检查计划名称">
+        </div>
+        <div class="form-item span-2">
+          <label class="required">检查类型</label>
+          <select id="ccPlanTplId"></select>
+          <span style="color:#999;font-size:12px;flex:none;">选择检查清单中已开启的清单</span>
+        </div>
         <div class="form-item span-2">
           <label class="required">检查维度</label>
           <div class="ec-radios">
@@ -3143,96 +3152,86 @@
           </div>
         </div>
         <div class="form-item" id="ccPlanProjectItem">
-          <label class="required">选择项目</label>
-          <select id="ccPlanProject"></select>
+          <label class="required">项目名称</label>
+          <select id="ccPlanProject" onchange="ccPlanProjectChange()"></select>
         </div>
         <div class="form-item" id="ccPlanContractorItem" style="display:none;">
-          <label class="required">选择承包商</label>
-          <select id="ccPlanContractor"></select>
+          <label class="required">承包商名称</label>
+          <select id="ccPlanContractor" onchange="ccPlanContractorChange()"></select>
         </div>
-        <div class="form-item span-2">
-          <label class="required">关联检查清单</label>
-          <select id="ccPlanTplId" onchange="ccPlanTplChange()"></select>
+        <div class="form-item span-2" id="ccPlanRelContrItem" style="display:none;">
+          <label>项目关联公司</label>
+          <div id="ccPlanRelContr" style="flex:1;display:flex;gap:6px;flex-wrap:wrap;padding-top:2px;"></div>
         </div>
-        <div class="form-item">
-          <label>检查类型</label>
-          <input type="text" id="ccPlanType" readonly placeholder="由关联清单自动带出" style="background:#fafafa;">
-        </div>
-        <div class="form-item span-2">
-          <label class="required">检查范围</label>
-          <textarea id="ccPlanScope" rows="2" maxlength="500" placeholder="描述区域、标段、作业面或专项范围（不超过500字）" style="flex:1;border:1px solid #d9d9d9;border-radius:4px;padding:6px 8px;resize:none;font-size:13px;"></textarea>
+        <div class="form-item span-2" id="ccPlanRelProjItem" style="display:none;">
+          <label>承包商关联的项目</label>
+          <div id="ccPlanRelProj" style="flex:1;display:flex;gap:6px;flex-wrap:wrap;padding-top:2px;"></div>
         </div>
         <div class="form-item span-2">
           <label class="required">执行频次</label>
           <div class="ec-radios">
-            <label><input type="radio" name="ccPlanFreq" value="单次" checked onchange="ccPlanFreqChange()">单次执行</label>
+            <label><input type="radio" name="ccPlanFreq" value="单次" checked onchange="ccPlanFreqChange()">单次任务</label>
             <label><input type="radio" name="ccPlanFreq" value="周期" onchange="ccPlanFreqChange()">周期任务</label>
           </div>
         </div>
         <div class="form-item" id="ccPlanSingleTimeItem">
-          <label class="required">单次执行时间</label>
+          <label class="required">执行时间</label>
           <input type="datetime-local" id="ccPlanExecTime">
         </div>
-        <div class="form-item" id="ccPlanCycleStartItem" style="display:none;">
-          <label class="required">周期开始</label>
-          <input type="datetime-local" id="ccPlanCycleStart" onchange="ccPlanUpdatePreview()">
-        </div>
-        <div class="form-item" id="ccPlanCycleEndItem" style="display:none;">
-          <label class="required">周期结束</label>
-          <input type="datetime-local" id="ccPlanCycleEnd" onchange="ccPlanUpdatePreview()">
-        </div>
-        <div class="form-item" id="ccPlanCycleTypeItem" style="display:none;">
-          <label class="required">周期类型</label>
-          <select id="ccPlanCycleType" onchange="ccPlanCycleTypeChange()">
-            <option>按天</option><option>按周</option><option>按月</option><option>按年</option>
-          </select>
-        </div>
-        <div class="form-item" id="ccPlanCycleTimeItem" style="display:none;">
-          <label class="required">执行时间</label>
-          <input type="time" id="ccPlanCycleTime" value="09:00" onchange="ccPlanUpdatePreview()">
-        </div>
-        <div class="form-item span-2" id="ccPlanCycleRuleItem" style="display:none;">
-          <label class="required">周期规则</label>
-          <div id="ccPlanCycleRule" style="flex:1;"></div>
-        </div>
-        <div class="form-item" id="ccPlanSkipItem" style="display:none;">
-          <label>跳过周末</label>
-          <label class="switch"><input type="checkbox" id="ccPlanSkipWeekend" onchange="ccPlanUpdatePreview()"><span class="slider"></span></label>
-          <span style="color:#999;font-size:12px;">遇周六、周日顺延至下一工作日</span>
-        </div>
-        <div class="form-item" id="ccPlanExecNowItem" style="display:none;">
-          <label>立即执行</label>
-          <label class="switch"><input type="checkbox" id="ccPlanExecNow"><span class="slider"></span></label>
-          <span style="color:#999;font-size:12px;">保存后生成首条检查记录，后续仍按周期执行</span>
-        </div>
-        <div class="form-item span-2">
-          <label class="required">执行主体类型</label>
+        <div class="form-item span-2" id="ccPlanExecObjItem">
+          <label class="required">执行对象</label>
           <div class="ec-radios">
             <label><input type="radio" name="ccPlanExecType" value="部门" checked onchange="ccPlanExecTypeChange()">部门</label>
-            <label><input type="radio" name="ccPlanExecType" value="个人" onchange="ccPlanExecTypeChange()">个人</label>
+            <label><input type="radio" name="ccPlanExecType" value="个人" onchange="ccPlanExecTypeChange()">人</label>
           </div>
         </div>
         <div class="form-item" id="ccPlanDeptItem">
-          <label class="required">执行部门</label>
-          <select id="ccPlanExecDept"></select>
+          <label class="required">检查部门</label>
+          <div style="flex:1;display:flex;gap:6px;">
+            <input type="text" id="ccPlanExecDept" readonly placeholder="点击右侧按钮从组织架构选择" style="flex:1;background:#fafafa;">
+            <button class="btn btn-plain" onclick="openEmg2OrgModal('dept','ccPlanExecDept')" style="flex:none;">组织架构</button>
+          </div>
         </div>
         <div class="form-item" id="ccPlanPersonItem" style="display:none;">
-          <label class="required">执行人</label>
-          <select id="ccPlanExecPerson"></select>
+          <label class="required">检查人</label>
+          <div style="flex:1;display:flex;gap:6px;">
+            <input type="text" id="ccPlanExecPerson" readonly placeholder="点击右侧按钮从组织架构选择" style="flex:1;background:#fafafa;">
+            <button class="btn btn-plain" onclick="openEmg2OrgModal('user','ccPlanExecPerson')" style="flex:none;">组织架构</button>
+          </div>
         </div>
-        <div class="form-item span-2">
-          <label>备注</label>
-          <textarea id="ccPlanRemark" rows="2" maxlength="500" placeholder="备注不作为检查标准，不写入清单快照" style="flex:1;border:1px solid #d9d9d9;border-radius:4px;padding:6px 8px;resize:none;font-size:13px;"></textarea>
+        <div class="form-item span-2" id="ccPlanCycleRangeItem" style="display:none;">
+          <label class="required">检查周期</label>
+          <div style="flex:1;display:flex;align-items:center;gap:8px;">
+            <input type="datetime-local" id="ccPlanCycleStart" style="flex:1;">
+            <span style="color:#999;">至</span>
+            <input type="datetime-local" id="ccPlanCycleEnd" style="flex:1;">
+          </div>
         </div>
-        <div class="form-item span-2">
-          <label>执行日期预览</label>
-          <div id="ccPlanPreview" style="flex:1;border:1px dashed #d9d9d9;border-radius:6px;padding:10px 12px;font-size:12px;color:#666;line-height:2;max-height:170px;overflow-y:auto;background:#fafafa;"></div>
+        <div class="form-item" id="ccPlanGapItem" style="display:none;">
+          <label class="required">排查周期</label>
+          <div style="flex:1;display:flex;align-items:center;gap:8px;">
+            <input type="number" id="ccPlanCycleN" min="1" value="1" style="width:90px;">
+            <select id="ccPlanCycleUnit" style="width:90px;">
+              <option>小时</option><option selected>天</option><option>周</option><option>月</option><option>年</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-item" id="ccPlanSkipItem" style="display:none;">
+          <label>是否跳过周末</label>
+          <div class="ec-radios">
+            <label><input type="radio" name="ccPlanSkip" value="是">是</label>
+            <label><input type="radio" name="ccPlanSkip" value="否" checked>否</label>
+          </div>
+        </div>
+        <div class="form-item" id="ccPlanFirstItem" style="display:none;">
+          <label class="required">首次执行时间</label>
+          <input type="datetime-local" id="ccPlanFirstExec">
         </div>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-plain" onclick="closeCcPlanModal()">取消</button>
-      <button class="btn btn-primary" onclick="saveCcPlan()">保存</button>
+      <button class="btn btn-primary" onclick="saveCcPlan()">确定</button>
     </div>
   </div>
 </div>
@@ -3256,21 +3255,21 @@
 <div class="modal-mask hidden" id="ccPlanCancelModal">
   <div class="modal">
     <div class="modal-header">
-      取消检查计划
+      关闭检查计划
       <span class="modal-close" onclick="closeCcPlanCancel()">✕</span>
     </div>
     <div class="modal-body">
       <div style="background:#fff1f0;border:1px solid #ffa39e;color:#cf1322;border-radius:4px;padding:8px 12px;margin-bottom:12px;font-size:13px;line-height:1.8;">
-        计划取消后不可撤销，且不再生成后续执行实例；已生成的检查记录不受影响（PLN-04/PLN-05）。
+        计划关闭后不可撤销，且不再生成后续执行实例；已生成的检查记录不受影响（PLN-04/PLN-05）。
       </div>
       <div class="form-item">
-        <label class="required">取消原因</label>
-        <textarea id="ccPlanCancelReason" rows="3" placeholder="请填写取消原因（必填）" style="flex:1;border:1px solid #d9d9d9;border-radius:4px;padding:6px 8px;resize:none;font-size:13px;"></textarea>
+        <label class="required">关闭原因</label>
+        <textarea id="ccPlanCancelReason" rows="3" placeholder="请填写关闭原因（必填）" style="flex:1;border:1px solid #d9d9d9;border-radius:4px;padding:6px 8px;resize:none;font-size:13px;"></textarea>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-plain" onclick="closeCcPlanCancel()">再想想</button>
-      <button class="btn btn-primary" onclick="confirmCcPlanCancel()">确认取消</button>
+      <button class="btn btn-primary" onclick="confirmCcPlanCancel()">确认关闭</button>
     </div>
   </div>
 </div>
@@ -8871,9 +8870,9 @@ let ccTemplates = [
 ];
 let ccTemplateSeq = 4;
 let ccPlans = [
-  { id:1, code:'JCJH-202610-001', dimension:'项目', target:'城东综合体二期', templateId:1, ver:'V1.2', freq:'单次', execTime:'2026-10-29 09:00', cycleType:'', cycleRule:'', cycleStart:'', cycleEnd:'', skipWeekend:false, execNow:false, execType:'个人', execDept:'', execPerson:'李强', status:'待执行', instances:[1], cancelReason:'', remark:'' },
-  { id:2, code:'JCJH-202610-006', dimension:'承包商', target:'华筑建设有限公司', templateId:1, ver:'V1.2', freq:'周期', execTime:'09:00', cycleType:'按周', cycleRule:'每1周，周一', cycleStart:'2026-10-26 00:00', cycleEnd:'2026-12-31 23:59', skipWeekend:false, execNow:false, execType:'部门', execDept:'安全管理部', execPerson:'', status:'执行中', instances:[], cancelReason:'', remark:'' },
-  { id:3, code:'JCJH-202610-009', dimension:'项目', target:'城东综合体二期', templateId:2, ver:'V1.0', freq:'周期', execTime:'08:30', cycleType:'按天', cycleRule:'每2天', cycleStart:'2026-10-28 00:00', cycleEnd:'2026-11-30 23:59', skipWeekend:true, execNow:false, execType:'个人', execDept:'', execPerson:'赵宁', status:'执行中', instances:[], cancelReason:'', remark:'' }
+  { id:1, code:'JCJH-202610-001', name:'城东综合体二期日常安全检查', dimension:'项目', target:'城东综合体二期', templateId:1, ver:'V1.2', freq:'单次', execTime:'2026-10-29 09:00', cycleType:'', cycleRule:'', cycleStart:'', cycleEnd:'', skipWeekend:false, execNow:false, execType:'个人', execDept:'', execPerson:'李强', status:'待执行', instances:[1], cancelReason:'', remark:'' },
+  { id:2, code:'JCJH-202610-006', name:'华筑建设每周综合安全检查', dimension:'承包商', target:'华筑建设有限公司', templateId:1, ver:'V1.2', freq:'周期', execTime:'09:00', cycleType:'按周', cycleRule:'每1周', cycleStart:'2026-10-26 00:00', cycleEnd:'2026-12-31 23:59', skipWeekend:false, execNow:false, execType:'部门', execDept:'安全管理部', execPerson:'', status:'执行中', instances:[], cancelReason:'', remark:'' },
+  { id:3, code:'JCJH-202610-009', name:'城东综合体二期消防设施巡检', dimension:'项目', target:'城东综合体二期', templateId:2, ver:'V1.0', freq:'周期', execTime:'08:30', cycleType:'按天', cycleRule:'每2天', cycleStart:'2026-10-28 00:00', cycleEnd:'2026-11-30 23:59', skipWeekend:true, execNow:false, execType:'个人', execDept:'', execPerson:'赵宁', status:'执行中', instances:[], cancelReason:'', remark:'' }
 ];
 let ccPlanSeq = 4;
 let ccRecords = [
@@ -9723,6 +9722,16 @@ function ccNoticeToggle(id) {
 const CC_NOW = '2026-10-29 12:00'; // 原型模拟当前时间，与种子数据匹配，保证演示稳定
 const CC_PROJECTS = ['城东综合体二期', '城西物流园区一期', '智能制造厂房三期'];
 const CC_CONTRACTORS = ['华筑建设有限公司', '宏远建筑有限公司', '华美装饰工程有限公司'];
+const CC_PROJ_CONTRACTORS = {
+  '城东综合体二期': ['华筑建设有限公司', '宏远建筑有限公司', '华美装饰工程有限公司'],
+  '城西物流园区一期': ['宏远建筑有限公司', '华美装饰工程有限公司', '华筑建设有限公司'],
+  '智能制造厂房三期': ['华美装饰工程有限公司', '华筑建设有限公司', '宏远建筑有限公司']
+};
+const CC_CONTR_PROJECTS = {
+  '华筑建设有限公司': ['城东综合体二期', '智能制造厂房三期', '城西物流园区一期'],
+  '宏远建筑有限公司': ['城西物流园区一期', '城东综合体二期', '智能制造厂房三期'],
+  '华美装饰工程有限公司': ['智能制造厂房三期', '城西物流园区一期', '城东综合体二期']
+};
 const CC_DEPTS = ['安全管理部', '工程管理部', '设备部', '综合管理部'];
 const CC_WEEK_NAMES = '一二三四五六日';
 
@@ -10001,26 +10010,26 @@ function renderCcPlans() {
   const status = document.getElementById('ccPlanFilterStatus') ? document.getElementById('ccPlanFilterStatus').value : ccPlanFilter.status;
   ccPlanFilter = { kw, dim, status };
   const list = ccPlans.filter(p =>
-    (!kw || p.code.includes(kw) || p.target.includes(kw)) &&
+    (!kw || (p.name || '').includes(kw) || p.code.includes(kw) || p.target.includes(kw)) &&
     (!dim || p.dimension === dim) &&
     (!status || p.status === status));
   const rows = list.map(p => {
     const t = ccTpl(p.templateId);
-    const v = t ? ccTplVer(t.id) : null;
-    const ops = [`<span class="link" onclick="openCcPlanDetail(${p.id})">查看</span>`];
+    const ops = [`<span class="link" onclick="openCcPlanDetail(${p.id})">详情</span>`];
     if (p.status === '待执行') {
       ops.push(`<span class="link" onclick="openCcPlanModal('edit', ${p.id})">编辑</span>`);
-      ops.push(`<span class="link" onclick="openCcPlanExec(${p.id})">执行</span>`);
-      ops.push(`<span class="link link-danger" onclick="openCcPlanCancel(${p.id})">取消</span>`);
+      ops.push(`<span class="link link-danger" onclick="openCcPlanCancel(${p.id})">关闭</span>`);
+      ops.push(`<span class="link link-danger" onclick="ccPlanDelete(${p.id})">删除</span>`);
+    } else if (p.status === '已取消') {
+      ops.push(`<span class="link link-danger" onclick="ccPlanDelete(${p.id})">删除</span>`);
     }
     return `<tr>
-      <td>${p.code}</td>
+      <td>${ccEsc(p.name || '—')}</td>
       <td><span class="tag ${p.dimension === '项目' ? 'tag-blue' : 'tag-green'}">${p.dimension}维度</span></td>
       <td>${ccEsc(p.target)}</td>
-      <td>${t ? `${t.code} ${v ? v.ver : '—'}（${v && v.items ? v.items.length : 0}项）` : '—'}</td>
-      <td>${p.freq === '单次' ? '单次：' + p.execTime : ccEsc(p.cycleRule) + ' ' + p.execTime}</td>
+      <td>${t ? t.type : '—'}</td>
+      <td>${p.freq === '单次' ? '单次任务' : '周期任务'}</td>
       <td>${ccPlanNextExec(p)}</td>
-      <td>${p.execType === '部门' ? ccEsc(p.execDept) + '（部门）' : ccEsc(p.execPerson) + '（个人）'}</td>
       <td><span class="tag ${ccPlanStatusClass[p.status] || 'tag-gray'}">${p.status}</span></td>
       <td class="sticky-col">${ops.join('')}</td>
     </tr>`;
@@ -10028,7 +10037,7 @@ function renderCcPlans() {
   document.getElementById('ccPlanBody').innerHTML = `
     <div class="toolbar">
       <div class="filters">
-        <input type="text" id="ccPlanFilterKw" placeholder="计划编号 / 项目 / 承包商" value="${ccEsc(kw)}">
+        <input type="text" id="ccPlanFilterKw" placeholder="计划名称 / 项目 / 承包商" value="${ccEsc(kw)}">
         <select id="ccPlanFilterDim">
           <option value="">全部维度</option>
           <option ${dim === '项目' ? 'selected' : ''}>项目</option>
@@ -10044,14 +10053,14 @@ function renderCcPlans() {
       <button class="btn btn-primary" onclick="openCcPlanModal('new')">+ 新建计划</button>
     </div>
     <div class="table-wrap">
-      <table style="min-width:1200px;">
+      <table style="min-width:1100px;">
         <thead>
           <tr>
-            <th>计划编号</th><th>检查维度</th><th>项目/承包商</th><th>关联清单</th><th>执行频次</th>
-            <th>下次执行时间</th><th>执行部门/人员</th><th>状态</th><th class="sticky-col">操作</th>
+            <th>计划名称</th><th>检查维度</th><th>项目/承包商</th><th>检查类型</th><th>执行频次</th>
+            <th>下次执行时间</th><th>状态</th><th class="sticky-col">操作</th>
           </tr>
         </thead>
-        <tbody>${rows || '<tr><td colspan="9"><div class="mo-empty">暂无检查计划</div></td></tr>'}</tbody>
+        <tbody>${rows || '<tr><td colspan="8"><div class="mo-empty">暂无检查计划</div></td></tr>'}</tbody>
       </table>
     </div>`;
 }
@@ -10071,26 +10080,8 @@ function ccPlanOptionList(arr, cur) {
 function ccEnabledTplOptions(cur) {
   return '<option value="">请选择</option>' + ccTemplates.filter(t => t.enabled && ccTplVer(t.id)).map(t => {
     const v = ccTplVer(t.id);
-    return `<option value="${t.id}" ${cur === t.id ? 'selected' : ''}>${t.code} ${t.name} ${v.ver}（${v.items ? v.items.length : 0}项）</option>`;
+    return `<option value="${t.id}" ${cur === t.id ? 'selected' : ''}>${t.name}（${t.type}） ${v.ver}（${v.items ? v.items.length : 0}项）</option>`;
   }).join('');
-}
-function ccPlanDefaultRule(type) {
-  return type === '按天' ? { type, n: 1, days: [], day: 1, last: false, month: 1 }
-    : type === '按周' ? { type, n: 1, days: [1], day: 1, last: false, month: 1 }
-    : type === '按月' ? { type, n: 1, days: [], day: 1, last: false, month: 1 }
-    : { type, n: 1, days: [], day: 1, last: false, month: 1 };
-}
-function ccPlanCycleRuleHtml(rule) {
-  if (rule.type === '按天') return `<span style="font-size:13px;display:flex;align-items:center;gap:6px;">每 <input type="number" id="ccPlanCycleN" min="1" value="${rule.n}" style="width:60px;" onchange="ccPlanUpdatePreview()"> 天执行一次</span>`;
-  if (rule.type === '按周') return `<span style="font-size:13px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">每 <input type="number" id="ccPlanCycleN" min="1" value="${rule.n}" style="width:60px;" onchange="ccPlanUpdatePreview()"> 周，星期：
-    ${CC_WEEK_NAMES.split('').map((nm, i) => `<label style="display:inline-flex;align-items:center;gap:3px;white-space:nowrap;"><input type="checkbox" name="ccPlanWeekday" value="${i + 1}" ${rule.days.indexOf(i + 1) >= 0 ? 'checked' : ''} onchange="ccPlanUpdatePreview()">${nm}</label>`).join('')}</span>`;
-  if (rule.type === '按月') return `<span style="font-size:13px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">每 <input type="number" id="ccPlanCycleN" min="1" value="${rule.n}" style="width:60px;" onchange="ccPlanUpdatePreview()"> 月，
-    <label style="display:inline-flex;align-items:center;gap:3px;white-space:nowrap;"><input type="radio" name="ccPlanMonthMode" ${rule.last ? '' : 'checked'} onchange="ccPlanUpdatePreview()"> 每月</label>
-    <input type="number" id="ccPlanMonthDay" min="1" max="31" value="${rule.day}" style="width:60px;" onchange="ccPlanUpdatePreview()"> 日
-    <label style="display:inline-flex;align-items:center;gap:3px;white-space:nowrap;"><input type="radio" name="ccPlanMonthMode" id="ccPlanMonthLast" ${rule.last ? 'checked' : ''} onchange="ccPlanUpdatePreview()"> 最后一日</label></span>`;
-  return `<span style="font-size:13px;display:flex;align-items:center;gap:6px;">每 <input type="number" id="ccPlanCycleN" min="1" value="${rule.n}" style="width:60px;" onchange="ccPlanUpdatePreview()"> 年，
-    <input type="number" id="ccPlanYearMonth" min="1" max="12" value="${rule.month}" style="width:60px;" onchange="ccPlanUpdatePreview()"> 月
-    <input type="number" id="ccPlanYearDay" min="1" max="31" value="${rule.day}" style="width:60px;" onchange="ccPlanUpdatePreview()"> 日</span>`;
 }
 function openCcPlanModal(mode, planId) {
   ccPlanEdit = { mode, planId: planId || null };
@@ -10098,34 +10089,29 @@ function openCcPlanModal(mode, planId) {
   if (mode === 'edit' && !p) { alert('计划不存在'); return; }
   if (p && p.status !== '待执行') { alert('仅待执行状态的计划可编辑'); return; }
   document.getElementById('ccPlanModalTitle').textContent = p ? `编辑检查计划（${p.code}）` : '新建检查计划';
+  document.getElementById('ccPlanName').value = p ? (p.name || '') : '';
   const dim = p ? p.dimension : '项目';
   document.querySelectorAll('input[name=ccPlanDim]').forEach(r => r.checked = r.value === dim);
   document.getElementById('ccPlanProject').innerHTML = ccPlanOptionList(CC_PROJECTS, p ? (dim === '项目' ? p.target : '') : '');
   document.getElementById('ccPlanContractor').innerHTML = ccPlanOptionList(CC_CONTRACTORS, p ? (dim === '承包商' ? p.target : '') : '');
   document.getElementById('ccPlanTplId').innerHTML = ccEnabledTplOptions(p ? p.templateId : null);
-  document.getElementById('ccPlanType').value = '';
-  document.getElementById('ccPlanScope').value = p ? (p.scope || '') : '';
   const freq = p ? p.freq : '单次';
   document.querySelectorAll('input[name=ccPlanFreq]').forEach(r => r.checked = r.value === freq);
   document.getElementById('ccPlanExecTime').value = p && p.freq === '单次' ? ccToLocal(p.execTime) : '';
   document.getElementById('ccPlanCycleStart').value = p && p.freq === '周期' ? ccToLocal(p.cycleStart) : '';
   document.getElementById('ccPlanCycleEnd').value = p && p.freq === '周期' ? ccToLocal(p.cycleEnd) : '';
-  document.getElementById('ccPlanCycleTime').value = p && p.freq === '周期' ? (p.execTime || '09:00') : '09:00';
-  document.getElementById('ccPlanCycleType').value = p && p.freq === '周期' ? (p.cycleType || '按天') : '按天';
-  const rule = p && p.freq === '周期' ? ccRuleOf(p) : ccPlanDefaultRule(document.getElementById('ccPlanCycleType').value);
-  document.getElementById('ccPlanCycleRule').innerHTML = ccPlanCycleRuleHtml(rule);
-  document.getElementById('ccPlanSkipWeekend').checked = p ? !!p.skipWeekend : false;
-  document.getElementById('ccPlanExecNow').checked = false;
+  const gapM = p && p.freq === '周期' ? /每(\d+)(小时|天|周|月|年)/.exec(p.cycleRule || '') : null;
+  document.getElementById('ccPlanCycleN').value = gapM ? parseInt(gapM[1], 10) : 1;
+  document.getElementById('ccPlanCycleUnit').value = gapM ? gapM[2] : '天';
+  document.querySelectorAll('input[name=ccPlanSkip]').forEach(r => r.checked = (p ? !!p.skipWeekend : false) === (r.value === '是'));
+  document.getElementById('ccPlanFirstExec').value = p && p.freq === '周期' ? ccToLocal(p.firstExec || p.cycleStart) : '';
   const execType = p ? p.execType : '部门';
   document.querySelectorAll('input[name=ccPlanExecType]').forEach(r => r.checked = r.value === execType);
-  document.getElementById('ccPlanExecDept').innerHTML = ccPlanOptionList(CC_DEPTS, p ? p.execDept : '');
-  document.getElementById('ccPlanExecPerson').innerHTML = ccPlanOptionList(CC_PEOPLE.inspector, p ? p.execPerson : '');
-  document.getElementById('ccPlanRemark').value = p ? (p.remark || '') : '';
-  ccPlanTplChange();
+  document.getElementById('ccPlanExecDept').value = p ? (p.execDept || '') : '';
+  document.getElementById('ccPlanExecPerson').value = p ? (p.execPerson || '') : '';
   ccPlanDimChange();
   ccPlanFreqChange();
   ccPlanExecTypeChange();
-  ccPlanUpdatePreview();
   document.getElementById('ccPlanModal').classList.remove('hidden');
 }
 function closeCcPlanModal() { document.getElementById('ccPlanModal').classList.add('hidden'); }
@@ -10135,101 +10121,95 @@ function ccPlanDimChange() {
   document.getElementById('ccPlanContractorItem').style.display = dim === '承包商' ? '' : 'none';
   if (dim === '项目') document.getElementById('ccPlanContractor').value = '';
   else document.getElementById('ccPlanProject').value = '';
+  ccPlanProjectChange();
+  ccPlanContractorChange();
 }
-function ccPlanTplChange() {
-  const id = parseInt(document.getElementById('ccPlanTplId').value, 10);
-  const t = id ? ccTpl(id) : null;
-  document.getElementById('ccPlanType').value = t ? t.type : '';
+function ccPlanProjectChange() {
+  const dim = (document.querySelector('input[name=ccPlanDim]:checked') || {}).value || '项目';
+  const v = document.getElementById('ccPlanProject').value;
+  const item = document.getElementById('ccPlanRelContrItem');
+  if (dim === '项目' && v) {
+    item.style.display = '';
+    document.getElementById('ccPlanRelContr').innerHTML = (CC_PROJ_CONTRACTORS[v] || [])
+      .map(n => `<span class="tag tag-blue">${n}</span>`).join('');
+  } else item.style.display = 'none';
+}
+function ccPlanContractorChange() {
+  const dim = (document.querySelector('input[name=ccPlanDim]:checked') || {}).value || '项目';
+  const v = document.getElementById('ccPlanContractor').value;
+  const item = document.getElementById('ccPlanRelProjItem');
+  if (dim === '承包商' && v) {
+    item.style.display = '';
+    document.getElementById('ccPlanRelProj').innerHTML = (CC_CONTR_PROJECTS[v] || [])
+      .map(n => `<span class="tag tag-green">${n}</span>`).join('');
+  } else item.style.display = 'none';
 }
 function ccPlanFreqChange() {
   const freq = (document.querySelector('input[name=ccPlanFreq]:checked') || {}).value || '单次';
   const isCycle = freq === '周期';
   document.getElementById('ccPlanSingleTimeItem').style.display = isCycle ? 'none' : '';
-  ['ccPlanCycleStartItem', 'ccPlanCycleEndItem', 'ccPlanCycleTypeItem', 'ccPlanCycleTimeItem', 'ccPlanCycleRuleItem', 'ccPlanSkipItem', 'ccPlanExecNowItem']
+  document.getElementById('ccPlanExecObjItem').style.display = isCycle ? 'none' : '';
+  ['ccPlanCycleRangeItem', 'ccPlanGapItem', 'ccPlanSkipItem', 'ccPlanFirstItem']
     .forEach(id => document.getElementById(id).style.display = isCycle ? '' : 'none');
-  ccPlanUpdatePreview();
-}
-function ccPlanCycleTypeChange() {
-  const type = document.getElementById('ccPlanCycleType').value;
-  document.getElementById('ccPlanCycleRule').innerHTML = ccPlanCycleRuleHtml(ccPlanDefaultRule(type));
-  ccPlanUpdatePreview();
+  ccPlanExecTypeChange();
 }
 function ccPlanExecTypeChange() {
   const t = (document.querySelector('input[name=ccPlanExecType]:checked') || {}).value || '部门';
-  document.getElementById('ccPlanDeptItem').style.display = t === '部门' ? '' : 'none';
-  document.getElementById('ccPlanPersonItem').style.display = t === '个人' ? '' : 'none';
+  const single = ((document.querySelector('input[name=ccPlanFreq]:checked') || {}).value || '单次') === '单次';
+  document.getElementById('ccPlanDeptItem').style.display = single && t === '部门' ? '' : 'none';
+  document.getElementById('ccPlanPersonItem').style.display = single && t === '个人' ? '' : 'none';
   if (t === '部门') document.getElementById('ccPlanExecPerson').value = '';
   else document.getElementById('ccPlanExecDept').value = '';
 }
-function ccPlanReadRule() {
-  const type = document.getElementById('ccPlanCycleType').value;
-  const rule = { type, n: 1, days: [], day: 1, last: false, month: 1 };
-  const nEl = document.getElementById('ccPlanCycleN');
-  if (nEl) rule.n = Math.max(1, parseInt(nEl.value, 10) || 1);
-  document.querySelectorAll('input[name=ccPlanWeekday]:checked').forEach(c => rule.days.push(+c.value));
-  rule.days.sort((a, b) => a - b);
-  const md = document.getElementById('ccPlanMonthDay');
-  if (md) rule.day = Math.min(31, Math.max(1, parseInt(md.value, 10) || 1));
-  const ml = document.getElementById('ccPlanMonthLast');
-  if (ml) rule.last = ml.checked;
-  const ym = document.getElementById('ccPlanYearMonth');
-  if (ym) rule.month = Math.min(12, Math.max(1, parseInt(ym.value, 10) || 1));
-  const yd = document.getElementById('ccPlanYearDay');
-  if (yd) rule.day = Math.min(31, Math.max(1, parseInt(yd.value, 10) || 1));
-  return rule;
-}
-function ccPlanUpdatePreview() {
-  const el = document.getElementById('ccPlanPreview');
-  if (!el) return;
-  const freq = (document.querySelector('input[name=ccPlanFreq]:checked') || {}).value || '单次';
-  if (freq === '单次') {
-    const t = ccFromLocal(document.getElementById('ccPlanExecTime').value);
-    el.innerHTML = t ? `单次执行时间：<b>${t}</b>，仅生成一次检查任务，完成后不再生成。` : '请选择单次执行时间';
-    return;
-  }
-  const rule = ccPlanReadRule();
-  if (rule.type === '按周' && !rule.days.length) { el.innerHTML = '<span style="color:#fa8c16;">请至少选择一个星期</span>'; return; }
-  const start = ccFromLocal(document.getElementById('ccPlanCycleStart').value);
-  const end = ccFromLocal(document.getElementById('ccPlanCycleEnd').value);
-  const time = document.getElementById('ccPlanCycleTime').value || '09:00';
-  const skip = document.getElementById('ccPlanSkipWeekend').checked;
-  if (!start) { el.innerHTML = '请选择周期开始时间'; return; }
-  if (end && end < start) { el.innerHTML = '<span style="color:#fa8c16;">周期结束不能早于周期开始</span>'; return; }
-  const dates = ccGenDates(rule, start, end, time, skip, 5, true);
-  el.innerHTML = (dates.length ? dates.map((x, i) => `<div>${i + 1}. ${x.date}${x.shifted ? ' <span class="tag tag-orange" style="margin-left:4px;">跳过周末顺延</span>' : ''}</div>`).join('') : '周期范围内暂无未来执行日期')
-    + (end ? `<div style="color:#bbb;">周期截止：${end}</div>` : '');
-}
 function saveCcPlan() {
+  const name = document.getElementById('ccPlanName').value.trim();
   const dim = (document.querySelector('input[name=ccPlanDim]:checked') || {}).value || '项目';
   const target = dim === '项目' ? document.getElementById('ccPlanProject').value : document.getElementById('ccPlanContractor').value;
   const templateId = parseInt(document.getElementById('ccPlanTplId').value, 10);
-  const scope = document.getElementById('ccPlanScope').value.trim();
   const freq = (document.querySelector('input[name=ccPlanFreq]:checked') || {}).value || '单次';
-  const execType = (document.querySelector('input[name=ccPlanExecType]:checked') || {}).value || '部门';
-  const execDept = execType === '部门' ? document.getElementById('ccPlanExecDept').value : '';
-  const execPerson = execType === '个人' ? document.getElementById('ccPlanExecPerson').value : '';
-  const execTime = freq === '单次' ? ccFromLocal(document.getElementById('ccPlanExecTime').value) : (document.getElementById('ccPlanCycleTime').value || '09:00');
-  const cycleStart = freq === '周期' ? ccFromLocal(document.getElementById('ccPlanCycleStart').value) : '';
-  const cycleEnd = freq === '周期' ? ccFromLocal(document.getElementById('ccPlanCycleEnd').value) : '';
-  const rule = freq === '周期' ? ccPlanReadRule() : null;
-  const skipWeekend = freq === '周期' ? document.getElementById('ccPlanSkipWeekend').checked : false;
-  const execNow = freq === '周期' ? document.getElementById('ccPlanExecNow').checked : false;
-  const remark = document.getElementById('ccPlanRemark').value.trim();
-
-  if (!target) { alert(dim === '项目' ? '请选择项目' : '请选择承包商'); return; }
-  if (!templateId || !ccTpl(templateId)) { alert('请选择关联检查清单（PLN-02：须为已开启且存在生效版本的清单）'); return; }
-  if (!ccTplVer(templateId)) { alert('所选清单没有生效版本，请先到配置中心发布版本'); return; }
-  if (!scope) { alert('请填写检查范围'); return; }
-  if (freq === '单次' && !execTime) { alert('请选择单次执行时间'); return; }
-  if (freq === '周期') {
-    if (!cycleStart) { alert('请选择周期开始时间'); return; }
-    if (!cycleEnd) { alert('请选择周期结束时间'); return; }
-    if (cycleEnd < cycleStart) { alert('周期结束不能早于周期开始'); return; }
-    if (rule.type === '按周' && !rule.days.length) { alert('按周执行请至少选择一个星期'); return; }
-    if (!execTime) { alert('请选择执行时间'); return; }
+  const skipWeekend = ((document.querySelector('input[name=ccPlanSkip]:checked') || {}).value || '否') === '是';
+  let execTime = '', cycleStart = '', cycleEnd = '', firstExec = '', cycleType = '', cycleRule = '', rule = null;
+  let execType = '', execDept = '', execPerson = '', freqN = null, freqUnit = '';
+  if (freq === '单次') {
+    execType = (document.querySelector('input[name=ccPlanExecType]:checked') || {}).value || '部门';
+    execDept = execType === '部门' ? document.getElementById('ccPlanExecDept').value.trim() : '';
+    execPerson = execType === '个人' ? document.getElementById('ccPlanExecPerson').value.trim() : '';
+    execTime = ccFromLocal(document.getElementById('ccPlanExecTime').value);
+  } else {
+    cycleStart = ccFromLocal(document.getElementById('ccPlanCycleStart').value);
+    cycleEnd = ccFromLocal(document.getElementById('ccPlanCycleEnd').value);
+    firstExec = ccFromLocal(document.getElementById('ccPlanFirstExec').value);
+    freqN = Math.max(1, parseInt(document.getElementById('ccPlanCycleN').value, 10) || 1);
+    freqUnit = document.getElementById('ccPlanCycleUnit').value;
+    execTime = firstExec ? firstExec.slice(11, 16) : '09:00';
+    const typeMap = { '小时': '按天', '天': '按天', '周': '按周', '月': '按月', '年': '按年' };
+    cycleType = typeMap[freqUnit];
+    cycleRule = `每${freqN}${freqUnit}`;
+    const fe = firstExec ? ccParse(firstExec) : null;
+    rule = {
+      type: cycleType,
+      n: freqUnit === '小时' ? Math.max(1, Math.round(freqN / 24)) : freqN,
+      days: freqUnit === '周' ? [1] : [],
+      day: fe ? fe.getDate() : 1,
+      last: false,
+      month: fe ? fe.getMonth() + 1 : 1
+    };
   }
-  if (execType === '部门' && !execDept) { alert('请选择执行部门'); return; }
-  if (execType === '个人' && !execPerson) { alert('请选择执行人'); return; }
+
+  if (!name) { alert('请输入检查计划名称'); return; }
+  if (!target) { alert(dim === '项目' ? '请选择项目' : '请选择承包商'); return; }
+  if (!templateId || !ccTpl(templateId)) { alert('请选择检查类型（须为检查清单中已开启的清单）'); return; }
+  if (!ccTplVer(templateId)) { alert('所选清单没有生效版本，请先到配置中心发布版本'); return; }
+  if (freq === '单次') {
+    if (!execTime) { alert('请选择执行时间'); return; }
+    if (execType === '部门' && !execDept) { alert('请选择检查部门'); return; }
+    if (execType === '个人' && !execPerson) { alert('请选择检查人'); return; }
+  } else {
+    if (!cycleStart) { alert('请选择检查周期开始时间'); return; }
+    if (!cycleEnd) { alert('请选择检查周期结束时间'); return; }
+    if (cycleEnd < cycleStart) { alert('检查周期结束时间不能早于开始时间'); return; }
+    if (!firstExec) { alert('请选择首次执行时间'); return; }
+  }
 
   // PLN-01 冲突校验：同 dimension+target+templateId 且日期范围重叠（排除已取消与自身）
   const [newStart, newEnd] = freq === '单次' ? [execTime, execTime] : [cycleStart, cycleEnd || '2099-12-31 23:59'];
@@ -10257,25 +10237,31 @@ function saveCcPlan() {
     ccPlans.push(plan);
   }
   Object.assign(plan, {
-    dimension: dim, target, templateId, ver: v ? v.ver : '',
-    freq, execTime, cycleType: freq === '周期' ? rule.type : '', cycleRule: freq === '周期' ? ccRuleSummary(rule) : '',
-    rule: freq === '周期' ? rule : null, cycleStart, cycleEnd, skipWeekend, execNow,
-    execType, execDept, execPerson, remark, scope,
+    name, dimension: dim, target, templateId, ver: v ? v.ver : '',
+    freq, execTime, cycleType, cycleRule, rule, cycleStart, cycleEnd, firstExec, skipWeekend, freqN, freqUnit,
+    execNow: false, execType, execDept, execPerson, remark: '', scope: '',
     status: '待执行'
   });
 
-  if (freq === '周期' && execNow) {
-    const rec = createCcRecord(plan);
-    plan.instances.push(rec.id);
-    plan.status = '执行中';
-    ccLog(execPerson || execDept || '系统', '检查人', '生成检查记录', rec.code, `计划 ${plan.code} 开启立即执行，生成首条检查记录`, '检查计划');
-  }
   ccLog('王敏', '监管管理员', ccPlanEdit.mode === 'edit' ? '编辑检查计划' : '新建检查计划', plan.code,
-    `${dim}维度／${target}／${t.code} ${plan.ver}／${freq === '单次' ? '单次执行 ' + execTime : ccRuleSummary(rule) + ' ' + execTime}`, '检查计划');
+    `${name}／${dim}维度／${target}／${t.name} ${plan.ver}／${freq === '单次' ? '单次任务 ' + execTime : cycleRule}`, '检查计划');
   closeCcPlanModal();
   renderCcPlans();
   renderCcWork();
-  alert(`计划 ${plan.code} 已保存`);
+  alert(`计划「${name}」已保存`);
+}
+
+// 删除计划
+function ccPlanDelete(id) {
+  const p = ccPlans.find(x => x.id === id);
+  if (!p) return;
+  if (p.status === '执行中') { alert('执行中的计划不可删除，请先关闭'); return; }
+  if (!confirm(`确认删除计划「${p.name || p.target}」（${p.code}）？已生成的检查记录不受影响。`)) return;
+  ccPlans.splice(ccPlans.indexOf(p), 1);
+  ccLog('王敏', '监管管理员', '删除检查计划', p.code, `删除计划「${p.name || p.target}」，已生成记录不受影响`, '检查计划');
+  renderCcPlans();
+  renderCcWork();
+  alert('计划已删除');
 }
 
 // 执行确认
@@ -10360,27 +10346,24 @@ function renderCcPlanDetail() {
   document.getElementById('ccPlanDetailBody').innerHTML = `
     <div class="drawer-section-title">计划信息</div>
     <div class="info-grid" style="grid-template-columns:120px 1fr 120px 1fr;">
-      <div class="ig-label">计划编号</div><div>${p.code}</div>
+      <div class="ig-label">计划名称</div><div>${ccEsc(p.name || '—')}</div>
       <div class="ig-label">状态</div><div><span class="tag ${ccPlanStatusClass[p.status] || 'tag-gray'}">${p.status}</span></div>
       <div class="ig-label">检查维度</div><div>${p.dimension}维度</div>
-      <div class="ig-label">项目/承包商</div><div>${ccEsc(p.target)}</div>
-      <div class="ig-label">关联清单</div><div>${t ? `${t.code} ${t.name} ${v ? v.ver : '—'}` : '—'}</div>
+      <div class="ig-label">${p.dimension === '项目' ? '项目名称' : '承包商名称'}</div><div>${ccEsc(p.target)}</div>
+      <div class="ig-label">关联清单</div><div>${t ? `${t.name} ${v ? v.ver : '—'}` : '—'}</div>
       <div class="ig-label">检查类型</div><div>${t ? t.type : '—'}</div>
-      <div class="ig-label">检查范围</div><div>${ccEsc(p.scope || '—')}</div>
-      <div class="ig-label">执行主体</div><div>${p.execType === '部门' ? ccEsc(p.execDept) + '（部门）' : ccEsc(p.execPerson) + '（个人）'}</div>
+      <div class="ig-label">执行对象</div><div>${p.execType === '部门' ? ccEsc(p.execDept) + '（部门）' : (p.execType === '个人' ? ccEsc(p.execPerson) + '（人）' : '—')}</div>
       <div class="ig-label">下次执行</div><div>${ccPlanNextExec(p)}</div>
-      <div class="ig-label">备注</div><div>${ccEsc(p.remark || '—')}</div>
-      ${p.status === '已取消' ? `<div class="ig-label">取消原因</div><div>${ccEsc(p.cancelReason)}</div>` : ''}
+      ${p.status === '已取消' ? `<div class="ig-label">关闭原因</div><div>${ccEsc(p.cancelReason)}</div>` : ''}
     </div>
-    <div class="drawer-section-title">执行频次与周期规则</div>
+    <div class="drawer-section-title">执行频次</div>
     <div class="info-grid" style="grid-template-columns:120px 1fr 120px 1fr;">
-      <div class="ig-label">执行频次</div><div>${p.freq === '单次' ? '单次执行' : '周期任务'}</div>
-      <div class="ig-label">执行时间</div><div>${p.execTime}</div>
-      ${p.freq === '单次' ? `<div class="ig-label">单次时间</div><div>${p.execTime}</div>` : `
-        <div class="ig-label">周期规则</div><div>${ccEsc(p.cycleRule)}（${ccEsc(p.cycleType)}）</div>
-        <div class="ig-label">周期范围</div><div>${p.cycleStart} ~ ${p.cycleEnd}</div>
-        <div class="ig-label">跳过周末</div><div>${p.skipWeekend ? '开启（顺延至下一工作日）' : '关闭'}</div>
-        <div class="ig-label">立即执行</div><div>${p.execNow ? '开启' : '关闭'}</div>`}
+      <div class="ig-label">执行频次</div><div>${p.freq === '单次' ? '单次任务' : '周期任务'}</div>
+      ${p.freq === '单次' ? `<div class="ig-label">执行时间</div><div>${p.execTime}</div>` : `
+        <div class="ig-label">检查周期</div><div>${p.cycleStart} ~ ${p.cycleEnd}</div>
+        <div class="ig-label">排查周期</div><div>${ccEsc(p.cycleRule)}</div>
+        <div class="ig-label">首次执行时间</div><div>${p.firstExec || p.cycleStart}</div>
+        <div class="ig-label">是否跳过周末</div><div>${p.skipWeekend ? '是（顺延至下一工作日）' : '否'}</div>`}
     </div>
     <div class="drawer-section-title">清单摘要（${v ? v.ver : '—'}）</div>
     ${v && v.items ? `<div class="table-wrap" style="border:1px solid #f0f0f0;border-radius:6px;margin-bottom:18px;">
