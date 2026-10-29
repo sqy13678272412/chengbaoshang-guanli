@@ -8987,7 +8987,6 @@ function renderCcTplList() {
     const draft = t.versions.find(v => v.status === '草稿');
     const planCount = ccPlans.filter(p => p.templateId === t.id).length;
     return `<tr>
-      <td>${t.code}</td>
       <td>${t.name}</td>
       <td>${t.type}</td>
       <td>${ccNowVer(t)}</td>
@@ -9007,7 +9006,7 @@ function renderCcTplList() {
   document.getElementById('ccTplBody').innerHTML = `
     <div class="toolbar">
       <div class="filters">
-        <input type="text" id="ccFilterKw" placeholder="清单编号 / 名称" value="${ccTplFilter.kw}">
+        <input type="text" id="ccFilterKw" placeholder="清单名称" value="${ccTplFilter.kw}">
         <select id="ccFilterType">
           <option value="">全部类型</option>${typeOpts}
         </select>
@@ -9025,11 +9024,11 @@ function renderCcTplList() {
       <table style="min-width:1000px;">
         <thead>
           <tr>
-            <th>清单编号</th><th>清单名称</th><th>检查类型</th><th>当前版本</th>
+            <th>清单名称</th><th>检查类型</th><th>当前版本</th>
             <th>检查项任务数</th><th>引用计划数</th><th>状态</th><th class="sticky-col">操作</th>
           </tr>
         </thead>
-        <tbody>${rows || '<tr><td colspan="8"><div class="mo-empty">暂无检查清单</div></td></tr>'}</tbody>
+        <tbody>${rows || '<tr><td colspan="7"><div class="mo-empty">暂无检查清单</div></td></tr>'}</tbody>
       </table>
     </div>`;
 }
