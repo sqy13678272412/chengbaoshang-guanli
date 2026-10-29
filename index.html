@@ -14386,15 +14386,14 @@ function c2mBizHtml() {
   ];
   return `
     <div style="font-size:12px;color:#999;margin-bottom:10px;">当前角色：${me.name}（${me.role}）</div>
-    ${icons.map(x => `
-      <div class="mo-card" onclick="${x.go}" style="display:flex;align-items:center;gap:14px;padding:16px;margin-bottom:12px;">
-        <div style="width:52px;height:52px;border-radius:14px;background:#f0f7ff;display:flex;align-items:center;justify-content:center;font-size:26px;flex:none;">${x.icon}</div>
-        <div style="flex:1;">
-          <div style="font-weight:600;font-size:15px;">${x.t}</div>
-          <div style="font-size:12px;color:#999;margin-top:2px;">${x.d}</div>
-        </div>
-        <span style="color:#ccc;">›</span>
-      </div>`).join('')}`;
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+      ${icons.map(x => `
+        <div class="mo-card" onclick="${x.go}" style="text-align:center;padding:18px 4px 14px;cursor:pointer;">
+          <div style="width:46px;height:46px;margin:0 auto 8px;border-radius:12px;background:#f0f7ff;display:flex;align-items:center;justify-content:center;font-size:24px;">${x.icon}</div>
+          <div style="font-weight:600;font-size:14px;">${x.t}</div>
+          <div style="font-size:11px;color:#999;margin-top:4px;line-height:1.5;">${x.d}</div>
+        </div>`).join('')}
+    </div>`;
 }
 function c2mRectTodoHtml() {
   const list = c2mVisibleRects().filter(r => r.status === '待分配' || r.status === '整改中')
