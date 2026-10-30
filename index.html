@@ -7192,8 +7192,7 @@ function openToolApplyHandle(id) {
   document.getElementById('tahSummary').textContent = a.applicant + '（' + a.company + '）申请 ' + a.count + ' 台工机具，请逐台选择处理结果';
   const last = a.nodes.length ? a.nodes[a.nodes.length - 1].results : {};
   document.getElementById('tahBody').innerHTML = `
-    ${a.nodes.length ? `<div style="font-size:13px;font-weight:600;margin:4px 0 6px;">历史处理节点（${a.nodes.length}）</div>${toolApplyNodesHtml(a)}` : '<div style="color:#999;font-size:12px;padding:4px 0;">该申请尚无处理记录，本次为首个处理节点</div>'}
-    <div style="font-size:13px;font-weight:600;margin:12px 0 6px;">本次处理（${['部门审核', '分管领导审批', '总经理审批'][a.nodes.length] || '第 ' + (a.nodes.length + 1) + ' 级审核'}）</div>
+    <div style="font-size:13px;font-weight:600;margin:4px 0 6px;">本次处理（${['部门审核', '分管领导审批', '总经理审批'][a.nodes.length] || '第 ' + (a.nodes.length + 1) + ' 级审核'}）</div>
     <div class="table-wrap" style="max-height:280px;overflow:auto;">
       <table style="min-width:1600px;">
         <thead><tr>${TOOL_APPLY_COLS.slice(0, 3).map(c => `<th>${c}</th>`).join('')}<th>处理结果</th></tr></thead>
@@ -7205,7 +7204,8 @@ function openToolApplyHandle(id) {
           </select></td>
         </tr>`).join('')}</tbody>
       </table>
-    </div>`;
+    </div>
+    ${a.nodes.length ? `<div style="font-size:13px;font-weight:600;margin:14px 0 6px;">审批时间轴（历史处理节点 ${a.nodes.length}）</div>${toolApplyNodesHtml(a)}` : '<div style="color:#999;font-size:12px;padding:8px 0 0;">该申请尚无处理记录，本次为首个处理节点</div>'}`;
   document.getElementById('tahOpinion').value = '';
   document.getElementById('toolApplyHandleModal').classList.remove('hidden');
 }
