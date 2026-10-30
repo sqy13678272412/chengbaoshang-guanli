@@ -794,34 +794,51 @@
 
     <!-- 工机具台账管理 -->
     <div class="card page hidden" id="page-toolAccount">
-      <div class="relation-layout">
-        <div class="relation-left" id="toolLeft"></div>
-        <div style="flex:1;min-width:0;">
-          <div class="table-wrap">
-            <table style="min-width:1500px;">
-              <thead>
-                <tr>
-                  <th>机具编号</th>
-                  <th>机具名称</th>
-                  <th>型号</th>
-                  <th>出厂编号</th>
-                  <th>生产厂家</th>
-                  <th>出厂日期</th>
-                  <th>机具分类</th>
-                  <th>证书编号</th>
-                  <th>检定日期</th>
-                  <th>下次检定日期</th>
-                  <th>检定预警</th>
-                  <th>证书附件</th>
-                  <th>机具照片</th>
-                  <th>备注</th>
-                  <th class="sticky-col">操作</th>
-                </tr>
-              </thead>
-              <tbody id="tbody-toolAccount"></tbody>
-            </table>
-          </div>
+      <div class="toolbar">
+        <div class="filters">
+          <input type="text" id="filterKw-toolAccount" placeholder="机具编号 / 机具名称 / 所属承包商">
+          <select id="filterStatus-toolAccount">
+            <option value="">全部状态</option>
+            <option>待审核</option>
+            <option>审核中</option>
+            <option>已通过</option>
+            <option>已拒绝</option>
+          </select>
+          <button class="btn btn-plain" onclick="renderToolAccount()">查询</button>
+          <button class="btn btn-plain" onclick="resetToolFilter()">重置</button>
         </div>
+        <div>
+          <button class="btn btn-plain" onclick="toolImport()">导入</button>
+          <button class="btn btn-plain" onclick="toolExport()">导出</button>
+          <button class="btn btn-primary" onclick="openToolAdd()">+ 新增</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table style="min-width:1800px;">
+          <thead>
+            <tr>
+              <th>所属承包商</th>
+              <th>机具编号</th>
+              <th>机具名称</th>
+              <th>型号</th>
+              <th>出厂编号</th>
+              <th>生产厂家</th>
+              <th>出厂日期</th>
+              <th>机具分类</th>
+              <th>证书编号</th>
+              <th>最新检查日期</th>
+              <th>检查周期</th>
+              <th>下次检查日期</th>
+              <th>检定预警</th>
+              <th>状态</th>
+              <th>证书附件</th>
+              <th>机具照片</th>
+              <th>备注</th>
+              <th class="sticky-col">操作</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-toolAccount"></tbody>
+        </table>
       </div>
     </div>
 
@@ -1934,6 +1951,107 @@
     <div class="modal-footer">
       <button class="btn btn-plain" onclick="closeToolWarn()">取消</button>
       <button class="btn btn-primary" onclick="saveToolWarn()">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- 工机具台账：新增 -->
+<div class="modal-mask hidden" id="toolAddModal">
+  <div class="modal wide">
+    <div class="modal-header">
+      新增机具台账
+      <span class="modal-close" onclick="closeToolAdd()">✕</span>
+    </div>
+    <div class="modal-body">
+      <div class="modal-body grid" style="padding:0;">
+        <div class="form-item">
+          <label class="required">所属承包商</label>
+          <select id="taCompany"></select>
+        </div>
+        <div class="form-item">
+          <label class="required">机具编号</label>
+          <input type="text" id="taId" placeholder="请输入机具编号">
+        </div>
+        <div class="form-item">
+          <label class="required">机具名称</label>
+          <input type="text" id="taName" placeholder="请输入机具名称">
+        </div>
+        <div class="form-item">
+          <label>型号</label>
+          <input type="text" id="taModel" placeholder="请输入型号">
+        </div>
+        <div class="form-item">
+          <label>出厂编号</label>
+          <input type="text" id="taFactoryNo" placeholder="请输入出厂编号">
+        </div>
+        <div class="form-item">
+          <label>生产厂家</label>
+          <input type="text" id="taManufacturer" placeholder="请输入生产厂家">
+        </div>
+        <div class="form-item">
+          <label>出厂日期</label>
+          <input type="date" id="taProdDate">
+        </div>
+        <div class="form-item">
+          <label>机具分类</label>
+          <select id="taCategory">
+            <option value="">请选择</option>
+            <option>焊接设备</option>
+            <option>电动工具</option>
+            <option>高处作业设备</option>
+            <option>动力设备</option>
+            <option>检测仪器</option>
+            <option>起重设备</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <label>证书编号</label>
+          <input type="text" id="taCertNo" placeholder="请输入证书编号">
+        </div>
+        <div class="form-item">
+          <label>最新检查日期</label>
+          <input type="date" id="taInspectDate">
+        </div>
+        <div class="form-item">
+          <label>检查周期</label>
+          <select id="taCycle">
+            <option value="">请选择</option>
+            <option>3个月</option>
+            <option>6个月</option>
+            <option>12个月</option>
+            <option>24个月</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <label>下次检查日期</label>
+          <input type="date" id="taNextInspectDate">
+        </div>
+        <div class="form-item">
+          <label>状态</label>
+          <select id="taStatus">
+            <option>待审核</option>
+            <option>审核中</option>
+            <option>已通过</option>
+            <option>已拒绝</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <label>证书附件</label>
+          <input type="text" id="taCertFile" placeholder="附件名称，如：检定证书.pdf">
+        </div>
+        <div class="form-item">
+          <label>机具照片</label>
+          <input type="text" id="taPhoto" placeholder="照片名称，如：机具照片.jpg">
+        </div>
+      </div>
+      <div class="form-item">
+        <label>备注</label>
+        <textarea id="taRemark" rows="2" placeholder="请输入备注"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-plain" onclick="closeToolAdd()">取消</button>
+      <button class="btn btn-primary" onclick="saveToolAdd()">确定</button>
     </div>
   </div>
 </div>
@@ -6726,30 +6844,30 @@ document.getElementById('workModal').addEventListener('click', function (e) {
 // 工机具台账（公司 → 机具数组）
 const toolAccounts = {
   '宏远建筑有限公司': [
-    { id: 'JJ-2023-001', name: '电焊机', model: 'ZX7-400', factoryNo: 'CH-88213', manufacturer: '上海通用电焊机股份有限公司', prodDate: '2023-03-15', category: '焊接设备', certNo: 'JD-2023-11876', inspectDate: '2026-06-10', nextInspectDate: '2027-06-10', certFile: '电焊机检定证书.pdf', photo: '电焊机照片.jpg', remark: '一号厂房现场使用', warnDays: 30 },
-    { id: 'JJ-2023-002', name: '角磨机', model: 'GWS 900-100', factoryNo: 'GM-55021', manufacturer: '博世电动工具（中国）有限公司', prodDate: '2023-05-20', category: '电动工具', certNo: 'JD-2023-12540', inspectDate: '2026-05-12', nextInspectDate: '2026-11-12', certFile: '角磨机合格证.pdf', photo: '角磨机照片.jpg', remark: '', warnDays: 30 },
-    { id: 'JJ-2024-003', name: '移动式脚手架', model: 'MJ-1700', factoryNo: 'JS-30211', manufacturer: '江苏苏建脚手架有限公司', prodDate: '2024-02-18', category: '高处作业设备', certNo: 'JD-2024-03652', inspectDate: '2026-04-20', nextInspectDate: '2027-04-20', certFile: '脚手架验收报告.pdf', photo: '脚手架照片.jpg', remark: '搭设前需专项检查', warnDays: 15 }
+    { id: 'JJ-2023-001', name: '电焊机', model: 'ZX7-400', factoryNo: 'CH-88213', manufacturer: '上海通用电焊机股份有限公司', prodDate: '2023-03-15', category: '焊接设备', certNo: 'JD-2023-11876', inspectDate: '2026-06-10', nextInspectDate: '2027-06-10', cycle: '12个月', status: '已通过', certFile: '电焊机检定证书.pdf', photo: '电焊机照片.jpg', remark: '一号厂房现场使用', warnDays: 30 },
+    { id: 'JJ-2023-002', name: '角磨机', model: 'GWS 900-100', factoryNo: 'GM-55021', manufacturer: '博世电动工具（中国）有限公司', prodDate: '2023-05-20', category: '电动工具', certNo: 'JD-2023-12540', inspectDate: '2026-05-12', nextInspectDate: '2026-11-12', cycle: '6个月', status: '已通过', certFile: '角磨机合格证.pdf', photo: '角磨机照片.jpg', remark: '', warnDays: 30 },
+    { id: 'JJ-2024-003', name: '移动式脚手架', model: 'MJ-1700', factoryNo: 'JS-30211', manufacturer: '江苏苏建脚手架有限公司', prodDate: '2024-02-18', category: '高处作业设备', certNo: 'JD-2024-03652', inspectDate: '2026-04-20', nextInspectDate: '2027-04-20', cycle: '12个月', status: '已通过', certFile: '脚手架验收报告.pdf', photo: '脚手架照片.jpg', remark: '搭设前需专项检查', warnDays: 15 }
   ],
   '华美装饰工程有限公司': [
-    { id: 'JJ-2023-011', name: '电锤', model: 'GBH 2-26', factoryNo: 'DC-66120', manufacturer: '博世电动工具（中国）有限公司', prodDate: '2023-08-11', category: '电动工具', certNo: 'JD-2023-20118', inspectDate: '2026-06-01', nextInspectDate: '2027-06-01', certFile: '电锤合格证.pdf', photo: '电锤照片.jpg', remark: '', warnDays: 30 },
-    { id: 'JJ-2024-012', name: '手提切割机', model: 'CM4SB2', factoryNo: 'QG-11880', manufacturer: '牧田（中国）有限公司', prodDate: '2024-01-09', category: '电动工具', certNo: 'JD-2024-01108', inspectDate: '2026-03-15', nextInspectDate: '2026-11-15', certFile: '切割机检定证书.pdf', photo: '切割机照片.jpg', remark: '更换新锯片后复检', warnDays: 30 },
-    { id: 'JJ-2022-013', name: '空气压缩机', model: 'V-0.6/8', factoryNo: 'KY-90255', manufacturer: '浙江红五环机械股份有限公司', prodDate: '2022-11-30', category: '动力设备', certNo: 'JD-2022-30056', inspectDate: '2025-02-14', nextInspectDate: '2025-08-14', certFile: '压力表检定证书.pdf', photo: '压力表照片.jpg', remark: '压力表已超期，送检中', warnDays: 0 }
+    { id: 'JJ-2023-011', name: '电锤', model: 'GBH 2-26', factoryNo: 'DC-66120', manufacturer: '博世电动工具（中国）有限公司', prodDate: '2023-08-11', category: '电动工具', certNo: 'JD-2023-20118', inspectDate: '2026-06-01', nextInspectDate: '2027-06-01', cycle: '12个月', status: '已通过', certFile: '电锤合格证.pdf', photo: '电锤照片.jpg', remark: '', warnDays: 30 },
+    { id: 'JJ-2024-012', name: '手提切割机', model: 'CM4SB2', factoryNo: 'QG-11880', manufacturer: '牧田（中国）有限公司', prodDate: '2024-01-09', category: '电动工具', certNo: 'JD-2024-01108', inspectDate: '2026-03-15', nextInspectDate: '2026-11-15', cycle: '6个月', status: '已通过', certFile: '切割机检定证书.pdf', photo: '切割机照片.jpg', remark: '更换新锯片后复检', warnDays: 30 },
+    { id: 'JJ-2022-013', name: '空气压缩机', model: 'V-0.6/8', factoryNo: 'KY-90255', manufacturer: '浙江红五环机械股份有限公司', prodDate: '2022-11-30', category: '动力设备', certNo: 'JD-2022-30056', inspectDate: '2025-02-14', nextInspectDate: '2025-08-14', cycle: '6个月', status: '已拒绝', certFile: '压力表检定证书.pdf', photo: '压力表照片.jpg', remark: '压力表已超期，送检中', warnDays: 0 }
   ],
   '安捷消防技术有限公司': [
-    { id: 'JJ-2024-021', name: '消防烟枪', model: 'YW-09', factoryNo: 'XY-70231', manufacturer: '北京烟枪消防检测设备有限公司', prodDate: '2024-04-02', category: '检测仪器', certNo: 'JD-2024-05021', inspectDate: '2026-05-28', nextInspectDate: '2027-05-28', certFile: '烟枪校准证书.pdf', photo: '烟枪照片.jpg', remark: '', warnDays: 30 },
-    { id: 'JJ-2023-022', name: '兆欧表', model: 'ZC25B-4', factoryNo: 'ZO-44098', manufacturer: '上海第六电表厂有限公司', prodDate: '2023-09-16', category: '检测仪器', certNo: 'JD-2023-22145', inspectDate: '2026-06-05', nextInspectDate: '2027-06-05', certFile: '兆欧表检定证书.pdf', photo: '兆欧表照片.jpg', remark: '', warnDays: 30 }
+    { id: 'JJ-2024-021', name: '消防烟枪', model: 'YW-09', factoryNo: 'XY-70231', manufacturer: '北京烟枪消防检测设备有限公司', prodDate: '2024-04-02', category: '检测仪器', certNo: 'JD-2024-05021', inspectDate: '2026-05-28', nextInspectDate: '2027-05-28', cycle: '12个月', status: '已通过', certFile: '烟枪校准证书.pdf', photo: '烟枪照片.jpg', remark: '', warnDays: 30 },
+    { id: 'JJ-2023-022', name: '兆欧表', model: 'ZC25B-4', factoryNo: 'ZO-44098', manufacturer: '上海第六电表厂有限公司', prodDate: '2023-09-16', category: '检测仪器', certNo: 'JD-2023-22145', inspectDate: '2026-06-05', nextInspectDate: '2027-06-05', cycle: '12个月', status: '审核中', certFile: '兆欧表检定证书.pdf', photo: '兆欧表照片.jpg', remark: '', warnDays: 30 }
   ],
   '迅达电梯工程有限公司': [
-    { id: 'JJ-2023-031', name: '曳引机测试仪', model: 'YT-3000', factoryNo: 'YY-11028', manufacturer: '苏州电梯检测仪器有限公司', prodDate: '2023-06-25', category: '检测仪器', certNo: 'JD-2023-17082', inspectDate: '2026-04-18', nextInspectDate: '2027-04-18', certFile: '测试仪校准证书.pdf', photo: '测试仪照片.jpg', remark: '', warnDays: 30 },
-    { id: 'JJ-2024-032', name: '手动葫芦', model: 'HSZ-2T', factoryNo: 'HL-55671', manufacturer: '杭州武林机器有限公司', prodDate: '2024-03-08', category: '起重设备', certNo: 'JD-2024-02390', inspectDate: '2026-05-30', nextInspectDate: '2026-11-20', certFile: '葫芦检验合格证.pdf', photo: '葫芦照片.jpg', remark: '', warnDays: 30 }
+    { id: 'JJ-2023-031', name: '曳引机测试仪', model: 'YT-3000', factoryNo: 'YY-11028', manufacturer: '苏州电梯检测仪器有限公司', prodDate: '2023-06-25', category: '检测仪器', certNo: 'JD-2023-17082', inspectDate: '2026-04-18', nextInspectDate: '2027-04-18', cycle: '12个月', status: '已通过', certFile: '测试仪校准证书.pdf', photo: '测试仪照片.jpg', remark: '', warnDays: 30 },
+    { id: 'JJ-2024-032', name: '手动葫芦', model: 'HSZ-2T', factoryNo: 'HL-55671', manufacturer: '杭州武林机器有限公司', prodDate: '2024-03-08', category: '起重设备', certNo: 'JD-2024-02390', inspectDate: '2026-05-30', nextInspectDate: '2026-11-20', cycle: '6个月', status: '已通过', certFile: '葫芦检验合格证.pdf', photo: '葫芦照片.jpg', remark: '', warnDays: 30 }
   ],
   '中建机电安装工程有限公司': [
-    { id: 'JJ-2023-041', name: '套丝机', model: 'Z1T-R2', factoryNo: 'TS-33147', manufacturer: '杭州宁达电动工具有限公司', prodDate: '2023-07-19', category: '电动工具', certNo: 'JD-2023-19033', inspectDate: '2026-06-08', nextInspectDate: '2027-06-08', certFile: '套丝机合格证.pdf', photo: '套丝机照片.jpg', remark: '', warnDays: 30 },
-    { id: 'JJ-2024-042', name: '液压弯管机', model: 'DWG-2A', factoryNo: 'YW-22309', manufacturer: '江苏力沃液压机械有限公司', prodDate: '2024-05-27', category: '动力设备', certNo: 'JD-2024-04172', inspectDate: '2026-04-25', nextInspectDate: '2026-11-25', certFile: '弯管机检定证书.pdf', photo: '弯管机照片.jpg', remark: '', warnDays: 30 }
+    { id: 'JJ-2023-041', name: '套丝机', model: 'Z1T-R2', factoryNo: 'TS-33147', manufacturer: '杭州宁达电动工具有限公司', prodDate: '2023-07-19', category: '电动工具', certNo: 'JD-2023-19033', inspectDate: '2026-06-08', nextInspectDate: '2027-06-08', cycle: '12个月', status: '已通过', certFile: '套丝机合格证.pdf', photo: '套丝机照片.jpg', remark: '', warnDays: 30 },
+    { id: 'JJ-2024-042', name: '液压弯管机', model: 'DWG-2A', factoryNo: 'YW-22309', manufacturer: '江苏力沃液压机械有限公司', prodDate: '2024-05-27', category: '动力设备', certNo: 'JD-2024-04172', inspectDate: '2026-04-25', nextInspectDate: '2026-11-25', cycle: '6个月', status: '已通过', certFile: '弯管机检定证书.pdf', photo: '弯管机照片.jpg', remark: '', warnDays: 30 }
   ]
 };
 
-let selectedToolContractor = null;
+function toolStatusClass(s) { return { '待审核': 'tag-gray', '审核中': 'tag-blue', '已通过': 'tag-green', '已拒绝': 'tag-red' }[s] || 'tag-gray'; }
 
 function inspectWarn(t) {
   const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -6760,17 +6878,20 @@ function inspectWarn(t) {
   return { cls: 'tag-green', text: '正常' };
 }
 
+function allToolList() {
+  return Object.keys(toolAccounts).flatMap(n => toolAccounts[n].map(t => ({ ...t, company: n })));
+}
+
 function renderToolAccount() {
-  const names = Object.keys(toolAccounts);
-  if (!selectedToolContractor || !names.includes(selectedToolContractor)) selectedToolContractor = names[0];
-  document.getElementById('toolLeft').innerHTML = names.map(n => `
-    <div class="left-item ${n === selectedToolContractor ? 'active' : ''}" onclick="selectToolContractor('${n}')">
-      <span>${n}</span><span class="left-count">${toolAccounts[n].length} 台</span>
-    </div>`).join('');
-  const list = toolAccounts[selectedToolContractor] || [];
+  const kw = (document.getElementById('filterKw-toolAccount').value || '').trim();
+  const st = document.getElementById('filterStatus-toolAccount').value;
+  let list = allToolList();
+  if (kw) list = list.filter(t => (t.id + t.name + t.company).indexOf(kw) >= 0);
+  if (st) list = list.filter(t => t.status === st);
   document.getElementById('tbody-toolAccount').innerHTML = list.length ? list.map(t => {
     const w = inspectWarn(t);
     return `<tr>
+      <td>${t.company}</td>
       <td>${t.id}</td>
       <td>${t.name}</td>
       <td>${t.model}</td>
@@ -6780,23 +6901,29 @@ function renderToolAccount() {
       <td>${t.category}</td>
       <td>${t.certNo}</td>
       <td>${t.inspectDate}</td>
+      <td>${t.cycle || '—'}</td>
       <td>${t.nextInspectDate}</td>
       <td><span class="tag ${w.cls}">${w.text}</span></td>
-      <td><span style="color:#1890ff;cursor:pointer;" onclick="openToolView('${selectedToolContractor}','${t.id}')">📎 ${t.certFile}</span></td>
-      <td><span style="color:#1890ff;cursor:pointer;" onclick="openToolView('${selectedToolContractor}','${t.id}')">🖼 ${t.photo}</span></td>
+      <td><span class="tag ${toolStatusClass(t.status)}">${t.status || '—'}</span></td>
+      <td><span style="color:#1890ff;cursor:pointer;" onclick="openToolView('${t.company}','${t.id}')">📎 ${t.certFile}</span></td>
+      <td><span style="color:#1890ff;cursor:pointer;" onclick="openToolView('${t.company}','${t.id}')">🖼 ${t.photo}</span></td>
       <td title="${t.remark}">${t.remark || '—'}</td>
       <td class="sticky-col">
-        <span class="link" onclick="openToolView('${selectedToolContractor}','${t.id}')">查看</span>
-        <span class="link" onclick="openToolWarn('${selectedToolContractor}','${t.id}')">预警设置</span>
+        <span class="link" onclick="openToolView('${t.company}','${t.id}')">查看</span>
+        <span class="link" onclick="openToolWarn('${t.company}','${t.id}')">预警设置</span>
       </td>
     </tr>`;
-  }).join('') : '<tr><td colspan="15" style="text-align:center;color:#999;padding:40px;">暂无数据</td></tr>';
+  }).join('') : '<tr><td colspan="18" style="text-align:center;color:#999;padding:40px;">暂无数据</td></tr>';
 }
 
-function selectToolContractor(name) {
-  selectedToolContractor = name;
+function resetToolFilter() {
+  document.getElementById('filterKw-toolAccount').value = '';
+  document.getElementById('filterStatus-toolAccount').value = '';
   renderToolAccount();
 }
+
+function toolImport() { alert('导入成功：已解析台账模板并新增机具数据（原型模拟）'); renderToolAccount(); }
+function toolExport() { alert('导出成功：已生成工机具台账明细.xlsx（原型模拟）'); }
 
 function openToolView(company, id) {
   const t = (toolAccounts[company] || []).find(x => x.id === id);
@@ -6811,9 +6938,11 @@ function openToolView(company, id) {
     <div class="ig-label">出厂日期</div><div>${t.prodDate}</div>
     <div class="ig-label">机具分类</div><div>${t.category}</div>
     <div class="ig-label">证书编号</div><div>${t.certNo}</div>
-    <div class="ig-label">检定日期</div><div>${t.inspectDate}</div>
-    <div class="ig-label">下次检定日期</div><div>${t.nextInspectDate}</div>
+    <div class="ig-label">最新检查日期</div><div>${t.inspectDate}</div>
+    <div class="ig-label">检查周期</div><div>${t.cycle || '—'}</div>
+    <div class="ig-label">下次检查日期</div><div>${t.nextInspectDate}</div>
     <div class="ig-label">检定预警</div><div><span class="tag ${w.cls}">${w.text}</span></div>
+    <div class="ig-label">状态</div><div><span class="tag ${toolStatusClass(t.status)}">${t.status || '—'}</span></div>
     <div class="ig-label">证书附件</div><div style="color:#1890ff;">📎 ${t.certFile}</div>
     <div class="ig-label">机具照片</div><div style="color:#1890ff;">🖼 ${t.photo}</div>
     <div class="ig-label">提前预警天数</div><div>${t.warnDays == null ? 30 : t.warnDays} 天</div>
@@ -6839,6 +6968,34 @@ function saveToolWarn() {
   t.warnDays = Math.floor(Number(v));
   closeToolWarn();
   renderToolAccount();
+}
+
+function openToolAdd() {
+  document.getElementById('taCompany').innerHTML = Object.keys(toolAccounts).map(n => `<option>${n}</option>`).join('');
+  ['taId', 'taName', 'taModel', 'taFactoryNo', 'taManufacturer', 'taProdDate', 'taCertNo', 'taInspectDate', 'taNextInspectDate', 'taCertFile', 'taPhoto', 'taRemark'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('taCategory').value = '';
+  document.getElementById('taCycle').value = '';
+  document.getElementById('taStatus').value = '待审核';
+  document.getElementById('toolAddModal').classList.remove('hidden');
+}
+function closeToolAdd() { document.getElementById('toolAddModal').classList.add('hidden'); }
+function saveToolAdd() {
+  const v = id => document.getElementById(id).value.trim();
+  const company = v('taCompany'), tid = v('taId'), tname = v('taName');
+  if (!company) { alert('请选择所属承包商'); return; }
+  if (!tid) { alert('请输入机具编号'); return; }
+  if (!tname) { alert('请输入机具名称'); return; }
+  if (toolAccounts[company].some(t => t.id === tid)) { alert('该机具编号已存在，请更换'); return; }
+  toolAccounts[company].push({
+    id: tid, name: tname, model: v('taModel'), factoryNo: v('taFactoryNo'),
+    manufacturer: v('taManufacturer'), prodDate: v('taProdDate'), category: v('taCategory'),
+    certNo: v('taCertNo'), inspectDate: v('taInspectDate'), cycle: v('taCycle'),
+    nextInspectDate: v('taNextInspectDate'), status: document.getElementById('taStatus').value,
+    certFile: v('taCertFile') || '—', photo: v('taPhoto') || '—', remark: v('taRemark'), warnDays: 30
+  });
+  closeToolAdd();
+  renderToolAccount();
+  alert('新增成功，已加入台账');
 }
 
 // ===== 工机具检查清单配置 =====
