@@ -214,6 +214,8 @@
     justify-content: center;
     z-index: 100;
   }
+  /* 从其他弹窗内呼出的二级弹窗（如组织架构选择）始终浮于上层 */
+  .modal-mask.top { z-index: 110; }
   .modal {
     background: #fff;
     border-radius: 6px;
@@ -3054,7 +3056,7 @@
 </div>
 
 <!-- 应急检查2：组织架构选择（部门 / 人员） -->
-<div class="modal-mask hidden" id="emg2OrgModal">
+<div class="modal-mask top hidden" id="emg2OrgModal">
   <div class="modal" style="width:420px;">
     <div class="modal-header">
       <span id="emg2OrgTitle">选择部门</span>
