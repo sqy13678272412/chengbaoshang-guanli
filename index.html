@@ -4108,7 +4108,7 @@
     margin-bottom: 12px;
   }
   .mo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .mo-phone .mo-grid { grid-template-columns: 1fr; gap: 12px; }
+  .mo-phone .mo-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
   .mo-card {
     border: 1px solid #f0f0f0;
     border-radius: 8px;
@@ -15262,7 +15262,7 @@ let c2mReps = [
         ] },
       { name: '智能制造厂房三期', assignee: '赵宁' }
     ],
-    requirement: '立即清理堆放材料，恢复消防通道畅通，并拍照留存', deadline: '2026-11-01',
+    requirement: '立即清理堆放材料，恢复消防通道畅通，并拍照留存', deadline: '2026-10-27 18:00',
     fixDesc: '', fixPhotos: [], fixTime: '', verifyRes: '', verifyOpinion: '', verifyTime: '',
     status: '待整改', reportTime: '2026-10-26 11:30', recId: 4, itemSeq: 6 },
   { id: 2, code: 'ZG2-20261029-002', planId: 1, planCode: 'JCJH-202610-001', planName: '城东综合体二期日常安全检查', level: '一般',
@@ -15305,8 +15305,8 @@ let c2mReps = [
       { name: '华筑建设有限公司', assignee: '高翔' }
     ],
     requirement: '按方案补设连墙件并挂设标识，拍照留存', deadline: '2026-10-31',
-    fixDesc: '', fixPhotos: [], fixTime: '', verifyRes: '', verifyOpinion: '', verifyTime: '',
-    status: '待整改', reportTime: '2026-10-28 16:40', recId: 3, itemSeq: 2 }
+    fixDesc: '已按方案补设连墙件2处并挂设标识', fixPhotos: ['整改照片C1.jpg'], fixTime: '2026-10-29 09:10', verifyRes: '', verifyOpinion: '', verifyTime: '',
+    status: '待验收', reportTime: '2026-10-28 16:40', recId: 3, itemSeq: 2 }
 ];
 let c2mRepSeq = 4;
 let c2mReportEdit = null;
@@ -15320,7 +15320,13 @@ function c2mPeopleOpts(cur) {
   return '<option value="">请选择</option>' + set.map(n => `<option ${cur === n ? 'selected' : ''}>${n}</option>`).join('');
 }
 function c2mRpById(id) { return c2mReps.find(x => x.id === id); }
-function c2mRpStatusClass(s) { return { '待整改': 'tag-orange', '待验收': 'tag-blue', '已验收': 'tag-green' }[s] || 'tag-gray'; }
+function c2mRpShowStatus(rp) {
+  const late = rp.deadline < CC_NOW;
+  if (rp.status === '已验收') return '已完成';
+  if (rp.status === '待验收') return late ? '待验收（整改延期）' : '待验收';
+  return late ? '延期待整改' : '待整改';
+}
+function c2mRpStatusClass(s) { return { '待整改': 'tag-orange', '延期待整改': 'tag-red', '待验收': 'tag-blue', '待验收（整改延期）': 'tag-orange', '已完成': 'tag-green', '已验收': 'tag-green' }[s] || 'tag-gray'; }
 
 // 覆盖问题登记块：不合格项增加「整改上报 / 上报查看」按钮
 function c2mProblemHtml(it) {
@@ -15509,8 +15515,9 @@ function c2mSubmitResultHtml() {
 // ---------- 整改模块：待整改 / 已整改 ----------
 function c2mSetRectTab(k) { c2mRectTab = k; c2mRender(); }
 function c2mRectCardHtml(rp) {
-  return `<div class="mo-card" onclick="c2mGo({name:'repDetail', id:${rp.id}})">
-    <div class="mc-title"><span>${rp.code}</span><span class="tag ${c2mRpStatusClass(rp.status)}">${rp.status}</span></div>
+  const go = rp.status === '待整改' ? 'repDetail' : 'repVerify';
+  return `<div class="mo-card" onclick="c2mGo({name:'${go}', id:${rp.id}})">
+    <div class="mc-title"><span>${rp.code}</span><span class="tag ${c2mRpStatusClass(c2mRpShowStatus(rp))}">${c2mRpShowStatus(rp)}</span></div>
     ${c2mField('严重等级', `<span class="tag ${ccLevelClass[rp.level] || 'tag-gray'}">${rp.level}</span>`)}
     ${c2mField('问题描述', ccEsc(rp.desc))}
     ${c2mField('整改要求', ccEsc(rp.requirement))}
@@ -15518,13 +15525,13 @@ function c2mRectCardHtml(rp) {
   </div>`;
 }
 function c2mRectTodoHtml() {
-  const todo = c2mReps.filter(r => r.status === '待整改');
-  const done = c2mReps.filter(r => r.status !== '待整改');
+  const todo = c2mReps.filter(r => r.status !== '已验收');
+  const done = c2mReps.filter(r => r.status === '已验收');
   const list = c2mRectTab === 'todo' ? todo : done;
   return `
     <div class="tabs" style="background:#fff;border:none;border-radius:8px;padding:0 8px;margin-bottom:10px;">
-      <span class="tab ${c2mRectTab === 'todo' ? 'active' : ''}" onclick="c2mSetRectTab('todo')">待整改（${todo.length}）</span>
-      <span class="tab ${c2mRectTab === 'done' ? 'active' : ''}" onclick="c2mSetRectTab('done')">已整改（${done.length}）</span>
+      <span class="tab ${c2mRectTab === 'todo' ? 'active' : ''}" onclick="c2mSetRectTab('todo')">待完成（${todo.length}）</span>
+      <span class="tab ${c2mRectTab === 'done' ? 'active' : ''}" onclick="c2mSetRectTab('done')">已完成（${done.length}）</span>
     </div>
     ${list.length ? `<div class="mo-grid">${list.map(c2mRectCardHtml).join('')}</div>` : '<div class="mo-empty">暂无数据</div>'}`;
 }
@@ -15536,7 +15543,7 @@ function c2mRepDetailHtml() {
   return `
     <div style="font-size:13px;font-weight:600;margin:2px 0 8px;">隐患信息</div>
     <div class="mo-card" style="cursor:default;">
-      <div class="mc-title"><span>${rp.code}</span><span class="tag ${c2mRpStatusClass(rp.status)}">${rp.status}</span></div>
+      <div class="mc-title"><span>${rp.code}</span><span class="tag ${c2mRpStatusClass(c2mRpShowStatus(rp))}">${c2mRpShowStatus(rp)}</span></div>
       ${c2mField('严重等级', `<span class="tag ${ccLevelClass[rp.level] || 'tag-gray'}">${rp.level}</span>`)}
       ${c2mField('问题描述', ccEsc(rp.desc))}
       ${c2mField('整改人', rp.targets.map(t => `${ccEsc(t.name)}：${ccEsc(t.assignee)}`).join('<br>'))}
@@ -15588,7 +15595,7 @@ function c2mSetVerTab(k) { c2mVerTab = k; c2mRender(); }
 let c2mVerTab = 'todo';
 function c2mVerCardHtml(rp) {
   return `<div class="mo-card" onclick="c2mGo({name:'repVerify', id:${rp.id}})">
-    <div class="mc-title"><span>${rp.code}</span><span class="tag ${c2mRpStatusClass(rp.status)}">${rp.status}</span></div>
+    <div class="mc-title"><span>${rp.code}</span><span class="tag ${c2mRpStatusClass(c2mRpShowStatus(rp))}">${c2mRpShowStatus(rp)}</span></div>
     ${c2mField('严重等级', `<span class="tag ${ccLevelClass[rp.level] || 'tag-gray'}">${rp.level}</span>`)}
     ${c2mField('问题描述', ccEsc(rp.desc))}
     ${c2mField('整改人', rp.targets.map(t => ccEsc(t.assignee)).join('、'))}
@@ -15615,7 +15622,7 @@ function c2mRepVerifyHtml() {
   return `
     <div style="font-size:13px;font-weight:600;margin:2px 0 8px;">隐患信息</div>
     <div class="mo-card" style="cursor:default;">
-      <div class="mc-title"><span>${rp.code}</span><span class="tag ${c2mRpStatusClass(rp.status)}">${rp.status}</span></div>
+      <div class="mc-title"><span>${rp.code}</span><span class="tag ${c2mRpStatusClass(c2mRpShowStatus(rp))}">${c2mRpShowStatus(rp)}</span></div>
       ${c2mField('严重等级', `<span class="tag ${ccLevelClass[rp.level] || 'tag-gray'}">${rp.level}</span>`)}
       ${c2mField('问题描述', ccEsc(rp.desc))}
       ${c2mField('整改人', rp.targets.map(t => `${ccEsc(t.name)}：${ccEsc(t.assignee)}`).join('<br>'))}
@@ -15656,21 +15663,27 @@ function c2mRepVerifyDo() {
   rp.verifyRes = c2mVerDraft.res;
   rp.verifyOpinion = (document.getElementById('c2mVerOpinion') ? document.getElementById('c2mVerOpinion').value : c2mVerDraft.opinion).trim();
   rp.verifyTime = CC_NOW;
-  rp.status = '已验收';
-  ccLog(c2mMe().name, '验收人', '移动端2提交验收', rp.code, `验收结论：${rp.verifyRes}`, '移动端');
-  alert('验收完成，该单已归档');
+  if (rp.verifyRes === '不通过') {
+    rp.status = '待整改';
+    ccLog(c2mMe().name, '验收人', '移动端2提交验收', rp.code, '验收不通过，退回待整改', '移动端');
+    alert('验收不通过，该单已退回「待完成-待整改」');
+  } else {
+    rp.status = '已验收';
+    ccLog(c2mMe().name, '验收人', '移动端2提交验收', rp.code, `验收结论：${rp.verifyRes}`, '移动端');
+    alert('验收通过，该单已进入「已完成」');
+  }
   c2mRender();
 }
 
 // 覆盖入口统计与渲染映射/底部按钮
 function c2mBizHtml() {
   const me = c2mMe();
-  const rectN = c2mReps.filter(r => r.status === '待整改').length;
+  const rectN = c2mReps.filter(r => r.status !== '已验收').length;
   const verifyN = c2mReps.filter(r => r.status === '待验收').length;
   const checkN = ccPlans.filter(p => p.status === '待执行').length;
   const icons = [
     { icon: '📝', t: '检查', d: `待检查 ${checkN} 项计划`, go: "c2mDeepGo({name:'check'})" },
-    { icon: '🔧', t: '整改', d: `待整改 ${rectN} 项上报`, go: "c2mDeepGo({name:'rectTodo'})" },
+    { icon: '🔧', t: '整改', d: `待完成 ${rectN} 项整改`, go: "c2mDeepGo({name:'rectTodo'})" },
     { icon: '✅', t: '验收', d: `待验收 ${verifyN} 项整改`, go: "c2mDeepGo({name:'verifyTodo'})" }
   ];
   return `
