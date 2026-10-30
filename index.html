@@ -11153,13 +11153,17 @@ function renderCcBlackRules() {
       </div>
     </div>
     <div class="table-wrap">
-      <table style="min-width:900px;">
-        <thead><tr><th>规则名称</th><th>适用公司</th><th>触发方式</th><th>状态</th><th>操作</th></tr></thead>
+      <table style="min-width:1200px;">
+        <thead><tr><th>规则名称</th><th>适用公司</th><th>适用对象类型</th><th>触发方式</th><th>严重等级</th><th>限制期限</th><th>到期自动解除</th><th>状态</th><th>操作</th></tr></thead>
         <tbody>${ccBlackRules.map(x => `
           <tr>
             <td>${x.name}</td>
             <td>${x.company}</td>
+            <td>${x.objType}</td>
             <td>${x.trigger}</td>
+            <td><span class="tag ${{ '一般': 'tag-gray', '中等': 'tag-orange', '严重': 'tag-red' }[x.level] || 'tag-gray'}">${x.level}</span></td>
+            <td>${x.limitDays} 天</td>
+            <td>${x.autoRelease}</td>
             <td>${ccSwitchHtml(x.enabled, `ccBlackRuleToggle(${x.id})`)}</td>
             <td><span class="link" onclick="openCcBlackRuleDetail(${x.id})">详情</span><span class="link" onclick="openCcBlackRuleModal(${x.id})" style="margin-left:10px;">编辑</span><span class="link" onclick="ccBlackRuleDel(${x.id})" style="margin-left:10px;">删除</span></td>
           </tr>`).join('')}
