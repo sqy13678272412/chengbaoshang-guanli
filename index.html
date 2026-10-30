@@ -4349,17 +4349,28 @@
 <div class="modal-mask hidden" id="ccBlackCreateModal">
   <div class="modal" style="width:560px;">
     <div class="modal-header">
-      新增黑名单
+      <span id="ccBlackCreateTitle">新增黑名单</span>
       <span class="modal-close" onclick="closeCcBlackCreate()">✕</span>
     </div>
     <div class="modal-body">
       <div class="form-item"><label class="required">对象类型</label>
-        <select id="ccBlackCreateObjType" style="flex:1;">
+        <select id="ccBlackCreateObjType" style="flex:1;" onchange="ccBlackIdCodeLabel()">
           <option>个人</option><option>公司</option>
         </select>
       </div>
-      <div class="form-item"><label class="required">对象名称</label><input type="text" id="ccBlackCreateName" placeholder="如：张三 / 某某建设有限公司" style="flex:1;"></div>
-      <div class="form-item"><label class="required">缘由</label><textarea id="ccBlackCreateReason" rows="3" maxlength="500" placeholder="填写纳入黑名单的缘由" style="flex:1;border:1px solid #d9d9d9;border-radius:4px;padding:6px 8px;resize:none;font-size:13px;"></textarea></div>
+      <div class="form-item"><label class="required">黑名单对象</label><input type="text" id="ccBlackCreateName" placeholder="如：张三 / 某某建设有限公司" style="flex:1;"></div>
+      <div class="form-item"><label class="required" id="ccBlackIdCodeLabel">手机号</label><input type="text" id="ccBlackCreateIdCode" placeholder="请输入手机号" style="flex:1;"></div>
+      <div class="form-item"><label class="required">严重等级</label>
+        <select id="ccBlackCreateLevel" style="flex:1;">
+          <option value="">请选择</option><option>一般</option><option>中等</option><option>严重</option>
+        </select>
+      </div>
+      <div class="form-item"><label class="required">限制期限（天）</label><input type="number" id="ccBlackCreateLimit" min="1" placeholder="请输入限制天数" style="flex:1;"></div>
+      <div class="form-item"><label class="required">到期自动解除</label>
+        <select id="ccBlackCreateAuto" style="flex:1;">
+          <option value="">请选择</option><option>是</option><option>否</option>
+        </select>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-plain" onclick="closeCcBlackCreate()">取消</button>
@@ -10513,11 +10524,19 @@ let ccPenRecords = [
 ];
 let ccPenRecordSeq = 5;
 let ccBlacklists = [
-  { id:1, code:'HMD-20261025-001', objType:'个人', name:'刘建军', source:'处罚', reason:'整改超时（系统自动触发：整改任务 ZG-20261020-003 逾期未整改）', operator:'系统', opTime:'2026-10-25 09:00', status:'有效', srcPen:2, effectDate:'2026-10-25', expireDate:'2027-10-24',
+  { id:1, code:'HMD-20261025-001', source:'规则自动触发', objType:'个人', name:'刘建军', idCode:'13812345678',
+    opTime:'2026-10-25 09:00', level:'严重', limitDays:365, autoRelease:'是',
+    trigger:'整改逾期', triggerSource:'整改任务 ZG-20261020-003（基坑临边防护栏杆缺失两段）',
+    operator:'系统', status:'有效', srcPen:2, reason:'整改超时（系统自动触发：整改任务 ZG-20261020-003 逾期未整改）', effectDate:'2026-10-25', expireDate:'2027-10-24',
     history:[{ type:'加入', time:'2026-10-25 09:00', operator:'系统', note:'整改超时自动触发（来源处罚 CF-20261025-002）' }] },
-  { id:2, code:'HMD-20261022-001', objType:'个人', name:'赵强', source:'处罚', reason:'整改不通过（系统自动触发：整改验证不通过且未按期复改）', operator:'系统', opTime:'2026-10-22 14:00', status:'有效', srcPen:null, effectDate:'2026-10-22', expireDate:'2027-10-21',
+  { id:2, code:'HMD-20261022-001', source:'规则自动触发', objType:'个人', name:'赵强', idCode:'13956781234',
+    opTime:'2026-10-22 14:00', level:'中等', limitDays:180, autoRelease:'是',
+    trigger:'项目检查隐患任务整改验收不通过', triggerSource:'检查记录 JC-20261028-003（城东综合体二期消防设施巡检）',
+    operator:'系统', status:'有效', srcPen:null, reason:'整改不通过（系统自动触发：整改验证不通过且未按期复改）', effectDate:'2026-10-22', expireDate:'2027-10-21',
     history:[{ type:'加入', time:'2026-10-22 14:00', operator:'系统', note:'整改不通过自动触发' }] },
-  { id:3, code:'HMD-20261018-001', objType:'个人', name:'孙明', source:'手动新增', reason:'伪造特种作业操作证，情节严重', operator:'王敏', opTime:'2026-10-18 10:00', status:'已解除', srcPen:null, effectDate:'2026-10-18', expireDate:'2027-10-17',
+  { id:3, code:'HMD-20261018-001', source:'手动新增', objType:'个人', name:'孙明', idCode:'13799998888',
+    opTime:'2026-10-18 10:00', level:'一般', limitDays:90, autoRelease:'否', trigger:'', triggerSource:'',
+    operator:'王敏', status:'已解除', srcPen:null, reason:'伪造特种作业操作证，情节严重', effectDate:'2026-10-18', expireDate:'2027-10-17',
     history:[
       { type:'加入', time:'2026-10-18 10:00', operator:'王敏', note:'伪造特种作业操作证，情节严重' },
       { type:'解除', time:'2026-10-24 15:30', operator:'刘峰', note:'经复核为证件过期而非伪造，予以解除' }
@@ -13834,7 +13853,9 @@ function ccAutoCreateBlacklists(pen) {
     const b = {
       id: ccBlackSeq,
       code: 'HMD-' + ymd + '-' + String(ccBlackSeq).padStart(3, '0'),
-      objType: t.objType, name: t.name, source: '处罚', reason: pen.fact,
+      objType: t.objType, name: t.name, idCode: t.objType === '公司' ? '91320100MA1XK2XX8Q（系统自动生成）' : '138****8888（系统自动生成）',
+      level: '严重', limitDays: 365, autoRelease: '是',
+      source: '规则自动触发', trigger: '处罚选中', triggerSource: `处罚 ${pen.code}（${pen.fact}）`, reason: pen.fact,
       operator: '系统', opTime: formatNow(), status: '有效', srcPen: pen.id,
       effectDate: ccToday(), expireDate: ccDstr(ccAddDays(ccParse(CC_NOW), 365)),
       history: [{ type: '加入', time: formatNow(), operator: '系统', note: `处罚 ${pen.code} 执行触发（列入黑名单），有效期一年` }]
@@ -14071,16 +14092,17 @@ function renderCcBlacks() {
     const ops = [];
     if (isOwner) {
       ops.push(`<span class="link" onclick="openCcBlackDetail(${b.id})">详情</span>`);
-      if (b.status === '有效') ops.push(`<span class="link" onclick="ccRelieveBlack(${b.id})">解除</span>`);
+      ops.push(`<span class="link" onclick="openCcBlackCreate(${b.id})" style="margin-left:10px;">编辑</span>`);
+      if (b.status === '有效') ops.push(`<span class="link" onclick="ccRelieveBlack(${b.id})" style="margin-left:10px;">解除</span>`);
     }
     return `<tr>
-      <td>${b.code}</td>
-      <td><span class="tag ${b.source === '处罚' ? 'tag-orange' : 'tag-gray'}">${b.source}</span></td>
+      <td><span class="tag ${b.source === '规则自动触发' ? 'tag-orange' : 'tag-gray'}">${b.source}</span></td>
       <td><span class="tag ${b.objType === '个人' ? 'tag-blue' : 'tag-orange'}">${b.objType}</span>　${ccEsc(b.name)}</td>
-      <td style="max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${ccEsc(b.reason)}">${ccEsc(b.reason)}</td>
-      <td>${ccEsc(b.operator)}</td>
+      <td>${ccEsc(b.idCode || '—')}</td>
       <td>${b.opTime}</td>
-      <td>${b.status === '有效' ? '<span class="tag tag-red">有效</span>' : '<span class="tag tag-gray">已解除</span>'}</td>
+      <td><span class="tag ${{ '一般': 'tag-gray', '中等': 'tag-orange', '严重': 'tag-red' }[b.level] || 'tag-gray'}">${b.level || '—'}</span></td>
+      <td>${b.limitDays ? b.limitDays + ' 天' : '—'}</td>
+      <td>${b.autoRelease || '—'}</td>
       <td class="sticky-col">${ops.join('') || '<span style="color:#ccc;">—</span>'}</td>
     </tr>`;
   }).join('');
@@ -14106,7 +14128,7 @@ function renderCcBlacks() {
     <div class="table-wrap">
       <table style="min-width:1180px;">
         <thead>
-          <tr><th>黑名单编号</th><th>来源</th><th>对象</th><th>缘由</th><th>操作人</th><th>操作时间</th><th>状态</th><th class="sticky-col">操作</th></tr>
+          <tr><th>来源</th><th>黑名单对象</th><th>对象唯一识别码</th><th>加入黑名单时间</th><th>严重等级</th><th>限制期限</th><th>到期自动解除</th><th class="sticky-col">操作</th></tr>
         </thead>
         <tbody>${rows || '<tr><td colspan="8"><div class="mo-empty">暂无黑名单记录</div></td></tr>'}</tbody>
       </table>
@@ -14114,33 +14136,65 @@ function renderCcBlacks() {
 }
 function resetCcBlackFilter() { ccBlackFilter = { kw: '', objType: '', status: '' }; renderCcBlacks(); }
 
-// 新增黑名单（业主端手动新增）
-function openCcBlackCreate() {
+// 新增 / 编辑黑名单（业主端手动新增）
+let ccBlackEditId = null;
+function ccBlackIdCodeLabel() {
+  const t = document.getElementById('ccBlackCreateObjType').value;
+  document.getElementById('ccBlackIdCodeLabel').textContent = t === '公司' ? '组织机构代码' : '手机号';
+  document.getElementById('ccBlackCreateIdCode').placeholder = t === '公司' ? '请输入组织机构代码' : '请输入手机号';
+}
+function openCcBlackCreate(id) {
   if (currentRole === 'contractor') { alert('承包商端仅可查看黑名单'); return; }
-  document.getElementById('ccBlackCreateObjType').value = '个人';
-  document.getElementById('ccBlackCreateName').value = '';
-  document.getElementById('ccBlackCreateReason').value = '';
+  ccBlackEditId = id || null;
+  const b = id ? ccBlacklists.find(x => x.id === id) : null;
+  document.getElementById('ccBlackCreateTitle').textContent = b ? '编辑黑名单' : '新增黑名单';
+  document.getElementById('ccBlackCreateObjType').value = b ? b.objType : '个人';
+  ccBlackIdCodeLabel();
+  document.getElementById('ccBlackCreateName').value = b ? b.name : '';
+  document.getElementById('ccBlackCreateIdCode').value = b ? (b.idCode || '') : '';
+  document.getElementById('ccBlackCreateLevel').value = b ? b.level : '';
+  document.getElementById('ccBlackCreateLimit').value = b ? b.limitDays : '';
+  document.getElementById('ccBlackCreateAuto').value = b ? b.autoRelease : '';
   document.getElementById('ccBlackCreateModal').classList.remove('hidden');
 }
-function closeCcBlackCreate() { document.getElementById('ccBlackCreateModal').classList.add('hidden'); }
+function closeCcBlackCreate() { ccBlackEditId = null; document.getElementById('ccBlackCreateModal').classList.add('hidden'); }
 function saveCcBlackCreate() {
   const objType = document.getElementById('ccBlackCreateObjType').value;
   const name = document.getElementById('ccBlackCreateName').value.trim();
-  const reason = document.getElementById('ccBlackCreateReason').value.trim();
-  if (!name) { alert('请填写对象名称'); return; }
-  if (!reason) { alert('请填写缘由'); return; }
+  const idCode = document.getElementById('ccBlackCreateIdCode').value.trim();
+  const level = document.getElementById('ccBlackCreateLevel').value;
+  const limitDays = Number(document.getElementById('ccBlackCreateLimit').value);
+  const autoRelease = document.getElementById('ccBlackCreateAuto').value;
+  if (!name) { alert('请填写黑名单对象'); return; }
+  if (!idCode) { alert(objType === '公司' ? '请填写组织机构代码' : '请填写手机号'); return; }
+  if (!level) { alert('请选择严重等级'); return; }
+  if (!limitDays || limitDays < 1) { alert('请输入限制期限（天）'); return; }
+  if (!autoRelease) { alert('请选择到期是否自动解除'); return; }
+  if (ccBlackEditId) {
+    const b = ccBlacklists.find(x => x.id === ccBlackEditId);
+    Object.assign(b, { objType, name, idCode, level, limitDays, autoRelease });
+    b.history = b.history || [];
+    b.history.push({ type:'编辑', time: formatNow(), operator:'王敏', note:`${objType}·${name}，等级：${level}，期限：${limitDays}天` });
+    ccLog('王敏', '监管管理员', '编辑黑名单', b.code, `对象：${objType}·${name}，等级：${level}，期限：${limitDays}天`, '黑名单');
+    closeCcBlackCreate();
+    ccRefreshAll();
+    if (ccBlackDetailId === b.id) renderCcBlackDetail();
+    alert(`黑名单 ${b.code} 已更新`);
+    return;
+  }
   const ymd = ccToday().replace(/-/g, '');
   const b = {
     id: ccBlackSeq,
     code: 'HMD-' + ymd + '-' + String(ccBlackSeq).padStart(3, '0'),
-    objType, name, source: '手动新增', reason,
+    objType, name, idCode, level, limitDays, autoRelease,
+    source: '手动新增', reason: '', trigger: '', triggerSource: '',
     operator: '王敏', opTime: formatNow(), status: '有效', srcPen: null,
-    effectDate: ccToday(), expireDate: ccDstr(ccAddDays(ccParse(CC_NOW), 365)),
-    history: [{ type: '加入', time: formatNow(), operator: '王敏', note: reason }]
+    effectDate: ccToday(), expireDate: ccDstr(ccAddDays(ccParse(CC_NOW), limitDays)),
+    history: [{ type: '加入', time: formatNow(), operator: '王敏', note: `手动新增：${objType}·${name}，等级：${level}，期限：${limitDays}天` }]
   };
   ccBlackSeq++;
   ccBlacklists.unshift(b);
-  ccLog('王敏', '监管管理员', '新增黑名单', b.code, `对象：${objType}·${name}，缘由：${reason}`, '黑名单');
+  ccLog('王敏', '监管管理员', '新增黑名单', b.code, `对象：${objType}·${name}，等级：${level}，期限：${limitDays}天`, '黑名单');
   closeCcBlackCreate();
   ccRefreshAll();
   alert(`黑名单 ${b.code} 已新增`);
@@ -14183,13 +14237,23 @@ function renderCcBlackDetail() {
       ${b.status === '有效' ? '<span class="tag tag-red">有效</span>' : '<span class="tag tag-gray">已解除</span>'}
     </div>
     <div class="drawer-section-title">基础信息</div>
-    <div class="info-grid" style="grid-template-columns:110px 1fr 110px 1fr;margin-bottom:16px;">
-      <div class="ig-label">来源</div><div><span class="tag ${b.source === '处罚' ? 'tag-orange' : 'tag-gray'}">${b.source}</span></div>
-      <div class="ig-label">对象</div><div><span class="tag ${b.objType === '个人' ? 'tag-blue' : 'tag-orange'}">${b.objType}</span>　${ccEsc(b.name)}</div>
-      <div class="ig-label">缘由</div><div class="ig-full" style="grid-column:span 3;">${ccEsc(b.reason)}</div>
-      <div class="ig-label">操作人</div><div>${ccEsc(b.operator)}</div>
-      <div class="ig-label">操作时间</div><div>${b.opTime}</div>
+    <div class="info-grid" style="margin-bottom:16px;">
+      <div class="ig-label">来源</div><div><span class="tag ${b.source === '规则自动触发' ? 'tag-orange' : 'tag-gray'}">${b.source}</span></div>
+      <div class="ig-label">黑名单对象</div><div><span class="tag ${b.objType === '个人' ? 'tag-blue' : 'tag-orange'}">${b.objType}</span>　${ccEsc(b.name)}</div>
+      <div class="ig-label">对象唯一识别码</div><div>${ccEsc(b.idCode || '—')}</div>
+      <div class="ig-label">加入黑名单时间</div><div>${b.opTime}</div>
+      <div class="ig-label">严重等级</div><div><span class="tag ${{ '一般': 'tag-gray', '中等': 'tag-orange', '严重': 'tag-red' }[b.level] || 'tag-gray'}">${b.level || '—'}</span></div>
+      <div class="ig-label">限制期限</div><div>${b.limitDays ? b.limitDays + ' 天' : '—'}</div>
+      <div class="ig-label">到期自动解除</div><div>${b.autoRelease || '—'}</div>
+      <div class="ig-label">状态</div><div>${b.status === '有效' ? '<span class="tag tag-red">有效</span>' : '<span class="tag tag-gray">已解除</span>'}</div>
     </div>
+    ${b.source === '规则自动触发' ? `
+    <div class="drawer-section-title">触发信息</div>
+    <div class="info-grid" style="margin-bottom:16px;">
+      <div class="ig-label">触发方式</div><div>${b.trigger || '—'}</div>
+      <div class="ig-label">触发来源</div><div>${ccEsc(b.triggerSource || '—')}</div>
+    </div>` : ''}
+    ${b.reason ? `<div class="drawer-section-title">缘由</div><div style="border:1px solid #f0f0f0;border-radius:6px;padding:10px 14px;font-size:13px;line-height:2;margin-bottom:16px;">${ccEsc(b.reason)}</div>` : ''}
     ${pen ? `
     <div class="drawer-section-title">来源处罚</div>
     <div style="border:1px solid #f0f0f0;border-radius:6px;padding:10px 14px;font-size:13px;line-height:2;margin-bottom:16px;">
