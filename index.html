@@ -586,6 +586,8 @@
       <ul class="submenu" id="submenu-checkRecord">
         <li data-page="mobile">移动端</li>
       </ul>
+      <li data-page="gjConfig">工机具检查配置</li>
+      <li data-page="gjMobile">工机具移动端</li>
     </ul>
     <li data-page="emergency" class="has-sub">应急检查</li>
     <ul class="submenu" id="submenu-emergency">
@@ -1236,6 +1238,55 @@
             <button class="btn btn-plain" onclick="resetEmg2RecFilter()">重置</button>
           </div>
           <div id="emg2RecordList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 工机具管理：检查配置 -->
+    <div class="card page hidden" id="page-gjConfig">
+      <div class="toolbar">
+        <div class="filters">
+          <select id="filterOp-gjConfig"><option value="">全部操作人</option></select>
+          <input type="text" id="filterKeyword-gjConfig" placeholder="检查清单名称">
+          <button class="btn btn-plain" onclick="renderGjConfigs()">查询</button>
+          <button class="btn btn-plain" onclick="resetGjConfigFilter()">重置</button>
+        </div>
+        <button class="btn btn-primary" onclick="openGjCl2Modal()">+ 新增</button>
+      </div>
+      <div class="table-wrap">
+        <table style="min-width:1000px;">
+          <thead>
+            <tr>
+              <th>检查清单名称</th>
+              <th>操作人</th>
+              <th>操作时间</th>
+              <th>适用范围</th>
+              <th>检查项</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-gjConfig"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 工机具管理：移动端（扫码检查 + 检查记录卡片） -->
+    <div class="card page hidden" id="page-gjMobile">
+      <div class="mo-phone">
+        <div class="mo-phone-head">工机具检查移动端</div>
+        <div class="mo-phone-body">
+          <div style="margin-bottom:14px;">
+            <button class="btn btn-primary" onclick="openGjScan()">📷 检查扫码</button>
+          </div>
+          <div style="font-weight:600;font-size:13px;margin-bottom:8px;">本次检查记录</div>
+          <div style="display:flex;gap:8px;margin-bottom:12px;">
+            <select id="filterComp-gjRec" onchange="renderGjRecords()" style="width:150px;">
+              <option value="">全部承包商</option>
+            </select>
+            <input type="text" id="filterKw-gjRec" placeholder="名称 / 编号" onkeyup="if(event.keyCode===13)renderGjRecords()" style="flex:1;min-width:0;border:1px solid #d9d9d9;border-radius:4px;padding:6px 8px;font-size:13px;">
+            <button class="btn btn-plain" onclick="resetGjRecFilter()">重置</button>
+          </div>
+          <div id="gjRecordList"></div>
         </div>
       </div>
     </div>
@@ -3044,6 +3095,125 @@
   </div>
 </div>
 
+<!-- 工机具管理：新增/编辑/详情 检查配置 -->
+<div class="modal-mask hidden" id="gjCl2Modal">
+  <div class="modal wide">
+    <div class="modal-header">
+      <span id="gjCl2ModalTitle">新增检查配置</span>
+      <span class="modal-close" onclick="closeGjCl2Modal()">✕</span>
+    </div>
+    <div class="modal-body">
+      <div class="form-item">
+        <label class="required">检查清单名称</label>
+        <input type="text" id="gjName" placeholder="请输入检查清单名称">
+      </div>
+      <div class="form-item" style="align-items:flex-start;">
+        <label class="required">检查项</label>
+        <div id="gjItemList" style="flex:1;overflow-x:auto;"></div>
+      </div>
+      <div class="form-item">
+        <label class="required">适用范围</label>
+        <input type="text" id="gjScope" readonly placeholder="点击选择适用的工机具" onclick="openGjScopeModal()" style="cursor:pointer;background:#fafafa;">
+      </div>
+      <div class="form-item" style="align-items:flex-start;">
+        <label>说明</label>
+        <textarea id="gjDesc" placeholder="请输入说明" style="flex:1;border:1px solid #d9d9d9;border-radius:4px;padding:6px 8px;resize:none;height:56px;font-size:13px;"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-plain" onclick="closeGjCl2Modal()">取消</button>
+      <button class="btn btn-primary" onclick="saveGjCl2()">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- 工机具管理：选择适用范围（工机具多选） -->
+<div class="modal-mask hidden" id="gjScopeModal">
+  <div class="modal wide" style="width:1000px;">
+    <div class="modal-header">
+      选择适用范围（工机具）
+      <span class="modal-close" onclick="closeGjScopeModal()">✕</span>
+    </div>
+    <div class="modal-body">
+      <div class="table-wrap" id="gjScopeTableWrap" style="border:1px solid #f0f0f0;border-radius:6px;"></div>
+      <div style="color:#999;font-size:12px;margin-top:10px;">已关联其他检查清单的工机具不可选择（一台工机具只能关联一个检查清单）；已选 <span id="gjScopeCount">0</span> 台</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-plain" onclick="clearGjScopePicks()">清空</button>
+      <button class="btn btn-plain" onclick="closeGjScopeModal()">取消</button>
+      <button class="btn btn-primary" onclick="confirmGjScope()">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- 工机具管理：适用范围 / 检查项 查看弹窗 -->
+<div class="modal-mask hidden" id="gjViewModal">
+  <div class="modal wide" style="width:900px;">
+    <div class="modal-header">
+      <span id="gjViewTitle">查看</span>
+      <span class="modal-close" onclick="closeGjView()">✕</span>
+    </div>
+    <div class="modal-body" id="gjViewBody" style="max-height:60vh;overflow-y:auto;"></div>
+    <div class="modal-footer">
+      <button class="btn btn-plain" onclick="closeGjView()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- 工机具管理：移动端-扫码（模拟扫描工机具二维码） -->
+<div class="modal-mask hidden" id="gjScanModal">
+  <div class="modal phone">
+    <div class="phone-head">
+      <span>扫码检查</span>
+      <span class="modal-close" onclick="closeGjScan()">✕</span>
+    </div>
+    <div class="phone-body">
+      <div id="gjScanList"></div>
+    </div>
+    <div class="phone-foot">
+      <button class="btn btn-plain" onclick="closeGjScan()">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- 工机具管理：移动端-检查项填写（按清单选项类型渲染） -->
+<div class="modal-mask hidden" id="gjCheckModal">
+  <div class="modal phone">
+    <div class="phone-head">
+      <span>工机具检查</span>
+      <span class="modal-close" onclick="closeGjCheck()">✕</span>
+    </div>
+    <div class="phone-body">
+      <div class="phone-task" id="gjCheckInfo"></div>
+      <div id="gjCheckItemList"></div>
+    </div>
+    <div class="phone-foot">
+      <button class="btn btn-plain" onclick="closeGjCheck()">取消</button>
+      <button class="btn btn-primary" onclick="submitGjCheck()">提交</button>
+    </div>
+  </div>
+</div>
+
+<!-- 工机具管理：检查记录详情（基础信息 / 本次检查记录） -->
+<div class="modal-mask hidden" id="gjRecordModal">
+  <div class="modal wide">
+    <div class="modal-header">
+      <span id="gjRecTitle">检查记录详情</span>
+      <span class="modal-close" onclick="closeGjRecord()">✕</span>
+    </div>
+    <div class="modal-body">
+      <div class="tabs" style="margin-bottom:14px;">
+        <span class="tab active" data-rtab="base" onclick="switchGjRecTab('base')">基础信息</span>
+        <span class="tab" data-rtab="check" onclick="switchGjRecTab('check')">本次检查记录</span>
+      </div>
+      <div id="gjRecBody"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-plain" onclick="closeGjRecord()">关闭</button>
+    </div>
+  </div>
+</div>
+
 <!-- 承包商检查：新建/编辑检查清单 -->
 <div class="modal-mask hidden" id="ccTplModal">
   <div class="modal wide" style="width:980px;">
@@ -4358,6 +4528,8 @@ const pageTitles = {
   checkConfig: '工机具管理 / 工机具检查清单配置',
   checkRecord: '工机具管理 / 工机具检查记录管理',
   mobile: '工机具检查记录管理 / 移动端',
+  gjConfig: '工机具管理 / 工机具检查配置',
+  gjMobile: '工机具管理 / 工机具移动端',
   emgTaskItem: '应急检查 / 检查任务项',
   emgChecklist: '应急检查 / 检查表清单',
   emgLedger: '应急检查 / 检查台账',
@@ -9546,6 +9718,575 @@ function renderEmg2RecBody() {
               : it.type === '单选框'
                 ? `<span class="tag ${it.value === '正常' || it.value === '合格' ? 'tag-green' : 'tag-red'}">${it.value || '—'}</span>`
                 : (it.value || []).map(v => `<span class="tag ${v === '未过期' || v === '正常' ? 'tag-green' : 'tag-orange'}" style="margin-right:6px;">${v}</span>`).join('')}
+          </div>
+          ${it.photo ? `<div style="font-size:12px;color:#666;padding-left:18px;line-height:2;">📷 已上传：${it.photo}</div>` : ''}
+          ${it.content ? `<div style="font-size:12px;color:#666;padding-left:18px;line-height:2;">检查内容：${it.content}</div>` : ''}
+        </div>`).join('')}`;
+  }
+}
+
+// ===== 工机具管理：检查配置 + 移动端（复刻应急检查2模式，对象适配为工机具台账） =====
+let gjChecklists = [
+  { id: 1, name: '起重吊装设备月度检查清单', items: [
+    { text: '外观结构完好，无变形、裂纹', type: '单选框', options: ['正常', '异常'], needPhoto: true, needContent: true },
+    { text: '钢丝绳磨损情况', type: '填空题', options: [], parts: [{ text: '钢丝绳实测直径' }, { blank: '填写数值' }, { text: 'mm，磨损量不超过' }, { blank: '填写百分比' }, { text: '%' }], needPhoto: false, needContent: false },
+    { text: '限位、制动装置有效', type: '单选框', options: ['合格', '不合格'], needPhoto: false, needContent: false }
+  ], desc: '适用于起重、吊装类工机具月度检查。', operator: '管理员', opTime: '2026-10-16 09:30' },
+  { id: 2, name: '施工机具日常安全检查清单', items: [
+    { text: '防护罩、接地线完好', type: '单选框', options: ['正常', '异常'], needPhoto: true, needContent: true },
+    { text: '证书与标识', type: '复选框', options: ['有检定证书', '标识清晰', '无证书'], needPhoto: false, needContent: false },
+    { text: '绝缘电阻测量', type: '填空题', options: [], parts: [{ text: '绝缘电阻' }, { blank: '填写数值' }, { text: 'MΩ，不小于规定值' }], needPhoto: false, needContent: false }
+  ], desc: '适用于施工机具日常巡检。', operator: '管理员', opTime: '2026-10-18 15:00' }
+];
+let gjClSeq = 3;
+
+// 工机具来源：直接拍平工机具台账数据（动态读取，台账新增/审批通过的机器自动纳入）
+function gjAllMachines() {
+  const arr = [];
+  Object.keys(toolAccounts).forEach(comp => toolAccounts[comp].forEach(t => arr.push(t)));
+  return arr;
+}
+function gjMachineOf(id) {
+  let found = null, company = '';
+  Object.keys(toolAccounts).some(comp => toolAccounts[comp].some(t => {
+    if (t.id === id) { found = t; company = comp; return true; }
+    return false;
+  }));
+  return found ? { t: found, company } : null;
+}
+// 初始化关联（起重/吊装类 → 清单1，其余 → 清单2）
+gjAllMachines().forEach(t => { t.gjChecklistId = (t.type === '起重' || t.type === '吊装') ? 1 : 2; });
+
+function gjClName(id) {
+  const c = gjChecklists.find(x => x.id === id);
+  return c ? c.name : '—';
+}
+function gjScopeOf(cid) {
+  return gjAllMachines().filter(m => m.gjChecklistId === cid);
+}
+
+// 检查配置列表
+let gjEditId = null;
+let gjViewMode = false;
+let gjItems = [];
+let gjScopePicks = [];
+
+function renderGjConfigs() {
+  fillGjFilterOpts();
+  const op = document.getElementById('filterOp-gjConfig').value;
+  const kw = document.getElementById('filterKeyword-gjConfig').value.trim();
+  const list = gjChecklists.filter(c =>
+    (!op || c.operator === op) &&
+    (!kw || c.name.includes(kw)));
+  document.getElementById('tbody-gjConfig').innerHTML = list.length ? list.map(c => `
+    <tr>
+      <td>${c.name}</td>
+      <td>${c.operator}</td>
+      <td>${c.opTime}</td>
+      <td><span class="link" onclick="openGjScopeView(${c.id})">${gjScopeOf(c.id).length}</span></td>
+      <td><span class="link" onclick="openGjItemsView(${c.id})">${c.items.length}</span></td>
+      <td>
+        <span class="link" onclick="openGjCl2Modal(${c.id}, true)">详情</span>
+        <span class="link" onclick="openGjCl2Modal(${c.id})">编辑</span>
+        <span class="link" onclick="deleteGjCl2(${c.id})">删除</span>
+      </td>
+    </tr>`).join('') : '<tr><td colspan="6" style="text-align:center;color:#999;padding:40px;">暂无数据</td></tr>';
+}
+function resetGjConfigFilter() {
+  document.getElementById('filterOp-gjConfig').value = '';
+  document.getElementById('filterKeyword-gjConfig').value = '';
+  renderGjConfigs();
+}
+
+function renderGjItems() {
+  const dis = gjViewMode ? 'disabled' : '';
+  const optCell = (it, i) => {
+    if (it.type === '填空题') {
+      return `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+        ${(it.parts || []).map((p, j) => p.blank != null
+          ? `<span style="display:inline-flex;align-items:center;gap:3px;">
+              <input type="text" class="gj-part-blank" data-i="${i}" data-j="${j}" value="${p.blank}" placeholder="填空提示" ${dis} style="width:88px;border:none;border-bottom:1px dashed #1890ff;border-radius:0;padding:4px 2px;font-size:12px;text-align:center;background:transparent;">
+              ${gjViewMode ? '' : `<span class="link" style="font-size:12px;" onclick="removeGjPart(${i},${j})">✕</span>`}
+            </span>`
+          : `<span style="display:inline-flex;align-items:center;gap:3px;">
+              <input type="text" class="gj-part-text" data-i="${i}" data-j="${j}" value="${p.text}" placeholder="文字内容" ${dis} style="width:110px;border:1px solid #d9d9d9;border-radius:4px;padding:4px 6px;font-size:12px;">
+              ${gjViewMode ? '' : `<span class="link" style="font-size:12px;" onclick="removeGjPart(${i},${j})">✕</span>`}
+            </span>`).join('')}
+        ${gjViewMode ? '' : `<span class="link" style="font-size:12px;white-space:nowrap;" onclick="addGjPart(${i},'text')">＋文字</span>
+        <span class="link" style="font-size:12px;white-space:nowrap;" onclick="addGjPart(${i},'blank')">＋填空</span>`}
+      </div>`;
+    }
+    return `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+      ${it.options.map((op, j) => `<span style="display:inline-flex;align-items:center;gap:3px;">
+        <input type="text" class="gj-opt" data-i="${i}" data-j="${j}" value="${op}" placeholder="选项${j + 1}" ${dis} style="width:90px;border:1px solid #d9d9d9;border-radius:4px;padding:4px 6px;font-size:12px;">
+        ${gjViewMode ? '' : `<span class="link" style="font-size:12px;" onclick="removeGjOption(${i},${j})">✕</span>`}
+      </span>`).join('')}
+      ${gjViewMode ? '' : `<span class="link" style="font-size:12px;white-space:nowrap;" onclick="addGjOption(${i})">＋添加</span>`}
+    </div>`;
+  };
+  const ynSel = (cls, val) => `<select class="${cls}" ${dis} style="width:64px;border:1px solid #d9d9d9;border-radius:4px;padding:4px;font-size:12px;">
+    <option value="1" ${val ? 'selected' : ''}>是</option>
+    <option value="0" ${val ? '' : 'selected'}>否</option>
+  </select>`;
+  document.getElementById('gjItemList').innerHTML = `<table style="min-width:980px;"><thead>
+    <tr><th style="width:220px;">检查项 *</th><th style="width:90px;">方式 *</th><th>选项</th><th style="width:90px;">是否上传图片</th><th style="width:100px;">是否填写检查内容</th><th style="width:64px;">操作</th></tr>
+  </thead><tbody>${gjItems.map((it, i) => `
+    <tr>
+      <td><input type="text" class="gj-name" data-i="${i}" placeholder="请输入检查项" value="${it.text}" ${dis} style="width:100%;border:1px solid #d9d9d9;border-radius:4px;padding:5px 8px;font-size:13px;box-sizing:border-box;"></td>
+      <td><select class="gj-type" data-i="${i}" ${dis} style="width:100%;border:1px solid #d9d9d9;border-radius:4px;padding:4px;font-size:12px;">
+        <option ${it.type === '复选框' ? 'selected' : ''}>复选框</option>
+        <option ${it.type === '单选框' ? 'selected' : ''}>单选框</option>
+        <option ${it.type === '填空题' ? 'selected' : ''}>填空题</option>
+      </select></td>
+      <td>${optCell(it, i)}</td>
+      <td style="text-align:center;">${ynSel('gj-photo', it.needPhoto)}</td>
+      <td style="text-align:center;">${ynSel('gj-content', it.needContent)}</td>
+      <td style="white-space:nowrap;">${gjViewMode ? '—' : `<span class="link" onclick="addGjItem(${i + 1})" style="margin-right:8px;">＋</span><span class="link" onclick="removeGjItem(${i})">－</span>`}</td>
+    </tr>`).join('')}</tbody></table>`;
+  if (gjViewMode) return;
+  document.querySelectorAll('#gjItemList .gj-name').forEach(el => el.addEventListener('input', function () {
+    gjItems[Number(this.dataset.i)].text = this.value;
+  }));
+  document.querySelectorAll('#gjItemList .gj-type').forEach(el => el.addEventListener('change', function () {
+    const it = gjItems[Number(this.dataset.i)];
+    it.type = this.value;
+    if (it.type !== '填空题' && !it.options.length) it.options = ['选项1', '选项2'];
+    if (it.type === '填空题' && !it.parts) it.parts = [{ blank: '' }];
+    renderGjItems();
+  }));
+  document.querySelectorAll('#gjItemList .gj-opt').forEach(el => el.addEventListener('input', function () {
+    gjItems[Number(this.dataset.i)].options[Number(this.dataset.j)] = this.value;
+  }));
+  document.querySelectorAll('#gjItemList .gj-part-text').forEach(el => el.addEventListener('input', function () {
+    gjItems[Number(this.dataset.i)].parts[Number(this.dataset.j)].text = this.value;
+  }));
+  document.querySelectorAll('#gjItemList .gj-part-blank').forEach(el => el.addEventListener('input', function () {
+    gjItems[Number(this.dataset.i)].parts[Number(this.dataset.j)].blank = this.value;
+  }));
+  document.querySelectorAll('#gjItemList .gj-photo').forEach(el => el.addEventListener('change', function () {
+    gjItems[Number(this.dataset.i)].needPhoto = this.value === '1';
+  }));
+  document.querySelectorAll('#gjItemList .gj-content').forEach(el => el.addEventListener('change', function () {
+    gjItems[Number(this.dataset.i)].needContent = this.value === '1';
+  }));
+}
+function addGjItem(at) {
+  const row = { text: '', type: '单选框', options: ['正常', '异常'], parts: [], needPhoto: false, needContent: false };
+  if (typeof at === 'number') gjItems.splice(at, 0, row);
+  else gjItems.push(row);
+  renderGjItems();
+}
+function removeGjItem(i) { gjItems.splice(i, 1); renderGjItems(); }
+function addGjOption(i) { gjItems[i].options.push(''); renderGjItems(); }
+function removeGjOption(i, j) { gjItems[i].options.splice(j, 1); renderGjItems(); }
+function addGjPart(i, kind) {
+  const it = gjItems[i];
+  if (!it.parts) it.parts = [];
+  it.parts.push(kind === 'blank' ? { blank: '' } : { text: '' });
+  renderGjItems();
+}
+function removeGjPart(i, j) { gjItems[i].parts.splice(j, 1); renderGjItems(); }
+
+function openGjCl2Modal(id, viewMode) {
+  gjEditId = id || null;
+  gjViewMode = !!viewMode;
+  const c = id ? gjChecklists.find(x => x.id === id) : null;
+  document.getElementById('gjCl2ModalTitle').textContent = gjViewMode ? '检查配置详情' : (c ? '编辑检查配置' : '新增检查配置');
+  document.getElementById('gjName').value = c ? c.name : '';
+  document.getElementById('gjDesc').value = c ? (c.desc || '') : '';
+  gjItems = c ? c.items.map(it => ({
+    text: it.text, type: it.type,
+    options: (it.options || []).slice(),
+    parts: it.parts ? it.parts.map(p => p.blank != null ? { blank: p.blank } : { text: p.text || '' }) : [],
+    needPhoto: !!it.needPhoto, needContent: !!it.needContent
+  })) : [{ text: '', type: '单选框', options: ['正常', '异常'], parts: [], needPhoto: false, needContent: false }];
+  gjScopePicks = c ? gjScopeOf(c.id).map(m => m.id) : [];
+  document.getElementById('gjScope').value = c ? `工机具 ${gjScopePicks.length} 台` : '';
+  renderGjItems();
+  ['gjName', 'gjScope', 'gjDesc'].forEach(k => document.getElementById(k).disabled = gjViewMode);
+  document.querySelector('#gjCl2Modal .modal-footer').style.display = gjViewMode ? 'none' : '';
+  document.getElementById('gjCl2Modal').classList.remove('hidden');
+}
+function closeGjCl2Modal() { document.getElementById('gjCl2Modal').classList.add('hidden'); }
+
+// 适用范围选择弹窗（工机具多选）
+function openGjScopeModal() {
+  renderGjScope();
+  document.getElementById('gjScopeModal').classList.remove('hidden');
+}
+function closeGjScopeModal() { document.getElementById('gjScopeModal').classList.add('hidden'); }
+
+function renderGjScope() {
+  const rows = gjAllMachines();
+  document.getElementById('gjScopeTableWrap').innerHTML = `<table style="min-width:900px;"><thead>
+    <tr><th style="width:40px;"></th><th>机具/物资名称</th><th>机具物资编号</th><th>类型</th><th>所属承包商</th><th>所属项目</th><th>关联状态</th></tr>
+  </thead><tbody>${
+    rows.length ? rows.map(r => {
+      const boundOther = r.gjChecklistId && r.gjChecklistId !== gjEditId;
+      const status = r.gjChecklistId
+        ? (boundOther ? `<span class="tag tag-gray">已关联「${gjClName(r.gjChecklistId)}」</span>` : '<span class="tag tag-green">当前清单</span>')
+        : '<span style="color:#999;">未关联</span>';
+      return `
+    <tr>
+      <td style="text-align:center;"><input type="checkbox" ${gjScopePicks.includes(r.id) ? 'checked' : ''} ${boundOther ? 'disabled' : ''} onchange="toggleGjScopePick('${r.id}')"></td>
+      <td>${r.name}</td>
+      <td>${r.id}</td>
+      <td>${r.type || '—'}</td>
+      <td>${gjMachineOf(r.id).company}</td>
+      <td>${r.project || '—'}</td>
+      <td>${status}</td>
+    </tr>`;
+    }).join('') : `<tr><td colspan="7" style="text-align:center;color:#999;padding:30px;">暂无数据</td></tr>`
+  }</tbody></table>`;
+  document.getElementById('gjScopeCount').textContent = gjScopePicks.length;
+}
+
+function toggleGjScopePick(id) {
+  const i = gjScopePicks.indexOf(id);
+  if (i >= 0) gjScopePicks.splice(i, 1); else gjScopePicks.push(id);
+  document.getElementById('gjScopeCount').textContent = gjScopePicks.length;
+}
+function clearGjScopePicks() {
+  gjScopePicks = [];
+  renderGjScope();
+}
+function confirmGjScope() {
+  document.getElementById('gjScope').value = `工机具 ${gjScopePicks.length} 台`;
+  closeGjScopeModal();
+}
+
+function saveGjCl2() {
+  const name = document.getElementById('gjName').value.trim();
+  const items = [];
+  for (let i = 0; i < gjItems.length; i++) {
+    const it = gjItems[i];
+    const text = it.text.trim();
+    if (!text) { alert('请填写第 ' + (i + 1) + ' 个检查项的名称'); return; }
+    if (it.type !== '填空题') {
+      const opts = it.options.map(o => o.trim()).filter(Boolean);
+      if (!opts.length) { alert('检查项「' + text + '」为' + it.type + '，请至少设置一个选项'); return; }
+      items.push({ text, type: it.type, options: opts, needPhoto: !!it.needPhoto, needContent: !!it.needContent });
+    } else {
+      const parts = (it.parts || []).map(p => p.blank != null ? { blank: (p.blank || '').trim() } : { text: (p.text || '').trim() }).filter(p => p.blank != null || p.text);
+      if (!parts.some(p => p.blank != null)) { alert('检查项「' + text + '」为填空题，请至少添加一个填空（＋填空）'); return; }
+      items.push({ text, type: '填空题', options: [], parts, needPhoto: !!it.needPhoto, needContent: !!it.needContent });
+    }
+  }
+  if (!name) { alert('请输入检查清单名称'); return; }
+  if (!gjScopePicks.length) { alert('请点击选择适用范围'); return; }
+  const cid = gjEditId || gjClSeq++;
+  const data = {
+    name, items,
+    desc: document.getElementById('gjDesc').value.trim(),
+    operator: '管理员', opTime: formatNow()
+  };
+  if (gjEditId) Object.assign(gjChecklists.find(x => x.id === gjEditId), data);
+  else gjChecklists.unshift({ id: cid, ...data });
+  // 绑定/解绑工机具（一台工机具只能关联一个检查清单）
+  gjAllMachines().forEach(m => {
+    if (gjScopePicks.includes(m.id)) m.gjChecklistId = cid;
+    else if (m.gjChecklistId === cid) m.gjChecklistId = null;
+  });
+  closeGjCl2Modal();
+  renderGjConfigs();
+}
+
+function deleteGjCl2(id) {
+  const c = gjChecklists.find(x => x.id === id);
+  if (!c) return;
+  if (!confirm('确定删除检查清单「' + c.name + '」？已关联的工机具将自动解除关联。')) return;
+  gjAllMachines().forEach(m => { if (m.gjChecklistId === id) m.gjChecklistId = null; });
+  gjChecklists = gjChecklists.filter(x => x.id !== id);
+  renderGjConfigs();
+}
+
+// 适用范围 / 检查项 查看弹窗
+function openGjScopeView(id) {
+  const c = gjChecklists.find(x => x.id === id);
+  if (!c) return;
+  const scope = gjScopeOf(id);
+  document.getElementById('gjViewTitle').textContent = '适用范围（' + c.name + '）';
+  document.getElementById('gjViewBody').innerHTML = scope.length
+    ? `<div class="table-wrap" style="border:1px solid #f0f0f0;border-radius:6px;"><table style="min-width:640px;"><thead><tr><th>机具/物资名称</th><th>机具物资编号</th><th>类型</th><th>所属承包商</th><th>所属项目</th></tr></thead><tbody>${scope.map(r => `
+      <tr><td>${r.name}</td><td>${r.id}</td><td>${r.type || '—'}</td><td>${gjMachineOf(r.id).company}</td><td>${r.project || '—'}</td></tr>`).join('')}</tbody></table></div>`
+    : '<div style="color:#999;font-size:13px;">未关联工机具</div>';
+  document.getElementById('gjViewModal').classList.remove('hidden');
+}
+function openGjItemsView(id) {
+  const c = gjChecklists.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('gjViewTitle').textContent = '检查项（' + c.name + '）';
+  document.getElementById('gjViewBody').innerHTML = c.items.length ? c.items.map((it, i) => `
+    <div style="border:1px solid #f0f0f0;border-radius:6px;padding:10px 14px;margin-bottom:10px;">
+      <div style="font-size:13px;font-weight:600;line-height:2;">${i + 1}. ${it.text} <span style="color:#999;font-weight:400;">（${it.type}）</span></div>
+      <div style="font-size:13px;color:#666;padding-left:18px;line-height:2.2;">
+        ${it.type === '填空题'
+          ? `<span style="line-height:2.2;">${(it.parts || []).map((p, j) => p.blank != null
+              ? `<input type="text" disabled placeholder="${p.blank || '填写'}" style="border:none;border-bottom:1px solid #d9d9d9;padding:2px 4px;width:110px;text-align:center;background:transparent;font-size:13px;">`
+              : `<span>${p.text}</span>`).join('')}</span>`
+          : it.options.map(op => it.type === '单选框'
+            ? `<label style="margin-right:16px;"><input type="radio" disabled name="gjv-${i}"> ${op}</label>`
+            : `<label style="margin-right:16px;"><input type="checkbox" disabled> ${op}</label>`).join('')}
+      </div>
+      <div style="font-size:12px;color:#999;padding-left:18px;line-height:2;">
+        是否上传图片：<span style="color:${it.needPhoto ? '#1890ff' : '#999'};">${it.needPhoto ? '是' : '否'}</span>
+        　是否填写检查内容：<span style="color:${it.needContent ? '#1890ff' : '#999'};">${it.needContent ? '是' : '否'}</span>
+      </div>
+    </div>`).join('') : '<div class="mo-empty">未配置检查项</div>';
+  document.getElementById('gjViewModal').classList.remove('hidden');
+}
+function closeGjView() { document.getElementById('gjViewModal').classList.add('hidden'); }
+
+// ===== 工机具管理：移动端（扫码检查） =====
+let gjRecSeq = 2;
+let gjRecords = [
+  { id: 1, targetId: 'JJWZ-2026-001', name: '电焊机', code: 'JJWZ-2026-001', company: '宏远建筑有限公司', project: '城东综合体二期',
+    checkTime: '2026-10-28 10:20', checklistName: '施工机具日常安全检查清单', inspector: '管理员', photo: '现场照片.jpg',
+    desc: '接地线连接可靠，防护罩完好。',
+    results: [
+      { text: '防护罩、接地线完好', type: '单选框', value: '正常', photo: '防护罩照片.jpg', content: '防护罩无缺损，接地线连接牢固。' },
+      { text: '证书与标识', type: '复选框', value: ['有检定证书', '标识清晰'] },
+      { text: '绝缘电阻测量', type: '填空题', parts: [{ text: '绝缘电阻' }, { blank: '填写数值' }, { text: 'MΩ，不小于规定值' }], value: ['2.5'] }
+    ] }
+];
+let gjCheckTarget = null;
+let gjRecViewId = null;
+let gjRecTab = 'base';
+
+// 检查记录卡片列表
+function renderGjRecords() {
+  fillGjFilterOpts();
+  const comp = document.getElementById('filterComp-gjRec').value;
+  const kw = document.getElementById('filterKw-gjRec').value.trim();
+  const list = gjRecords.filter(r =>
+    (!comp || r.company === comp) &&
+    (!kw || r.name.includes(kw) || (r.code || '').includes(kw)));
+  document.getElementById('gjRecordList').innerHTML = list.length ? `<div class="mo-grid">${list.map(rec => `
+    <div class="mo-card" onclick="openGjRecord(${rec.id})">
+      <div class="mc-title">
+        <span>${rec.name}</span>
+        <span class="tag tag-blue">工机具</span>
+      </div>
+      <div class="mc-field"><span class="mc-label">机具物资编号</span><span class="mc-value">${rec.code || '—'}</span></div>
+      <div class="mc-field"><span class="mc-label">所属承包商</span><span class="mc-value" title="${rec.company}">${rec.company || '—'}</span></div>
+      <div class="mc-field"><span class="mc-label">所属项目</span><span class="mc-value" title="${rec.project}">${rec.project || '—'}</span></div>
+      <div class="mc-field"><span class="mc-label">检查时间</span><span class="mc-value">${rec.checkTime}</span></div>
+    </div>`).join('')}</div>` : '<div class="mo-empty">暂无检查记录，请点击左上角“检查扫码”开始检查</div>';
+}
+function resetGjRecFilter() {
+  document.getElementById('filterComp-gjRec').value = '';
+  document.getElementById('filterKw-gjRec').value = '';
+  renderGjRecords();
+}
+// 下拉搜索项跟随数据动态生成（保留当前选中值）
+function fillGjFilterOpts() {
+  const mk = (id, allLabel, vals) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const cur = el.value;
+    el.innerHTML = `<option value="">${allLabel}</option>` + [...new Set(vals.filter(Boolean))].map(v => `<option>${v}</option>`).join('');
+    el.value = cur;
+  };
+  mk('filterOp-gjConfig', '全部操作人', gjChecklists.map(c => c.operator));
+  mk('filterComp-gjRec', '全部承包商', gjRecords.map(r => r.company));
+}
+
+// 扫码（模拟：展示工机具二维码，点击即识别）
+function openGjScan() {
+  renderGjScan();
+  document.getElementById('gjScanModal').classList.remove('hidden');
+}
+function closeGjScan() { document.getElementById('gjScanModal').classList.add('hidden'); }
+
+function renderGjScan() {
+  const rows = gjAllMachines();
+  document.getElementById('gjScanList').innerHTML = rows.length ? rows.map(r => `
+    <div class="mo-card" style="display:flex;gap:12px;align-items:center;margin-bottom:10px;" onclick="scanGjPick('${r.id}')">
+      <canvas id="gjsq-${r.id}" style="flex:none;border:1px solid #f0f0f0;border-radius:4px;"></canvas>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:600;font-size:13px;">${r.name}</div>
+        <div style="font-size:12px;color:#999;line-height:1.9;">编号：${r.id}</div>
+        <div style="font-size:12px;color:#999;line-height:1.9;">所属项目：${r.project || '—'}</div>
+        <div style="font-size:12px;line-height:1.9;">${r.gjChecklistId ? '清单：' + gjClName(r.gjChecklistId) : '<span style="color:#fa8c16;">未关联检查清单</span>'}</div>
+      </div>
+      <span class="link" style="flex:none;">检查</span>
+    </div>`).join('') : '<div class="mo-empty">暂无数据</div>';
+  rows.forEach(r => drawEmg2QR(document.getElementById(`gjsq-${r.id}`), `工机具：${r.name}（编号：${r.id}）`, 2));
+}
+function scanGjPick(id) {
+  closeGjScan();
+  openGjCheck(id);
+}
+
+// 检查项填写（按清单配置的选项类型渲染）
+function openGjCheck(targetId) {
+  const found = gjMachineOf(targetId);
+  if (!found) return;
+  const r = found.t;
+  const c = gjChecklists.find(x => x.id === r.gjChecklistId);
+  if (!c) { alert('该工机具未关联检查清单，无法检查'); return; }
+  gjCheckTarget = { targetId };
+  gqItemPhotoMap = {};
+  gqFormPhoto = '';
+  document.getElementById('gjCheckInfo').innerHTML = `
+    <div><span class="pt-label">机具名称</span>${r.name}</div>
+    <div><span class="pt-label">机具编号</span>${r.id}</div>
+    <div><span class="pt-label">所属承包商</span>${found.company}</div>
+    <div><span class="pt-label">所属项目</span>${r.project || '—'}</div>
+    <div><span class="pt-label">检查清单</span>${c.name}</div>`;
+  document.getElementById('gjCheckItemList').innerHTML = c.items.map((it, i) => `
+    <div class="phone-item" data-i="${i}">
+      <div class="pi-title">${i + 1}. ${it.text} <span style="color:#999;font-weight:400;font-size:12px;">（${it.type}）</span></div>
+      ${it.type === '填空题'
+        ? `<div class="pi-row" style="align-items:center;flex-wrap:wrap;gap:4px;line-height:2;">
+            ${(it.parts || []).map((p, j) => p.blank != null
+              ? `<input type="text" id="gq-blank-${i}-${j}" placeholder="${p.blank || '填写'}" style="width:110px;border:none;border-bottom:1px solid #1890ff;padding:2px 4px;font-size:13px;text-align:center;background:transparent;">`
+              : `<span style="color:#666;">${p.text}</span>`).join('')}
+          </div>`
+        : `<div class="pi-row" style="flex-wrap:wrap;">
+            ${it.options.map(op => it.type === '单选框'
+              ? `<label><input type="radio" name="gq-res-${i}" value="${op}">${op}</label>`
+              : `<label><input type="checkbox" name="gq-res-${i}" value="${op}">${op}</label>`).join('')}
+          </div>`}
+      ${it.needPhoto ? `<div class="pi-row"><span class="link" id="gq-photo-btn-${i}" onclick="gqUploadItemPhoto(${i})">＋ 上传图片</span></div>` : ''}
+      ${it.needContent ? `<div style="padding:0 14px 10px;"><div style="font-size:12px;color:#666;margin-bottom:4px;">检查内容（必填）</div><textarea id="gq-content-${i}" rows="2" placeholder="请输入检查内容" style="width:100%;border:1px solid #d9d9d9;border-radius:4px;padding:6px 8px;font-size:13px;box-sizing:border-box;resize:vertical;"></textarea></div>` : ''}
+    </div>`).join('') + `
+    <div class="phone-item">
+      <div class="pi-title">拍照上传</div>
+      <div style="padding:0 14px 12px;">
+        <div id="gqPhotoBox" onclick="gqUploadFormPhoto()" style="border:1px dashed #d9d9d9;border-radius:6px;height:72px;display:flex;align-items:center;justify-content:center;color:#999;font-size:13px;cursor:pointer;">＋ 拍照/上传现场照片</div>
+      </div>
+      <div style="padding:0 14px 12px;">
+        <div style="font-size:12px;color:#666;margin-bottom:4px;">描述</div>
+        <textarea id="gqDesc" rows="2" placeholder="请输入本次检查描述（选填）" style="width:100%;border:1px solid #d9d9d9;border-radius:4px;padding:6px 8px;font-size:13px;box-sizing:border-box;resize:vertical;"></textarea>
+      </div>
+    </div>`;
+  document.getElementById('gjCheckModal').classList.remove('hidden');
+}
+let gqItemPhotoMap = {};
+let gqFormPhoto = '';
+function gqUploadItemPhoto(i) {
+  gqItemPhotoMap[i] = '现场照片.jpg';
+  const el = document.getElementById('gq-photo-btn-' + i);
+  if (el) el.innerHTML = '✓ 已上传 现场照片.jpg';
+}
+function gqUploadFormPhoto() {
+  gqFormPhoto = '现场照片.jpg';
+  document.getElementById('gqPhotoBox').innerHTML = '📷 已上传 现场照片.jpg（点击可重新上传）';
+}
+function closeGjCheck() { document.getElementById('gjCheckModal').classList.add('hidden'); }
+
+function submitGjCheck() {
+  const { targetId } = gjCheckTarget;
+  const found = gjMachineOf(targetId);
+  const r = found.t;
+  const c = gjChecklists.find(x => x.id === r.gjChecklistId);
+  const results = [];
+  let valid = true;
+  let errMsg = '';
+  c.items.forEach((it, i) => {
+    let value;
+    let partsSnap = null;
+    if (it.type === '填空题') {
+      const answers = [];
+      (it.parts || []).forEach((p, j) => {
+        if (p.blank != null) answers.push(document.getElementById(`gq-blank-${i}-${j}`).value.trim());
+      });
+      value = answers;
+      partsSnap = it.parts;
+      if (answers.some(a => !a)) { valid = false; if (!errMsg) errMsg = '请完整填写「' + it.text + '」中的所有填空'; }
+    } else if (it.type === '单选框') {
+      const sel = document.querySelector(`input[name="gq-res-${i}"]:checked`);
+      value = sel ? sel.value : '';
+      if (!sel) { valid = false; if (!errMsg) errMsg = '请选择「' + it.text + '」'; }
+    } else {
+      value = Array.from(document.querySelectorAll(`input[name="gq-res-${i}"]:checked`)).map(x => x.value);
+      if (!value.length) { valid = false; if (!errMsg) errMsg = '请勾选「' + it.text + '」至少一项'; }
+    }
+    const res = { text: it.text, type: it.type, value };
+    if (partsSnap) res.parts = partsSnap;
+    if (it.needPhoto) {
+      res.photo = gqItemPhotoMap[i] || '';
+      if (!res.photo) { valid = false; if (!errMsg) errMsg = '请上传「' + it.text + '」的图片'; }
+    }
+    if (it.needContent) {
+      res.content = document.getElementById('gq-content-' + i).value.trim();
+      if (!res.content) { valid = false; if (!errMsg) errMsg = '请填写「' + it.text + '」的检查内容'; }
+    }
+    results.push(res);
+  });
+  if (!valid) { alert(errMsg || '请完成每一项检查后再提交'); return; }
+  gjRecords.unshift({
+    id: gjRecSeq++,
+    targetId,
+    name: r.name, code: r.id, company: found.company, project: r.project || '',
+    checklistName: c.name, checkTime: formatNow(), inspector: '管理员',
+    photo: gqFormPhoto, desc: document.getElementById('gqDesc').value.trim(),
+    results
+  });
+  closeGjCheck();
+  renderGjRecords();
+  alert('检查完成，已生成检查记录');
+}
+
+// 检查记录详情：基础信息 / 本次检查记录 两个页签
+function openGjRecord(id) {
+  gjRecViewId = id;
+  gjRecTab = 'base';
+  const rec = gjRecords.find(x => x.id === id);
+  document.getElementById('gjRecTitle').textContent = `检查记录详情（${rec.name}）`;
+  renderGjRecBody();
+  document.getElementById('gjRecordModal').classList.remove('hidden');
+}
+function closeGjRecord() { document.getElementById('gjRecordModal').classList.add('hidden'); }
+function switchGjRecTab(tab) {
+  gjRecTab = tab;
+  renderGjRecBody();
+}
+
+function renderGjRecBody() {
+  document.querySelectorAll('#gjRecordModal .tab').forEach(t =>
+    t.classList.toggle('active', t.dataset.rtab === gjRecTab));
+  const rec = gjRecords.find(x => x.id === gjRecViewId);
+  if (!rec) return;
+  if (gjRecTab === 'base') {
+    const found = gjMachineOf(rec.targetId);
+    if (!found) {
+      document.getElementById('gjRecBody').innerHTML = '<div class="mo-empty">该工机具已被删除，无法查看基础信息</div>';
+      return;
+    }
+    const r = found.t;
+    const grid = `
+      <div class="ig-label">机具/物资编号</div><div>${r.id}</div>
+      <div class="ig-label">机具/物资名称</div><div>${r.name}</div>
+      <div class="ig-label">型号</div><div>${r.model || '—'}</div>
+      <div class="ig-label">出厂编号</div><div>${r.factoryNo || '—'}</div>
+      <div class="ig-label">生产厂家</div><div>${r.manufacturer || '—'}</div>
+      <div class="ig-label">出厂日期</div><div>${r.prodDate || '—'}</div>
+      <div class="ig-label">类型</div><div>${r.type || '—'}</div>
+      <div class="ig-label">所属承包商</div><div>${found.company}</div>
+      <div class="ig-label">所属项目</div><div>${r.project || '—'}</div>
+      <div class="ig-label">设备状态</div><div>${r.deviceStatus || '—'}</div>
+      <div class="ig-label">最新检验日期</div><div>${r.inspectDate || '—'}</div>
+      <div class="ig-label">检验周期</div><div>${r.cycle || '—'}</div>
+      <div class="ig-label">下次检验日期</div><div>${r.nextInspectDate || '—'}</div>
+      <div class="ig-label">证书编号</div><div>${r.certNo || '—'}</div>
+      <div class="ig-label">备注</div><div>${r.remark || '—'}</div>
+      <div class="ig-label">关联检查清单</div><div>${r.gjChecklistId ? gjClName(r.gjChecklistId) : '—'}</div>`;
+    document.getElementById('gjRecBody').innerHTML = `<div class="info-grid" style="grid-template-columns:repeat(3,1fr);">${grid}</div>`;
+  } else {
+    document.getElementById('gjRecBody').innerHTML = `
+      <div style="font-size:13px;color:#666;margin-bottom:8px;">检查清单：<span style="font-weight:600;color:#333;">${rec.checklistName || '—'}</span>　检查时间：${rec.checkTime}</div>
+      <div style="font-size:13px;color:#666;margin-bottom:12px;">现场照片：${rec.photo ? '📷 ' + rec.photo : '—'}　描述：${rec.desc || '—'}</div>
+      ${rec.results.map((it, i) => `
+        <div style="border:1px solid #f0f0f0;border-radius:6px;padding:10px 14px;margin-bottom:10px;">
+          <div style="font-size:13px;font-weight:600;line-height:2;">${i + 1}. ${it.text} <span style="color:#999;font-weight:400;font-size:12px;">（${it.type}）</span></div>
+          <div style="font-size:13px;padding-left:18px;line-height:2;">
+            ${it.type === '填空题'
+              ? `<span>${emg2BlankSentence(it.parts, it.value)}</span>`
+              : it.type === '单选框'
+                ? `<span class="tag ${it.value === '正常' || it.value === '合格' ? 'tag-green' : 'tag-red'}">${it.value || '—'}</span>`
+                : (it.value || []).map(v => `<span class="tag ${v === '未过期' || v === '正常' || v === '有检定证书' || v === '标识清晰' ? 'tag-green' : 'tag-orange'}" style="margin-right:6px;">${v}</span>`).join('')}
           </div>
           ${it.photo ? `<div style="font-size:12px;color:#666;padding-left:18px;line-height:2;">📷 已上传：${it.photo}</div>` : ''}
           ${it.content ? `<div style="font-size:12px;color:#666;padding-left:18px;line-height:2;">检查内容：${it.content}</div>` : ''}
@@ -16239,6 +16980,8 @@ renderEmg2Mats();
 renderEmg2Devs();
 renderEmg2Configs();
 renderEmg2Records();
+renderGjConfigs();
+renderGjRecords();
 renderCcTplList();
 renderCcTypes();
 renderCcPenTypes();
@@ -16276,6 +17019,8 @@ document.getElementById('menu').addEventListener('click', function (e) {
  ['emg2ClPickModal', closeEmg2ClPick], ['emg2ScopeModal', closeEmg2ScopeModal], ['emg2ViewModal', closeEmg2View],
  ['emg2QrModal', closeEmg2Qr], ['emg2OrgModal', closeEmg2OrgModal], ['emg2DetailDrawer', closeEmg2Detail],
  ['emg2ScanModal', closeEmg2Scan], ['emg2CheckModal', closeEmg2Check], ['emg2RecordModal', closeEmg2Record],
+ ['gjCl2Modal', closeGjCl2Modal], ['gjScopeModal', closeGjScopeModal], ['gjViewModal', closeGjView],
+ ['gjScanModal', closeGjScan], ['gjCheckModal', closeGjCheck], ['gjRecordModal', closeGjRecord],
  ['ccTplModal', closeCcTplModal], ['ccTplPubModal', closeCcTplPubConfirm], ['ccTplDetailDrawer', closeCcTplDetail],
  ['ccTplPlansModal', closeCcTplPlans], ['ccTplItemsModal', closeCcTplItems], ['ccTplBlockModal', closeCcTplBlock],
  ['ccTypeModal', closeCcTypeModal], ['ccPenTypeModal', closeCcPenTypeModal], ['ccAutoRuleModal', closeCcAutoRuleModal],
