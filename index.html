@@ -795,7 +795,11 @@
     <!-- 工机具台账管理（业主端：左侧承包商栏 + 公司维度列表） -->
     <div class="card page hidden" id="page-toolAccount">
     <div id="toolOwnerWrap">
-      <div class="relation-layout">
+      <div class="tabs" style="margin-bottom:12px;">
+        <span class="tab active" id="toolTabAccount" onclick="setToolOwnerTab('account')">工机具台账</span>
+        <span class="tab" id="toolTabApply" onclick="setToolOwnerTab('apply')">工机具申请</span>
+      </div>
+      <div class="relation-layout" id="toolRelationWrap">
         <div class="relation-left" id="toolLeft"></div>
         <div style="flex:1;min-width:0;">
           <div class="table-wrap">
@@ -824,6 +828,21 @@
               <tbody id="tbody-toolAccount"></tbody>
             </table>
           </div>
+        </div>
+      </div>
+      <div id="toolApplyWrap" class="hidden">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>申请人</th>
+                <th>申请承包商公司</th>
+                <th>申请工机具数量</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-toolApply"></tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -1991,103 +2010,93 @@
   </div>
 </div>
 
-<!-- 工机具台账：新增 -->
+<!-- 工机具台账：新增（列表式批量录入） -->
 <div class="modal-mask hidden" id="toolAddModal">
-  <div class="modal wide">
+  <div class="modal wide" style="width:1100px;">
     <div class="modal-header">
       新增机具台账
       <span class="modal-close" onclick="closeToolAdd()">✕</span>
     </div>
     <div class="modal-body">
-      <div class="modal-body grid" style="padding:0;">
-        <div class="form-item">
-          <label>所属承包商</label>
-          <span style="line-height:32px;">宏远建筑有限公司（当前登录）</span>
-        </div>
-        <div class="form-item">
-          <label class="required">机具编号</label>
-          <input type="text" id="taId" placeholder="请输入机具编号">
-        </div>
-        <div class="form-item">
-          <label class="required">机具名称</label>
-          <input type="text" id="taName" placeholder="请输入机具名称">
-        </div>
-        <div class="form-item">
-          <label>型号</label>
-          <input type="text" id="taModel" placeholder="请输入型号">
-        </div>
-        <div class="form-item">
-          <label>出厂编号</label>
-          <input type="text" id="taFactoryNo" placeholder="请输入出厂编号">
-        </div>
-        <div class="form-item">
-          <label>生产厂家</label>
-          <input type="text" id="taManufacturer" placeholder="请输入生产厂家">
-        </div>
-        <div class="form-item">
-          <label>出厂日期</label>
-          <input type="date" id="taProdDate">
-        </div>
-        <div class="form-item">
-          <label>机具分类</label>
-          <select id="taCategory">
-            <option value="">请选择</option>
-            <option>焊接设备</option>
-            <option>电动工具</option>
-            <option>高处作业设备</option>
-            <option>动力设备</option>
-            <option>检测仪器</option>
-            <option>起重设备</option>
-          </select>
-        </div>
-        <div class="form-item">
-          <label>证书编号</label>
-          <input type="text" id="taCertNo" placeholder="请输入证书编号">
-        </div>
-        <div class="form-item">
-          <label>最新检查日期</label>
-          <input type="date" id="taInspectDate">
-        </div>
-        <div class="form-item">
-          <label>检查周期</label>
-          <select id="taCycle">
-            <option value="">请选择</option>
-            <option>3个月</option>
-            <option>6个月</option>
-            <option>12个月</option>
-            <option>24个月</option>
-          </select>
-        </div>
-        <div class="form-item">
-          <label>下次检查日期</label>
-          <input type="date" id="taNextInspectDate">
-        </div>
-        <div class="form-item">
-          <label>状态</label>
-          <select id="taStatus">
-            <option>待审核</option>
-            <option>审核中</option>
-            <option>已通过</option>
-            <option>已拒绝</option>
-          </select>
-        </div>
-        <div class="form-item">
-          <label>证书附件</label>
-          <input type="text" id="taCertFile" placeholder="附件名称，如：检定证书.pdf">
-        </div>
-        <div class="form-item">
-          <label>机具照片</label>
-          <input type="text" id="taPhoto" placeholder="照片名称，如：机具照片.jpg">
-        </div>
+      <div style="margin-bottom:10px;color:#999;font-size:12px;">所属承包商：宏远建筑有限公司（当前登录），可一次录入多条机具，带 * 为必填</div>
+      <div class="table-wrap" style="max-height:380px;overflow:auto;">
+        <table style="min-width:1900px;">
+          <thead>
+            <tr>
+              <th>机具编号*</th>
+              <th>机具名称*</th>
+              <th>型号</th>
+              <th>出厂编号</th>
+              <th>生产厂家</th>
+              <th>出厂日期</th>
+              <th>机具分类</th>
+              <th>证书编号</th>
+              <th>最新检查日期</th>
+              <th>检查周期</th>
+              <th>下次检查日期</th>
+              <th>状态</th>
+              <th>证书附件</th>
+              <th>机具照片</th>
+              <th>备注</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-toolAdd"></tbody>
+        </table>
       </div>
-      <div class="form-item">
-        <label>备注</label>
-        <textarea id="taRemark" rows="2" placeholder="请输入备注"></textarea>
-      </div>
+      <button class="btn btn-plain" style="margin-top:10px;" onclick="toolAddRow()">+ 添加一行</button>
     </div>
     <div class="modal-footer">
       <button class="btn btn-plain" onclick="closeToolAdd()">取消</button>
       <button class="btn btn-primary" onclick="saveToolAdd()">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- 工机具申请（业主端）：详情 -->
+<div class="modal-mask hidden" id="toolApplyViewModal">
+  <div class="modal" style="width:640px;">
+    <div class="modal-header">
+      工机具申请详情
+      <span class="modal-close" onclick="closeToolApplyView()">✕</span>
+    </div>
+    <div class="modal-body">
+      <div class="info-grid" id="toolApplyViewGrid" style="grid-template-columns:repeat(2,1fr);"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-plain" onclick="closeToolApplyView()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- 工机具申请（业主端）：处理 -->
+<div class="modal-mask hidden" id="toolApplyHandleModal">
+  <div class="modal" style="width:520px;">
+    <div class="modal-header">
+      处理工机具申请
+      <span class="modal-close" onclick="closeToolApplyHandle()">✕</span>
+    </div>
+    <div class="modal-body">
+      <div class="form-item">
+        <label>申请信息</label>
+        <span id="tahSummary" style="line-height:32px;"></span>
+      </div>
+      <div class="form-item">
+        <label class="required">处理结果</label>
+        <select id="tahResult">
+          <option value="">请选择</option>
+          <option>通过</option>
+          <option>拒绝</option>
+        </select>
+      </div>
+      <div class="form-item">
+        <label>处理意见</label>
+        <textarea id="tahOpinion" rows="3" placeholder="请输入处理意见（选填）"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-plain" onclick="closeToolApplyHandle()">取消</button>
+      <button class="btn btn-primary" onclick="saveToolApplyHandle()">提交</button>
     </div>
   </div>
 </div>
@@ -6956,6 +6965,12 @@ function renderToolAccount() {
     </div>`).join('');
   const list = toolAccounts[selectedToolContractor] || [];
   document.getElementById('tbody-toolAccount').innerHTML = list.length ? list.map(t => toolRowHtml(t, selectedToolContractor)).join('') : '<tr><td colspan="17" style="text-align:center;color:#999;padding:40px;">暂无数据</td></tr>';
+  // 业主端 Tab：台账 / 申请
+  document.getElementById('toolTabAccount').classList.toggle('active', toolOwnerTab === 'account');
+  document.getElementById('toolTabApply').classList.toggle('active', toolOwnerTab === 'apply');
+  document.getElementById('toolRelationWrap').classList.toggle('hidden', toolOwnerTab !== 'account');
+  document.getElementById('toolApplyWrap').classList.toggle('hidden', toolOwnerTab !== 'apply');
+  renderToolApply();
   // 承包商端：本公司单列表 + 关键字/状态筛选
   const kw = (document.getElementById('filterKw-toolCtc').value || '').trim();
   const st = document.getElementById('filterStatus-toolCtc').value;
@@ -7024,30 +7039,139 @@ function saveToolWarn() {
   renderToolAccount();
 }
 
+function toolAddRowHtml() {
+  const tdInput = (f, ph, type) => `<td><input type="${type || 'text'}" data-f="${f}" placeholder="${ph || ''}" style="width:120px;"></td>`;
+  return `<tr>
+    ${tdInput('id', '必填')}
+    ${tdInput('name', '必填')}
+    ${tdInput('model')}
+    ${tdInput('factoryNo')}
+    ${tdInput('manufacturer')}
+    ${tdInput('prodDate', '', 'date')}
+    <td><select data-f="category" style="width:110px;"><option value="">请选择</option><option>焊接设备</option><option>电动工具</option><option>高处作业设备</option><option>动力设备</option><option>检测仪器</option><option>起重设备</option></select></td>
+    ${tdInput('certNo')}
+    ${tdInput('inspectDate', '', 'date')}
+    <td><select data-f="cycle" style="width:90px;"><option value="">请选择</option><option>3个月</option><option>6个月</option><option>12个月</option><option>24个月</option></select></td>
+    ${tdInput('nextInspectDate', '', 'date')}
+    <td><select data-f="status" style="width:90px;"><option>待审核</option><option>审核中</option><option>已通过</option><option>已拒绝</option></select></td>
+    ${tdInput('certFile', '附件名称')}
+    ${tdInput('photo', '照片名称')}
+    ${tdInput('remark')}
+    <td><span class="link link-danger" onclick="this.closest('tr').remove()">删除</span></td>
+  </tr>`;
+}
+function toolAddRow() {
+  document.getElementById('tbody-toolAdd').insertAdjacentHTML('beforeend', toolAddRowHtml());
+}
 function openToolAdd() {
-  ['taId', 'taName', 'taModel', 'taFactoryNo', 'taManufacturer', 'taProdDate', 'taCertNo', 'taInspectDate', 'taNextInspectDate', 'taCertFile', 'taPhoto', 'taRemark'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('taCategory').value = '';
-  document.getElementById('taCycle').value = '';
-  document.getElementById('taStatus').value = '待审核';
+  document.getElementById('tbody-toolAdd').innerHTML = toolAddRowHtml();
   document.getElementById('toolAddModal').classList.remove('hidden');
 }
 function closeToolAdd() { document.getElementById('toolAddModal').classList.add('hidden'); }
 function saveToolAdd() {
-  const v = id => document.getElementById(id).value.trim();
-  const company = currentContractor, tid = v('taId'), tname = v('taName');
-  if (!tid) { alert('请输入机具编号'); return; }
-  if (!tname) { alert('请输入机具名称'); return; }
-  if (toolAccounts[company].some(t => t.id === tid)) { alert('该机具编号已存在，请更换'); return; }
-  toolAccounts[company].push({
-    id: tid, name: tname, model: v('taModel'), factoryNo: v('taFactoryNo'),
-    manufacturer: v('taManufacturer'), prodDate: v('taProdDate'), category: v('taCategory'),
-    certNo: v('taCertNo'), inspectDate: v('taInspectDate'), cycle: v('taCycle'),
-    nextInspectDate: v('taNextInspectDate'), status: document.getElementById('taStatus').value,
-    certFile: v('taCertFile') || '—', photo: v('taPhoto') || '—', remark: v('taRemark'), warnDays: 30
+  const company = currentContractor;
+  const rows = Array.prototype.slice.call(document.querySelectorAll('#tbody-toolAdd tr'));
+  const items = [];
+  let rowErr = '';
+  rows.forEach((tr, i) => {
+    const g = f => { const el = tr.querySelector('[data-f="' + f + '"]'); return el ? el.value.trim() : ''; };
+    const it = {
+      id: g('id'), name: g('name'), model: g('model'), factoryNo: g('factoryNo'),
+      manufacturer: g('manufacturer'), prodDate: g('prodDate'), category: g('category'),
+      certNo: g('certNo'), inspectDate: g('inspectDate'), cycle: g('cycle'),
+      nextInspectDate: g('nextInspectDate'), status: g('status'),
+      certFile: g('certFile') || '—', photo: g('photo') || '—', remark: g('remark'), warnDays: 30
+    };
+    if (!it.id && !it.name) return;
+    if (!it.id || !it.name) { rowErr = '第 ' + (i + 1) + ' 行：机具编号、机具名称为必填项'; return; }
+    items.push(it);
   });
+  if (rowErr) { alert(rowErr); return; }
+  if (!items.length) { alert('请至少填写一行机具数据'); return; }
+  const dup = items.find(it => toolAccounts[company].some(t => t.id === it.id));
+  if (dup) { alert('机具编号 ' + dup.id + ' 已存在，请更换'); return; }
+  items.forEach(it => toolAccounts[company].push(it));
   closeToolAdd();
   renderToolAccount();
-  alert('新增成功，已加入台账');
+  alert('新增成功，已加入台账 ' + items.length + ' 条机具');
+}
+
+// ===== 工机具申请（业主端：台账 / 申请 双 Tab） =====
+let toolApplies = [
+  { id: 1, applicant: '张伟', company: '宏远建筑有限公司', count: 3, time: '2026-10-28 09:30',
+    reason: '城东综合体二期新增焊接作业面，需补充进场机具',
+    tools: ['电焊机 ZX7-400 × 2', '角磨机 GWS 900-100 × 1'],
+    status: '待处理', handler: '', handleTime: '', opinion: '' },
+  { id: 2, applicant: '刘洋', company: '安捷消防技术有限公司', count: 2, time: '2026-10-28 14:10',
+    reason: '消防设施巡检设备老化，申请更换',
+    tools: ['消防烟枪 YW-09 × 1', '兆欧表 ZC25B-4 × 1'],
+    status: '待处理', handler: '', handleTime: '', opinion: '' },
+  { id: 3, applicant: '陈静', company: '迅达电梯工程有限公司', count: 1, time: '2026-10-27 10:00',
+    reason: '电梯井道检测需要新增仪器',
+    tools: ['曳引机测试仪 YT-3000 × 1'],
+    status: '已通过', handler: '王敏', handleTime: '2026-10-27 15:20', opinion: '同意，进场前完成检定登记' }
+];
+let toolOwnerTab = 'account';
+
+function setToolOwnerTab(k) {
+  toolOwnerTab = k;
+  renderToolAccount();
+}
+
+function toolApplyStatusClass(s) { return { '待处理': 'tag-orange', '已通过': 'tag-green', '已拒绝': 'tag-red' }[s] || 'tag-gray'; }
+
+function renderToolApply() {
+  document.getElementById('tbody-toolApply').innerHTML = toolApplies.length ? toolApplies.map(a => `
+    <tr>
+      <td>${a.applicant}</td>
+      <td>${a.company}</td>
+      <td>${a.count}</td>
+      <td>
+        <span class="link" onclick="openToolApplyView(${a.id})">详情</span>
+        ${a.status === '待处理' ? `<span class="link" onclick="openToolApplyHandle(${a.id})">处理</span>` : `<span style="color:#999;">处理</span>`}
+      </td>
+    </tr>`).join('') : '<tr><td colspan="4" style="text-align:center;color:#999;padding:40px;">暂无数据</td></tr>';
+}
+
+function openToolApplyView(id) {
+  const a = toolApplies.find(x => x.id === id);
+  if (!a) return;
+  document.getElementById('toolApplyViewGrid').innerHTML = `
+    <div class="ig-label">申请人</div><div>${a.applicant}</div>
+    <div class="ig-label">申请承包商公司</div><div>${a.company}</div>
+    <div class="ig-label">申请工机具数量</div><div>${a.count}</div>
+    <div class="ig-label">申请时间</div><div>${a.time}</div>
+    <div class="ig-label">申请缘由</div><div>${a.reason}</div>
+    <div class="ig-label">申请机具明细</div><div>${a.tools.join('<br>')}</div>
+    <div class="ig-label">状态</div><div><span class="tag ${toolApplyStatusClass(a.status)}">${a.status}</span></div>
+    <div class="ig-label">处理人</div><div>${a.handler || '—'}</div>
+    <div class="ig-label">处理时间</div><div>${a.handleTime || '—'}</div>
+    <div class="ig-label">处理意见</div><div>${a.opinion || '—'}</div>`;
+  document.getElementById('toolApplyViewModal').classList.remove('hidden');
+}
+function closeToolApplyView() { document.getElementById('toolApplyViewModal').classList.add('hidden'); }
+
+let tahTarget = null;
+function openToolApplyHandle(id) {
+  tahTarget = id;
+  const a = toolApplies.find(x => x.id === id);
+  document.getElementById('tahSummary').textContent = a.applicant + '（' + a.company + '）申请 ' + a.count + ' 台工机具';
+  document.getElementById('tahResult').value = '';
+  document.getElementById('tahOpinion').value = '';
+  document.getElementById('toolApplyHandleModal').classList.remove('hidden');
+}
+function closeToolApplyHandle() { document.getElementById('toolApplyHandleModal').classList.add('hidden'); }
+function saveToolApplyHandle() {
+  const a = toolApplies.find(x => x.id === tahTarget);
+  const res = document.getElementById('tahResult').value;
+  if (!res) { alert('请选择处理结果'); return; }
+  a.status = res === '通过' ? '已通过' : '已拒绝';
+  a.handler = '王敏';
+  a.handleTime = '2026-10-30 10:00';
+  a.opinion = document.getElementById('tahOpinion').value.trim();
+  closeToolApplyHandle();
+  renderToolApply();
+  alert('处理完成：该申请已' + a.status.replace('已', ''));
 }
 
 // ===== 工机具检查清单配置 =====
