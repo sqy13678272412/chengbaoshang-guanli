@@ -3465,7 +3465,6 @@
         <label class="required">触发方式</label>
         <select id="ccBlackRuleTrigger">
           <option value="">请选择触发方式</option>
-          <option>处罚选中</option>
           <option>项目检查逾期</option>
           <option>整改逾期</option>
           <option>项目检查隐患任务整改验收不通过</option>
@@ -3919,7 +3918,7 @@
       <div class="form-item" id="ccSysPenTypeItem" style="display:none;">
         <label class="required">处罚类型</label>
         <select id="ccSysPenHandleType" style="flex:1;">
-          <option>警告</option><option>罚款</option><option>停工整改</option><option>清退出场</option><option>列入黑名单</option>
+          <option>警告</option><option>罚款</option><option>停工整改</option><option>清退出场</option>
         </select>
       </div>
       <div class="form-item" id="ccSysPenDescItem" style="display:none;">
@@ -3978,7 +3977,7 @@
       </div>
       <div class="form-item"><label class="required">处罚类型</label>
         <select id="ccPenRecCreateType" style="flex:1;">
-          <option>警告</option><option>罚款</option><option>停工整改</option><option>清退出场</option><option>列入黑名单</option>
+          <option>警告</option><option>罚款</option><option>停工整改</option><option>清退出场</option>
         </select>
       </div>
       <div class="form-item"><label class="required">处罚对象</label><input type="text" id="ccPenRecCreateTarget" placeholder="如：华筑建设有限公司 / 陈建国" style="flex:1;"></div>
@@ -10504,7 +10503,7 @@ let ccRects = [
 let ccRectSeq = 5;
 let ccPens = [
   { id:1, code:'CF-20261029-001', source:'验证不通过', sourceId:1, project:'城东综合体二期', contractor:'华筑建设有限公司', person:'陈建国', company:'', type:'警告', amount:'', fact:'整改任务 ZG-20261029-001 首次验证不通过（演示数据）', basis:'《承包商安全管理办法》第18条', decision:'对责任人陈建国给予警告，限期完成整改', execReq:'', status:'待审批', appeal:null, approvals:[], blacklistId:null, logs:[] },
-  { id:2, code:'CF-20261025-002', source:'人工发起', sourceId:null, project:'城东综合体二期', contractor:'华筑建设有限公司', person:'', company:'华筑建设有限公司', type:'列入黑名单', amount:'', fact:'重复发生严重违规且逾期未整改', basis:'《承包商安全管理办法》第25条', decision:'将华筑建设有限公司列入承包商黑名单，有效期一年', execReq:'立即停止新项目投标资格', status:'执行中', appeal:{ status:'未申诉', reason:'', result:'' }, approvals:[{ node:'一级审批', approver:'刘峰', result:'通过', opinion:'同意', time:'2026-10-26 10:00' }], blacklistId:1, logs:[] }
+  { id:2, code:'CF-20261025-002', source:'人工发起', sourceId:null, project:'城东综合体二期', contractor:'华筑建设有限公司', person:'', company:'华筑建设有限公司', type:'清退出场', amount:'', fact:'重复发生严重违规且逾期未整改', basis:'《承包商安全管理办法》第25条', decision:'将华筑建设有限公司清退出场，一年内不得再次入场', execReq:'立即停止现场所有作业并撤离人员设备', status:'执行中', appeal:{ status:'未申诉', reason:'', result:'' }, approvals:[{ node:'一级审批', approver:'刘峰', result:'通过', opinion:'同意', time:'2026-10-26 10:00' }], blacklistId:1, logs:[] }
 ];
 let ccPenSeq = 3;
 // 处罚记录（新）：系统判定（Tab1）+ 处罚记录（Tab2）
@@ -10567,20 +10566,19 @@ let ccPenTypes = [
   { id:1, code:'CFLX-01', name:'警告', desc:'书面警告并责令限期整改', field:'', enabled:true },
   { id:2, code:'CFLX-02', name:'罚款', desc:'按处罚依据处以罚款', field:'罚款金额', enabled:true },
   { id:3, code:'CFLX-03', name:'停工整改', desc:'责令停工，完成整改并验收合格后申请复工', field:'执行要求', enabled:true },
-  { id:4, code:'CFLX-04', name:'清退出场', desc:'清退出场，限制再次入场', field:'执行要求', enabled:true },
-  { id:5, code:'CFLX-05', name:'列入黑名单', desc:'列入承包商黑名单，限制投标', field:'', enabled:true }
+  { id:4, code:'CFLX-04', name:'清退出场', desc:'清退出场，限制再次入场', field:'执行要求', enabled:true }
 ];
-let ccPenTypeSeq = 6;
+let ccPenTypeSeq = 5;
 let ccAutoRules = [
   { id:1, name:'验证不通过自动警告', event:'验证不通过', condition:'同一整改任务首次验证不通过', penType:'警告', enabled:true },
   { id:2, name:'整改超期自动罚款', event:'整改超期', condition:'整改任务超期≥1天', penType:'罚款', enabled:true },
-  { id:3, name:'重复严重违规列入黑名单', event:'验证不通过', condition:'严重问题重复发生且逾期未整改', penType:'列入黑名单', enabled:false }
+  { id:3, name:'重复严重违规停工整改', event:'验证不通过', condition:'严重问题重复发生且逾期未整改', penType:'停工整改', enabled:false }
 ];
 let ccAutoRuleSeq = 4;
 let ccBlackRules = [
   { id:1, name:'整改逾期自动拉黑', objType:'企业', scope:'华筑建设有限公司', personScope:'', trigger:'整改逾期', level:'严重', limitDays:365, autoRelease:'是', enabled:true,
     versions:[{ action:'创建', operator:'王敏', opTime:'2026-10-10 09:00' }] },
-  { id:2, name:'处罚选中拉黑', objType:'企业', scope:'宏远建筑有限公司', personScope:'', trigger:'处罚选中', level:'中等', limitDays:180, autoRelease:'是', enabled:true,
+  { id:2, name:'重复违规拉黑', objType:'企业', scope:'宏远建筑有限公司', personScope:'', trigger:'整改逾期', level:'中等', limitDays:180, autoRelease:'是', enabled:true,
     versions:[{ action:'创建', operator:'王敏', opTime:'2026-10-12 14:30' }] },
   { id:3, name:'验收不通过累计拉黑', objType:'人员', scope:'', personScope:'陈建国（宏远建筑有限公司）', trigger:'项目检查隐患任务整改验收不通过', level:'一般', limitDays:90, autoRelease:'否', enabled:true,
     versions:[{ action:'创建', operator:'王敏', opTime:'2026-10-15 11:20' }] }
@@ -10588,7 +10586,7 @@ let ccBlackRules = [
 let ccBlackRuleSeq = 4;
 let ccFlows = [
   { id:1, name:'普通处罚审批流', penTypes:'警告、罚款', amountRange:'罚款 ≤ 5000元', node1:'部门负责人', approver1:'刘峰', node2:'安全总监', approver2:'刘峰', enabled:true },
-  { id:2, name:'重大处罚审批流', penTypes:'停工整改、清退出场、列入黑名单', amountRange:'罚款 > 5000元', node1:'部门负责人', approver1:'刘峰', node2:'安全总监', approver2:'刘峰', enabled:true }
+  { id:2, name:'重大处罚审批流', penTypes:'停工整改、清退出场', amountRange:'罚款 > 5000元', node1:'部门负责人', approver1:'刘峰', node2:'安全总监', approver2:'刘峰', enabled:true }
 ];
 let ccFlowSeq = 3;
 let ccNotices = [
@@ -13208,7 +13206,7 @@ function ccRenderPenRecTab(tabs) {
   const source = document.getElementById('ccPenRecSource') ? document.getElementById('ccPenRecSource').value : ccPenRecFilter.source;
   const type = document.getElementById('ccPenRecType') ? document.getElementById('ccPenRecType').value : ccPenRecFilter.type;
   ccPenRecFilter = { kw, source, type };
-  const types = ['警告', '罚款', '停工整改', '清退出场', '列入黑名单', '不予处罚'];
+  const types = ['警告', '罚款', '停工整改', '清退出场', '不予处罚'];
   const list = ccPenRecords.filter(p =>
     (!kw || (p.target + p.reason + p.operator).includes(kw)) &&
     (!source || p.source === source) &&
@@ -13855,7 +13853,7 @@ function ccAutoCreateBlacklists(pen) {
       code: 'HMD-' + ymd + '-' + String(ccBlackSeq).padStart(3, '0'),
       objType: t.objType, name: t.name, idCode: t.objType === '公司' ? '91320100MA1XK2XX8Q（系统自动生成）' : '138****8888（系统自动生成）',
       level: '严重', limitDays: 365, autoRelease: '是',
-      source: '规则自动触发', trigger: '处罚选中', triggerSource: `处罚 ${pen.code}（${pen.fact}）`, reason: pen.fact,
+      source: '规则自动触发', trigger: '整改逾期', triggerSource: `处罚 ${pen.code}（${pen.fact}）`, reason: pen.fact,
       operator: '系统', opTime: formatNow(), status: '有效', srcPen: pen.id,
       effectDate: ccToday(), expireDate: ccDstr(ccAddDays(ccParse(CC_NOW), 365)),
       history: [{ type: '加入', time: formatNow(), operator: '系统', note: `处罚 ${pen.code} 执行触发（列入黑名单），有效期一年` }]
