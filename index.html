@@ -583,6 +583,7 @@
       <li data-page="toolAccount">工机具台账管理</li>
       <li data-page="gjConfig">工机具检查配置</li>
       <li data-page="gjMobile">工机具移动端</li>
+      <li data-page="gjLedger">检查台账</li>
     </ul>
     <li data-page="emergency" class="has-sub">应急检查</li>
     <ul class="submenu" id="submenu-emergency">
@@ -1288,6 +1289,38 @@
           </div>
           <div id="gjRecordList"></div>
         </div>
+      </div>
+    </div>
+
+    <!-- 工机具管理：检查台账（移动端扫码检查记录） -->
+    <div class="card page hidden" id="page-gjLedger">
+      <div class="toolbar">
+        <div class="filters">
+          <select id="filterComp-gjLedger" onchange="renderGjLedger()"><option value="">全部承包商</option></select>
+          <input type="text" id="filterKw-gjLedger" placeholder="名称 / 编号" onkeyup="if(event.keyCode===13)renderGjLedger()">
+          <button class="btn btn-plain" onclick="renderGjLedger()">查询</button>
+          <button class="btn btn-plain" onclick="resetGjLedgerFilter()">重置</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table style="min-width:1100px;">
+          <thead>
+            <tr>
+              <th style="width:50px;">序号</th>
+              <th>机具物资编号</th>
+              <th>机具/物资名称</th>
+              <th>所属承包商</th>
+              <th>所属项目</th>
+              <th>检查清单</th>
+              <th>检查时间</th>
+              <th>检查人</th>
+              <th>现场照片</th>
+              <th>描述</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-gjLedger"></tbody>
+        </table>
       </div>
     </div>
 
@@ -4530,6 +4563,7 @@ const pageTitles = {
   mobile: '应急检查 / 工机具移动端',
   gjConfig: '工机具管理 / 工机具检查配置',
   gjMobile: '工机具管理 / 工机具移动端',
+  gjLedger: '工机具管理 / 检查台账',
   emgTaskItem: '应急检查 / 检查任务项',
   emgChecklist: '应急检查 / 检查表清单',
   emgLedger: '应急检查 / 检查台账',
@@ -10077,6 +10111,39 @@ function resetGjRecFilter() {
   document.getElementById('filterComp-gjRec').value = '';
   document.getElementById('filterKw-gjRec').value = '';
   renderGjRecords();
+}
+
+// 检查台账（工机具管理）：列表数据 = 移动端扫码产生的全部检查记录
+function renderGjLedger() {
+  const el = document.getElementById('filterComp-gjLedger');
+  const cur = el.value;
+  el.innerHTML = '<option value="">全部承包商</option>' +
+    [...new Set(gjRecords.map(r => r.company).filter(Boolean))].map(v => `<option>${v}</option>`).join('');
+  el.value = cur;
+  const comp = el.value;
+  const kw = document.getElementById('filterKw-gjLedger').value.trim();
+  const list = gjRecords.filter(r =>
+    (!comp || r.company === comp) &&
+    (!kw || r.name.includes(kw) || (r.code || '').includes(kw)));
+  document.getElementById('tbody-gjLedger').innerHTML = list.length ? list.map((r, i) => `
+    <tr>
+      <td style="text-align:center;">${i + 1}</td>
+      <td>${r.code || '—'}</td>
+      <td>${r.name}</td>
+      <td>${r.company || '—'}</td>
+      <td>${r.project || '—'}</td>
+      <td>${r.checklistName || '—'}</td>
+      <td>${r.checkTime}</td>
+      <td>${r.inspector || '—'}</td>
+      <td>${r.photo ? '📷 ' + r.photo : '—'}</td>
+      <td title="${r.desc || ''}">${r.desc || '—'}</td>
+      <td><span class="link" onclick="openGjRecord(${r.id})">详情</span></td>
+    </tr>`).join('') : '<tr><td colspan="11" style="text-align:center;color:#999;padding:40px;">暂无检查记录，请通过“工机具移动端”扫码检查</td></tr>';
+}
+function resetGjLedgerFilter() {
+  document.getElementById('filterComp-gjLedger').value = '';
+  document.getElementById('filterKw-gjLedger').value = '';
+  renderGjLedger();
 }
 // 下拉搜索项跟随数据动态生成（保留当前选中值）
 function fillGjFilterOpts() {
@@ -16982,6 +17049,7 @@ renderEmg2Configs();
 renderEmg2Records();
 renderGjConfigs();
 renderGjRecords();
+renderGjLedger();
 renderCcTplList();
 renderCcTypes();
 renderCcPenTypes();
@@ -17005,6 +17073,7 @@ document.getElementById('menu').addEventListener('click', function (e) {
   const li = e.target.closest('li');
   if (li && li.dataset.page === 'ccMobile') ccmRender();
   if (li && li.dataset.page === 'ccMobile2') c2mRender();
+  if (li && li.dataset.page === 'gjLedger') renderGjLedger();
 });
 
 // 新增弹窗遮罩点击关闭
