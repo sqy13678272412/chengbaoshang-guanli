@@ -4353,12 +4353,12 @@
     </div>
     <div class="modal-body">
       <div class="form-item"><label class="required">对象类型</label>
-        <select id="ccBlackCreateObjType" style="flex:1;" onchange="ccBlackIdCodeLabel()">
+        <select id="ccBlackCreateObjType" style="flex:1;" onchange="ccBlackObjTypeChange()">
           <option>个人</option><option>公司</option>
         </select>
       </div>
-      <div class="form-item"><label class="required">黑名单对象</label><input type="text" id="ccBlackCreateName" placeholder="如：张三 / 某某建设有限公司" style="flex:1;"></div>
-      <div class="form-item"><label class="required" id="ccBlackIdCodeLabel">手机号</label><input type="text" id="ccBlackCreateIdCode" placeholder="请输入手机号" style="flex:1;"></div>
+      <div class="form-item"><label class="required">黑名单对象</label><input type="text" id="ccBlackCreateName" readonly placeholder="点击选择人员" onclick="openEmg2OrgModal('user', 'ccBlackCreateName')" style="flex:1;cursor:pointer;background:#fafafa;"></div>
+      <div class="form-item"><label class="required" id="ccBlackIdCodeLabel">手机号</label><input type="text" id="ccBlackCreateIdCode" readonly placeholder="根据所选对象自动带出" style="flex:1;background:#fafafa;"></div>
       <div class="form-item"><label class="required">严重等级</label>
         <select id="ccBlackCreateLevel" style="flex:1;">
           <option value="">请选择</option><option>一般</option><option>中等</option><option>严重</option>
@@ -9094,7 +9094,7 @@ function openEmg2OrgModal(mode, inputId) {
   emg2OrgMode = mode;
   emg2OrgTarget = inputId;
   emg2OrgExpanded = true;
-  document.getElementById('emg2OrgTitle').textContent = mode === 'dept' ? '选择部门' : '选择人员';
+  document.getElementById('emg2OrgTitle').textContent = mode === 'dept' ? '选择部门' : mode === 'company' ? '选择公司' : '选择人员';
   document.getElementById('emg2OrgTree').classList.toggle('people-tree', mode === 'user');
   renderEmg2OrgTree();
   document.getElementById('emg2OrgModal').classList.remove('hidden');
@@ -9103,12 +9103,16 @@ function closeEmg2OrgModal() { document.getElementById('emg2OrgModal').classList
 function toggleEmg2OrgTree() { emg2OrgExpanded = !emg2OrgExpanded; renderEmg2OrgTree(); }
 function renderEmg2OrgTree() {
   const c = emgOrgTree[0];
-  const inner = emg2OrgMode === 'dept'
+  const inner = emg2OrgMode === 'company'
+    ? CC_CONTRACTORS.map(n => `<div class="dt-item" onclick="pickEmg2Org('${n}')">${n}</div>`).join('')
+    : emg2OrgMode === 'dept'
     ? c.depts.map(d => `<div class="dt-item" onclick="pickEmg2Org('${d.dept}')">${d.dept}</div>`).join('')
     : c.depts.map(d => `
       <div style="padding:2px 0 2px 10px;color:#999;font-size:12px;">${d.dept}</div>
       ${d.people.map(p => `<div class="dt-item" onclick="pickEmg2Org('${p}')">${p}（${d.dept}）</div>`).join('')}`).join('');
-  document.getElementById('emg2OrgTree').innerHTML = `
+  document.getElementById('emg2OrgTree').innerHTML = emg2OrgMode === 'company'
+    ? `<div class="dt-company"><span style="color:#999;font-size:12px;">承包商公司（点击选择）</span></div><div class="dt-children">${inner}</div>`
+    : `
     <div class="dt-company" onclick="toggleEmg2OrgTree()">
       <span class="expand-icon">${emg2OrgExpanded ? '▾' : '▸'}</span>${c.name}
     </div>
@@ -9116,6 +9120,7 @@ function renderEmg2OrgTree() {
 }
 function pickEmg2Org(val) {
   document.getElementById(emg2OrgTarget).value = val;
+  if (emg2OrgTarget === 'ccBlackCreateName') ccBlackAutoIdCode(val);
   closeEmg2OrgModal();
 }
 function clearEmg2Field(id) { document.getElementById(id).value = ''; }
@@ -11440,6 +11445,9 @@ function ccNoticeToggle(id) {
 const CC_NOW = '2026-10-29 12:00'; // 原型模拟当前时间，与种子数据匹配，保证演示稳定
 const CC_PROJECTS = ['城东综合体二期', '城西物流园区一期', '智能制造厂房三期'];
 const CC_CONTRACTORS = ['华筑建设有限公司', '宏远建筑有限公司', '华美装饰工程有限公司'];
+// 黑名单对象选择后自动带出的唯一识别码：公司 → 组织机构代码，个人 → 手机号
+const CC_COMPANY_INFO = { '华筑建设有限公司': '91320100MA1XK0011A', '宏远建筑有限公司': '91320100MA1XK0022B', '华美装饰工程有限公司': '91320100MA1XK0033C' };
+const CC_PERSON_INFO = { '张伟': '13800001001', '王芳': '13800001002', '李强': '13800001003', '王建国': '13800001004', '赵磊': '13800001005', '陈静': '13800001006' };
 const CC_PROJ_CONTRACTORS = {
   '城东综合体二期': ['华筑建设有限公司', '宏远建筑有限公司', '华美装饰工程有限公司'],
   '城西物流园区一期': ['宏远建筑有限公司', '华美装饰工程有限公司', '华筑建设有限公司'],
@@ -14091,11 +14099,12 @@ function renderCcBlacks() {
     if (isOwner) {
       ops.push(`<span class="link" onclick="openCcBlackDetail(${b.id})">详情</span>`);
       ops.push(`<span class="link" onclick="openCcBlackCreate(${b.id})" style="margin-left:10px;">编辑</span>`);
-      if (b.status === '有效') ops.push(`<span class="link" onclick="ccRelieveBlack(${b.id})" style="margin-left:10px;">解除</span>`);
+      if (b.status === '有效') ops.push(`<span class="link" onclick="ccRelieveBlack(${b.id})" style="margin-left:10px;">移除黑名单</span>`);
     }
     return `<tr>
+      <td style="text-align:center;"><input type="checkbox" data-bid="${b.id}" ${ccBlackSel.includes(b.id) ? 'checked' : ''} onchange="ccBlackToggleSel(${b.id},this.checked)"></td>
       <td><span class="tag ${b.source === '规则自动触发' ? 'tag-orange' : 'tag-gray'}">${b.source}</span></td>
-      <td><span class="tag ${b.objType === '个人' ? 'tag-blue' : 'tag-orange'}">${b.objType}</span>　${ccEsc(b.name)}</td>
+      <td>${ccEsc(b.name)}</td>
       <td>${ccEsc(b.idCode || '—')}</td>
       <td>${b.opTime}</td>
       <td><span class="tag ${{ '一般': 'tag-gray', '中等': 'tag-orange', '严重': 'tag-red' }[b.level] || 'tag-gray'}">${b.level || '—'}</span></td>
@@ -14121,25 +14130,72 @@ function renderCcBlacks() {
         <button class="btn btn-plain" onclick="renderCcBlacks()">查询</button>
         <button class="btn btn-plain" onclick="resetCcBlackFilter()">重置</button>
       </div>
-      ${isOwner ? '<button class="btn btn-primary" onclick="openCcBlackCreate()">+ 新增</button>' : ''}
+      <div style="display:flex;gap:8px;">
+        ${isOwner ? '<button class="btn btn-plain" onclick="ccRelieveBlackBatch()">批量移除黑名单</button><button class="btn btn-primary" onclick="openCcBlackCreate()">+ 新增</button>' : ''}
+      </div>
     </div>
     <div class="table-wrap">
       <table style="min-width:1180px;">
         <thead>
-          <tr><th>来源</th><th>黑名单对象</th><th>对象唯一识别码</th><th>加入黑名单时间</th><th>严重等级</th><th>限制期限</th><th>到期自动解除</th><th class="sticky-col">操作</th></tr>
+          <tr><th style="width:36px;text-align:center;"><input type="checkbox" onclick="ccBlackToggleAll(this.checked)"></th><th>来源</th><th>黑名单对象</th><th>对象唯一识别码</th><th>加入黑名单时间</th><th>严重等级</th><th>限制期限</th><th>到期自动解除</th><th class="sticky-col">操作</th></tr>
         </thead>
-        <tbody>${rows || '<tr><td colspan="8"><div class="mo-empty">暂无黑名单记录</div></td></tr>'}</tbody>
+        <tbody>${rows || '<tr><td colspan="9"><div class="mo-empty">暂无黑名单记录</div></td></tr>'}</tbody>
       </table>
     </div>`;
 }
-function resetCcBlackFilter() { ccBlackFilter = { kw: '', objType: '', status: '' }; renderCcBlacks(); }
+function resetCcBlackFilter() { ccBlackFilter = { kw: '', objType: '', status: '' }; ccBlackSel = []; renderCcBlacks(); }
+
+// 列表勾选与批量移除黑名单
+let ccBlackSel = [];
+function ccBlackToggleSel(id, checked) {
+  const i = ccBlackSel.indexOf(id);
+  if (checked && i < 0) ccBlackSel.push(id);
+  if (!checked && i >= 0) ccBlackSel.splice(i, 1);
+}
+function ccBlackToggleAll(checked) {
+  ccBlackSel = [];
+  document.querySelectorAll('#ccBlackBody tbody input[data-bid]').forEach(cb => {
+    cb.checked = checked;
+    if (checked) ccBlackSel.push(Number(cb.dataset.bid));
+  });
+}
+function ccRelieveBlackBatch() {
+  if (currentRole === 'contractor') { alert('承包商端仅可查看黑名单'); return; }
+  const targets = ccBlacklists.filter(b => ccBlackSel.includes(b.id) && b.status === '有效');
+  if (!targets.length) { alert('请先勾选要移除的有效黑名单记录'); return; }
+  if (!confirm(`确认批量移除 ${targets.length} 条黑名单记录？\n移除后这些对象不再受黑名单限制。`)) return;
+  targets.forEach(b => {
+    b.status = '已解除';
+    b.history = b.history || [];
+    b.history.push({ type: '移除', time: formatNow(), operator: '王敏', note: '批量移除黑名单' });
+  });
+  ccLog('王敏', '监管管理员', '批量移除黑名单', targets.map(b => b.code).join('、'), `共 ${targets.length} 条`, '黑名单');
+  ccBlackSel = [];
+  ccRefreshAll();
+  alert(`已移除 ${targets.length} 条黑名单记录`);
+}
 
 // 新增 / 编辑黑名单（业主端手动新增）
 let ccBlackEditId = null;
 function ccBlackIdCodeLabel() {
   const t = document.getElementById('ccBlackCreateObjType').value;
   document.getElementById('ccBlackIdCodeLabel').textContent = t === '公司' ? '组织机构代码' : '手机号';
-  document.getElementById('ccBlackCreateIdCode').placeholder = t === '公司' ? '请输入组织机构代码' : '请输入手机号';
+}
+// 对象类型切换：黑名单对象改为点击弹出组织架构/公司选择，识别码自动带出
+function ccBlackObjTypeChange() {
+  const t = document.getElementById('ccBlackCreateObjType').value;
+  ccBlackIdCodeLabel();
+  const nameEl = document.getElementById('ccBlackCreateName');
+  nameEl.placeholder = t === '公司' ? '点击选择公司' : '点击选择人员';
+  nameEl.onclick = function () { openEmg2OrgModal(t === '公司' ? 'company' : 'user', 'ccBlackCreateName'); };
+  if (!document.getElementById('ccBlackCreateIdCode').value) document.getElementById('ccBlackCreateIdCode').placeholder = '根据所选对象自动带出';
+}
+function ccBlackAutoIdCode(val) {
+  const t = document.getElementById('ccBlackCreateObjType').value;
+  const codeEl = document.getElementById('ccBlackCreateIdCode');
+  codeEl.value = t === '公司'
+    ? (CC_COMPANY_INFO[val] || '91320100XXXXXXXXXX')
+    : (CC_PERSON_INFO[val.split('（')[0]] || '13800000000');
 }
 function openCcBlackCreate(id) {
   if (currentRole === 'contractor') { alert('承包商端仅可查看黑名单'); return; }
@@ -14147,7 +14203,7 @@ function openCcBlackCreate(id) {
   const b = id ? ccBlacklists.find(x => x.id === id) : null;
   document.getElementById('ccBlackCreateTitle').textContent = b ? '编辑黑名单' : '新增黑名单';
   document.getElementById('ccBlackCreateObjType').value = b ? b.objType : '个人';
-  ccBlackIdCodeLabel();
+  ccBlackObjTypeChange();
   document.getElementById('ccBlackCreateName').value = b ? b.name : '';
   document.getElementById('ccBlackCreateIdCode').value = b ? (b.idCode || '') : '';
   document.getElementById('ccBlackCreateLevel').value = b ? b.level : '';
@@ -14227,23 +14283,17 @@ function renderCcBlackDetail() {
   const history = ccBlacklists.filter(x => x.name === b.name)
     .flatMap(x => (x.history || []).map(h => ({ ...h, code: x.code })))
     .sort((x, y) => y.time.localeCompare(x.time));
-  document.getElementById('ccBlackDetailTitle').textContent = `黑名单详情（${b.code}）`;
+  document.getElementById('ccBlackDetailTitle').textContent = `黑名单详情（${b.name}）`;
   document.getElementById('ccBlackDetailBody').innerHTML = `
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-      <span style="font-size:16px;font-weight:600;">${b.code}</span>
-      <span class="tag ${b.objType === '个人' ? 'tag-blue' : 'tag-orange'}">${b.objType}</span>
-      ${b.status === '有效' ? '<span class="tag tag-red">有效</span>' : '<span class="tag tag-gray">已解除</span>'}
-    </div>
     <div class="drawer-section-title">基础信息</div>
     <div class="info-grid" style="margin-bottom:16px;">
       <div class="ig-label">来源</div><div><span class="tag ${b.source === '规则自动触发' ? 'tag-orange' : 'tag-gray'}">${b.source}</span></div>
-      <div class="ig-label">黑名单对象</div><div><span class="tag ${b.objType === '个人' ? 'tag-blue' : 'tag-orange'}">${b.objType}</span>　${ccEsc(b.name)}</div>
+      <div class="ig-label">黑名单对象</div><div>${ccEsc(b.name)}</div>
       <div class="ig-label">对象唯一识别码</div><div>${ccEsc(b.idCode || '—')}</div>
       <div class="ig-label">加入黑名单时间</div><div>${b.opTime}</div>
       <div class="ig-label">严重等级</div><div><span class="tag ${{ '一般': 'tag-gray', '中等': 'tag-orange', '严重': 'tag-red' }[b.level] || 'tag-gray'}">${b.level || '—'}</span></div>
       <div class="ig-label">限制期限</div><div>${b.limitDays ? b.limitDays + ' 天' : '—'}</div>
       <div class="ig-label">到期自动解除</div><div>${b.autoRelease || '—'}</div>
-      <div class="ig-label">状态</div><div>${b.status === '有效' ? '<span class="tag tag-red">有效</span>' : '<span class="tag tag-gray">已解除</span>'}</div>
     </div>
     ${b.source === '规则自动触发' ? `
     <div class="drawer-section-title">触发信息</div>
@@ -14263,8 +14313,7 @@ function renderCcBlackDetail() {
         <div class="t-node ${h.type === '加入' ? 'done' : 'rejected'}">
           <span class="t-dot"></span>
           <div class="t-head"><span class="t-node-name">${h.type}黑名单</span>
-            <span class="tag ${h.type === '加入' ? 'tag-red' : 'tag-green'}">${h.type}</span>
-            <span style="color:#999;font-size:12px;">${h.code}</span></div>
+            <span class="tag ${h.type === '加入' ? 'tag-red' : 'tag-green'}">${h.type}</span></div>
           <div style="font-size:13px;color:#666;">${ccEsc(h.note || '—')}</div>
           <div class="t-time">操作人：${ccEsc(h.operator)}　|　${h.time}</div>
         </div>`).join('')
