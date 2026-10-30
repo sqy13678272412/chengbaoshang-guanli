@@ -792,12 +792,48 @@
       </div>
     </div>
 
-    <!-- 工机具台账管理 -->
+    <!-- 工机具台账管理（业主端：左侧承包商栏 + 公司维度列表） -->
     <div class="card page hidden" id="page-toolAccount">
+    <div id="toolOwnerWrap">
+      <div class="relation-layout">
+        <div class="relation-left" id="toolLeft"></div>
+        <div style="flex:1;min-width:0;">
+          <div class="table-wrap">
+            <table style="min-width:1600px;">
+              <thead>
+                <tr>
+                  <th>机具编号</th>
+                  <th>机具名称</th>
+                  <th>型号</th>
+                  <th>出厂编号</th>
+                  <th>生产厂家</th>
+                  <th>出厂日期</th>
+                  <th>机具分类</th>
+                  <th>证书编号</th>
+                  <th>最新检查日期</th>
+                  <th>检查周期</th>
+                  <th>下次检查日期</th>
+                  <th>检定预警</th>
+                  <th>状态</th>
+                  <th>证书附件</th>
+                  <th>机具照片</th>
+                  <th>备注</th>
+                  <th class="sticky-col">操作</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-toolAccount"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 工机具台账管理（承包商端：单列表 + 新增/导入/导出） -->
+    <div id="toolContractorWrap" class="hidden">
       <div class="toolbar">
         <div class="filters">
-          <input type="text" id="filterKw-toolAccount" placeholder="机具编号 / 机具名称 / 所属承包商">
-          <select id="filterStatus-toolAccount">
+          <input type="text" id="filterKw-toolCtc" placeholder="机具编号 / 机具名称">
+          <select id="filterStatus-toolCtc">
             <option value="">全部状态</option>
             <option>待审核</option>
             <option>审核中</option>
@@ -805,7 +841,7 @@
             <option>已拒绝</option>
           </select>
           <button class="btn btn-plain" onclick="renderToolAccount()">查询</button>
-          <button class="btn btn-plain" onclick="resetToolFilter()">重置</button>
+          <button class="btn btn-plain" onclick="resetToolCtcFilter()">重置</button>
         </div>
         <div>
           <button class="btn btn-plain" onclick="toolImport()">导入</button>
@@ -814,10 +850,9 @@
         </div>
       </div>
       <div class="table-wrap">
-        <table style="min-width:1800px;">
+        <table style="min-width:1500px;">
           <thead>
             <tr>
-              <th>所属承包商</th>
               <th>机具编号</th>
               <th>机具名称</th>
               <th>型号</th>
@@ -837,9 +872,10 @@
               <th class="sticky-col">操作</th>
             </tr>
           </thead>
-          <tbody id="tbody-toolAccount"></tbody>
+          <tbody id="tbody-toolCtcAccount"></tbody>
         </table>
       </div>
+    </div>
     </div>
 
     <!-- 工机具检查清单配置 -->
@@ -1965,8 +2001,8 @@
     <div class="modal-body">
       <div class="modal-body grid" style="padding:0;">
         <div class="form-item">
-          <label class="required">所属承包商</label>
-          <select id="taCompany"></select>
+          <label>所属承包商</label>
+          <span style="line-height:32px;">宏远建筑有限公司（当前登录）</span>
         </div>
         <div class="form-item">
           <label class="required">机具编号</label>
@@ -4372,6 +4408,10 @@ function switchRole(role) {
   if (typeof renderCcPens === 'function' && activePage === 'ccPen') renderCcPens();
   // 刷新黑名单（承包商端仅展示列表）
   if (typeof renderCcBlacks === 'function' && activePage === 'ccBlack') renderCcBlacks();
+  // 工机具台账（承包商端为单列表+新增/导入导出，业主端保留左侧公司栏）
+  document.getElementById('toolOwnerWrap').classList.toggle('hidden', role === 'contractor');
+  document.getElementById('toolContractorWrap').classList.toggle('hidden', role === 'owner');
+  renderToolAccount();
 }
 
 // 切换页面（供菜单点击与端口切换共用）
@@ -6878,20 +6918,11 @@ function inspectWarn(t) {
   return { cls: 'tag-green', text: '正常' };
 }
 
-function allToolList() {
-  return Object.keys(toolAccounts).flatMap(n => toolAccounts[n].map(t => ({ ...t, company: n })));
-}
+let selectedToolContractor = null;
 
-function renderToolAccount() {
-  const kw = (document.getElementById('filterKw-toolAccount').value || '').trim();
-  const st = document.getElementById('filterStatus-toolAccount').value;
-  let list = allToolList();
-  if (kw) list = list.filter(t => (t.id + t.name + t.company).indexOf(kw) >= 0);
-  if (st) list = list.filter(t => t.status === st);
-  document.getElementById('tbody-toolAccount').innerHTML = list.length ? list.map(t => {
-    const w = inspectWarn(t);
-    return `<tr>
-      <td>${t.company}</td>
+function toolRowHtml(t, company) {
+  const w = inspectWarn(t);
+  return `<tr>
       <td>${t.id}</td>
       <td>${t.name}</td>
       <td>${t.model}</td>
@@ -6905,20 +6936,43 @@ function renderToolAccount() {
       <td>${t.nextInspectDate}</td>
       <td><span class="tag ${w.cls}">${w.text}</span></td>
       <td><span class="tag ${toolStatusClass(t.status)}">${t.status || '—'}</span></td>
-      <td><span style="color:#1890ff;cursor:pointer;" onclick="openToolView('${t.company}','${t.id}')">📎 ${t.certFile}</span></td>
-      <td><span style="color:#1890ff;cursor:pointer;" onclick="openToolView('${t.company}','${t.id}')">🖼 ${t.photo}</span></td>
+      <td><span style="color:#1890ff;cursor:pointer;" onclick="openToolView('${company}','${t.id}')">📎 ${t.certFile}</span></td>
+      <td><span style="color:#1890ff;cursor:pointer;" onclick="openToolView('${company}','${t.id}')">🖼 ${t.photo}</span></td>
       <td title="${t.remark}">${t.remark || '—'}</td>
       <td class="sticky-col">
-        <span class="link" onclick="openToolView('${t.company}','${t.id}')">查看</span>
-        <span class="link" onclick="openToolWarn('${t.company}','${t.id}')">预警设置</span>
+        <span class="link" onclick="openToolView('${company}','${t.id}')">查看</span>
+        <span class="link" onclick="openToolWarn('${company}','${t.id}')">预警设置</span>
       </td>
     </tr>`;
-  }).join('') : '<tr><td colspan="18" style="text-align:center;color:#999;padding:40px;">暂无数据</td></tr>';
 }
 
-function resetToolFilter() {
-  document.getElementById('filterKw-toolAccount').value = '';
-  document.getElementById('filterStatus-toolAccount').value = '';
+function renderToolAccount() {
+  // 业主端：左侧承包商栏 + 选中公司列表
+  const names = Object.keys(toolAccounts);
+  if (!selectedToolContractor || !names.includes(selectedToolContractor)) selectedToolContractor = names[0];
+  document.getElementById('toolLeft').innerHTML = names.map(n => `
+    <div class="left-item ${n === selectedToolContractor ? 'active' : ''}" onclick="selectToolContractor('${n}')">
+      <span>${n}</span><span class="left-count">${toolAccounts[n].length} 台</span>
+    </div>`).join('');
+  const list = toolAccounts[selectedToolContractor] || [];
+  document.getElementById('tbody-toolAccount').innerHTML = list.length ? list.map(t => toolRowHtml(t, selectedToolContractor)).join('') : '<tr><td colspan="17" style="text-align:center;color:#999;padding:40px;">暂无数据</td></tr>';
+  // 承包商端：本公司单列表 + 关键字/状态筛选
+  const kw = (document.getElementById('filterKw-toolCtc').value || '').trim();
+  const st = document.getElementById('filterStatus-toolCtc').value;
+  let clist = (toolAccounts[currentContractor] || []).slice();
+  if (kw) clist = clist.filter(t => (t.id + t.name).indexOf(kw) >= 0);
+  if (st) clist = clist.filter(t => t.status === st);
+  document.getElementById('tbody-toolCtcAccount').innerHTML = clist.length ? clist.map(t => toolRowHtml(t, currentContractor)).join('') : '<tr><td colspan="17" style="text-align:center;color:#999;padding:40px;">暂无数据</td></tr>';
+}
+
+function selectToolContractor(name) {
+  selectedToolContractor = name;
+  renderToolAccount();
+}
+
+function resetToolCtcFilter() {
+  document.getElementById('filterKw-toolCtc').value = '';
+  document.getElementById('filterStatus-toolCtc').value = '';
   renderToolAccount();
 }
 
@@ -6971,7 +7025,6 @@ function saveToolWarn() {
 }
 
 function openToolAdd() {
-  document.getElementById('taCompany').innerHTML = Object.keys(toolAccounts).map(n => `<option>${n}</option>`).join('');
   ['taId', 'taName', 'taModel', 'taFactoryNo', 'taManufacturer', 'taProdDate', 'taCertNo', 'taInspectDate', 'taNextInspectDate', 'taCertFile', 'taPhoto', 'taRemark'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('taCategory').value = '';
   document.getElementById('taCycle').value = '';
@@ -6981,8 +7034,7 @@ function openToolAdd() {
 function closeToolAdd() { document.getElementById('toolAddModal').classList.add('hidden'); }
 function saveToolAdd() {
   const v = id => document.getElementById(id).value.trim();
-  const company = v('taCompany'), tid = v('taId'), tname = v('taName');
-  if (!company) { alert('请选择所属承包商'); return; }
+  const company = currentContractor, tid = v('taId'), tname = v('taName');
   if (!tid) { alert('请输入机具编号'); return; }
   if (!tname) { alert('请输入机具名称'); return; }
   if (toolAccounts[company].some(t => t.id === tid)) { alert('该机具编号已存在，请更换'); return; }
