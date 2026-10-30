@@ -3466,6 +3466,14 @@
         </select>
       </div>
       <div class="form-item">
+        <label class="required">适用对象类型</label>
+        <select id="ccBlackRuleObjType">
+          <option value="">请选择</option>
+          <option>人员</option>
+          <option>企业</option>
+        </select>
+      </div>
+      <div class="form-item">
         <label class="required">触发方式</label>
         <select id="ccBlackRuleTrigger">
           <option value="">请选择触发方式</option>
@@ -3475,10 +3483,42 @@
           <option>项目检查隐患任务整改验收不通过</option>
         </select>
       </div>
+      <div class="form-item">
+        <label class="required">严重等级</label>
+        <select id="ccBlackRuleLevel">
+          <option value="">请选择</option>
+          <option>一般</option>
+          <option>中等</option>
+          <option>严重</option>
+        </select>
+      </div>
+      <div class="form-item"><label class="required">限制期限（天）</label><input type="number" id="ccBlackRuleLimit" min="1" placeholder="请输入限制天数"></div>
+      <div class="form-item">
+        <label class="required">到期自动解除</label>
+        <select id="ccBlackRuleAuto">
+          <option value="">请选择</option>
+          <option>是</option>
+          <option>否</option>
+        </select>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-plain" onclick="closeCcBlackRuleModal()">取消</button>
       <button class="btn btn-primary" onclick="saveCcBlackRule()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 黑名单规则：详情（列表字段 + 版本记录） -->
+<div class="modal-mask hidden" id="ccBlackRuleDetailModal">
+  <div class="modal wide">
+    <div class="modal-header">
+      <span id="ccBlackRuleDetailTitle">黑名单规则详情</span>
+      <span class="modal-close" onclick="closeCcBlackRuleDetail()">✕</span>
+    </div>
+    <div class="modal-body" id="ccBlackRuleDetailBody" style="max-height:60vh;overflow-y:auto;"></div>
+    <div class="modal-footer">
+      <button class="btn btn-plain" onclick="closeCcBlackRuleDetail()">关闭</button>
     </div>
   </div>
 </div>
@@ -10513,9 +10553,12 @@ let ccAutoRules = [
 ];
 let ccAutoRuleSeq = 4;
 let ccBlackRules = [
-  { id:1, name:'整改逾期自动拉黑', company:'华筑建设有限公司', trigger:'整改逾期', enabled:true },
-  { id:2, name:'处罚选中拉黑', company:'宏远建筑有限公司', trigger:'处罚选中', enabled:true },
-  { id:3, name:'验收不通过累计拉黑', company:'华美装饰工程有限公司', trigger:'项目检查隐患任务整改验收不通过', enabled:true }
+  { id:1, name:'整改逾期自动拉黑', company:'华筑建设有限公司', objType:'企业', trigger:'整改逾期', level:'严重', limitDays:365, autoRelease:'是', enabled:true,
+    versions:[{ action:'创建', operator:'王敏', opTime:'2026-10-10 09:00' }] },
+  { id:2, name:'处罚选中拉黑', company:'宏远建筑有限公司', objType:'企业', trigger:'处罚选中', level:'中等', limitDays:180, autoRelease:'是', enabled:true,
+    versions:[{ action:'创建', operator:'王敏', opTime:'2026-10-12 14:30' }] },
+  { id:3, name:'验收不通过累计拉黑', company:'华美装饰工程有限公司', objType:'人员', trigger:'项目检查隐患任务整改验收不通过', level:'一般', limitDays:90, autoRelease:'否', enabled:true,
+    versions:[{ action:'创建', operator:'王敏', opTime:'2026-10-15 11:20' }] }
 ];
 let ccBlackRuleSeq = 4;
 let ccFlows = [
@@ -11118,7 +11161,7 @@ function renderCcBlackRules() {
             <td>${x.company}</td>
             <td>${x.trigger}</td>
             <td>${ccSwitchHtml(x.enabled, `ccBlackRuleToggle(${x.id})`)}</td>
-            <td><span class="link" onclick="openCcBlackRuleModal(${x.id})">编辑</span><span class="link" onclick="ccBlackRuleDel(${x.id})" style="margin-left:10px;">删除</span></td>
+            <td><span class="link" onclick="openCcBlackRuleDetail(${x.id})">详情</span><span class="link" onclick="openCcBlackRuleModal(${x.id})" style="margin-left:10px;">编辑</span><span class="link" onclick="ccBlackRuleDel(${x.id})" style="margin-left:10px;">删除</span></td>
           </tr>`).join('')}
         </tbody>
       </table>
@@ -11133,6 +11176,10 @@ function openCcBlackRuleModal(id) {
     CC_CONTRACTORS.map(c => `<option ${x && x.company === c ? 'selected' : ''}>${c}</option>`).join('');
   document.getElementById('ccBlackRuleName').value = x ? x.name : '';
   document.getElementById('ccBlackRuleTrigger').value = x ? x.trigger : '';
+  document.getElementById('ccBlackRuleObjType').value = x ? x.objType : '';
+  document.getElementById('ccBlackRuleLevel').value = x ? x.level : '';
+  document.getElementById('ccBlackRuleLimit').value = x ? x.limitDays : '';
+  document.getElementById('ccBlackRuleAuto').value = x ? x.autoRelease : '';
   document.getElementById('ccBlackRuleModal').classList.remove('hidden');
 }
 function closeCcBlackRuleModal() { document.getElementById('ccBlackRuleModal').classList.add('hidden'); }
@@ -11140,18 +11187,28 @@ function saveCcBlackRule() {
   const data = {
     name: document.getElementById('ccBlackRuleName').value.trim(),
     company: document.getElementById('ccBlackRuleObj').value,
+    objType: document.getElementById('ccBlackRuleObjType').value,
     trigger: document.getElementById('ccBlackRuleTrigger').value,
+    level: document.getElementById('ccBlackRuleLevel').value,
+    limitDays: Number(document.getElementById('ccBlackRuleLimit').value),
+    autoRelease: document.getElementById('ccBlackRuleAuto').value,
     enabled: true
   };
   if (!data.name) { alert('请输入规则名称'); return; }
   if (!data.company) { alert('请选择适用对象（承包商公司）'); return; }
+  if (!data.objType) { alert('请选择适用对象类型'); return; }
   if (!data.trigger) { alert('请选择触发方式'); return; }
+  if (!data.level) { alert('请选择严重等级'); return; }
+  if (!data.limitDays || data.limitDays < 1) { alert('请输入限制期限（天）'); return; }
+  if (!data.autoRelease) { alert('请选择到期是否自动解除'); return; }
   if (ccBlackRuleEditId) {
     const x = ccBlackRules.find(t => t.id === ccBlackRuleEditId);
     Object.assign(x, data);
+    x.versions = x.versions || [];
+    x.versions.push({ action:'编辑', operator:'王敏', opTime: formatNow() });
     ccLog('王敏', '监管管理员', '编辑黑名单规则', data.name, `适用公司：${data.company}，触发方式：${data.trigger}`);
   } else {
-    ccBlackRules.push({ id: ccBlackRuleSeq++, ...data });
+    ccBlackRules.push({ id: ccBlackRuleSeq++, ...data, versions:[{ action:'创建', operator:'王敏', opTime: formatNow() }] });
     ccLog('王敏', '监管管理员', '新增黑名单规则', data.name, `适用公司：${data.company}，触发方式：${data.trigger}`);
   }
   closeCcBlackRuleModal();
@@ -11160,6 +11217,8 @@ function saveCcBlackRule() {
 function ccBlackRuleToggle(id) {
   const x = ccBlackRules.find(t => t.id === id);
   x.enabled = !x.enabled;
+  x.versions = x.versions || [];
+  x.versions.push({ action: x.enabled ? '开启' : '关闭', operator:'王敏', opTime: formatNow() });
   ccLog('王敏', '监管管理员', x.enabled ? '开启黑名单规则' : '关闭黑名单规则', x.name, x.enabled ? '已开启' : '已关闭');
   renderCcBlackRules();
 }
@@ -11171,6 +11230,40 @@ function ccBlackRuleDel(id) {
   ccLog('王敏', '监管管理员', '删除黑名单规则', x.name, `适用公司：${x.company}`);
   renderCcBlackRules();
 }
+// 详情：列表字段 + 版本记录（每次创建/编辑/开关调整都会留下版本）
+function openCcBlackRuleDetail(id) {
+  const x = ccBlackRules.find(t => t.id === id);
+  if (!x) return;
+  const levelTag = { '一般': 'tag-gray', '中等': 'tag-orange', '严重': 'tag-red' }[x.level] || 'tag-gray';
+  document.getElementById('ccBlackRuleDetailTitle').textContent = '黑名单规则详情（' + x.name + '）';
+  document.getElementById('ccBlackRuleDetailBody').innerHTML = `
+    <div class="drawer-section-title">基础信息</div>
+    <div class="info-grid">
+      <div class="ig-label">规则名称</div><div>${x.name}</div>
+      <div class="ig-label">适用公司</div><div>${x.company}</div>
+      <div class="ig-label">适用对象类型</div><div>${x.objType}</div>
+      <div class="ig-label">触发方式</div><div>${x.trigger}</div>
+      <div class="ig-label">严重等级</div><div><span class="tag ${levelTag}">${x.level}</span></div>
+      <div class="ig-label">限制期限</div><div>${x.limitDays} 天</div>
+      <div class="ig-label">到期自动解除</div><div>${x.autoRelease}</div>
+      <div class="ig-label">状态</div><div>${x.enabled ? '<span class="tag tag-green">开启</span>' : '<span class="tag tag-gray">关闭</span>'}</div>
+    </div>
+    <div class="drawer-section-title" style="margin-top:18px;">版本记录（${(x.versions || []).length}）</div>
+    <div class="table-wrap" style="border:1px solid #f0f0f0;border-radius:6px;">
+      <table style="min-width:640px;">
+        <thead><tr><th style="width:70px;">版本</th><th style="width:100px;">操作</th><th>操作人</th><th>操作时间</th></tr></thead>
+        <tbody>${(x.versions && x.versions.length) ? x.versions.map((v, i) => `
+          <tr>
+            <td style="text-align:center;">V${i + 1}</td>
+            <td>${v.action}</td>
+            <td>${v.operator}</td>
+            <td>${v.opTime}</td>
+          </tr>`).join('') : '<tr><td colspan="4" style="text-align:center;color:#999;padding:30px;">暂无版本记录</td></tr>'}</tbody>
+      </table>
+    </div>`;
+  document.getElementById('ccBlackRuleDetailModal').classList.remove('hidden');
+}
+function closeCcBlackRuleDetail() { document.getElementById('ccBlackRuleDetailModal').classList.add('hidden'); }
 
 // ===== 配置中心：审批流程 =====
 function renderCcFlows() {
@@ -17104,7 +17197,7 @@ document.getElementById('menu').addEventListener('click', function (e) {
  ['ccTplModal', closeCcTplModal], ['ccTplPubModal', closeCcTplPubConfirm], ['ccTplDetailDrawer', closeCcTplDetail],
  ['ccTplPlansModal', closeCcTplPlans], ['ccTplItemsModal', closeCcTplItems], ['ccTplBlockModal', closeCcTplBlock],
  ['ccTypeModal', closeCcTypeModal], ['ccPenTypeModal', closeCcPenTypeModal], ['ccAutoRuleModal', closeCcAutoRuleModal],
- ['ccBlackRuleModal', closeCcBlackRuleModal], ['ccFlowModal', closeCcFlowModal], ['ccNoticeModal', closeCcNoticeModal],
+ ['ccBlackRuleModal', closeCcBlackRuleModal], ['ccBlackRuleDetailModal', closeCcBlackRuleDetail], ['ccFlowModal', closeCcFlowModal], ['ccNoticeModal', closeCcNoticeModal],
  ['ccPlanModal', closeCcPlanModal], ['ccPlanTplPickModal', closeCcPlanTplPick], ['ccPlanRecModal', closeCcPlanRec], ['ccPlanExecModal', closeCcPlanExec], ['ccPlanCancelModal', closeCcPlanCancel],
  ['ccPlanDetailDrawer', closeCcPlanDetail], ['ccNewRecModal', closeCcNewRec], ['ccExecModal', closeCcExec],
  ['ccExecConfirmModal', closeCcExecConfirm], ['ccRecordDetailDrawer', closeCcRecordDetail],
