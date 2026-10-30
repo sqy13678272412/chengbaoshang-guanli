@@ -798,6 +798,7 @@
       <div class="tabs" style="margin-bottom:12px;">
         <span class="tab active" id="toolTabAccount" onclick="setToolOwnerTab('account')">工机具台账</span>
         <span class="tab" id="toolTabApply" onclick="setToolOwnerTab('apply')">工机具申请</span>
+        <button class="btn btn-plain" style="float:right;margin-top:4px;" onclick="toolBatchPrint()">批量打印</button>
       </div>
       <div class="relation-layout" id="toolRelationWrap">
         <div class="relation-left" id="toolLeft"></div>
@@ -863,6 +864,7 @@
           <button class="btn btn-plain" onclick="resetToolCtcFilter()">重置</button>
         </div>
         <div>
+          <button class="btn btn-plain" onclick="toolBatchPrint()">批量打印</button>
           <button class="btn btn-plain" onclick="toolImport()">导入</button>
           <button class="btn btn-plain" onclick="toolExport()">导出</button>
           <button class="btn btn-primary" onclick="openToolAdd()">+ 新增</button>
@@ -2018,7 +2020,10 @@
       <span class="modal-close" onclick="closeToolAdd()">✕</span>
     </div>
     <div class="modal-body">
-      <div style="margin-bottom:10px;color:#999;font-size:12px;">所属承包商：宏远建筑有限公司（当前登录），可一次录入多条机具，带 * 为必填</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <button class="btn btn-plain" onclick="toolBatchImport()">批量导入</button>
+        <span style="color:#999;font-size:12px;">所属承包商：宏远建筑有限公司（当前登录），可一次录入多条机具，带 * 为必填</span>
+      </div>
       <div class="table-wrap" style="max-height:380px;overflow:auto;">
         <table style="min-width:1900px;">
           <thead>
@@ -2055,13 +2060,14 @@
 
 <!-- 工机具申请（业主端）：详情 -->
 <div class="modal-mask hidden" id="toolApplyViewModal">
-  <div class="modal" style="width:640px;">
+  <div class="modal" style="width:960px;">
     <div class="modal-header">
       工机具申请详情
       <span class="modal-close" onclick="closeToolApplyView()">✕</span>
     </div>
     <div class="modal-body">
       <div class="info-grid" id="toolApplyViewGrid" style="grid-template-columns:repeat(2,1fr);"></div>
+      <div id="toolApplyViewBody"></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-plain" onclick="closeToolApplyView()">关闭</button>
@@ -2071,7 +2077,7 @@
 
 <!-- 工机具申请（业主端）：处理 -->
 <div class="modal-mask hidden" id="toolApplyHandleModal">
-  <div class="modal" style="width:520px;">
+  <div class="modal" style="width:900px;">
     <div class="modal-header">
       处理工机具申请
       <span class="modal-close" onclick="closeToolApplyHandle()">✕</span>
@@ -2081,22 +2087,33 @@
         <label>申请信息</label>
         <span id="tahSummary" style="line-height:32px;"></span>
       </div>
-      <div class="form-item">
-        <label class="required">处理结果</label>
-        <select id="tahResult">
-          <option value="">请选择</option>
-          <option>通过</option>
-          <option>拒绝</option>
-        </select>
-      </div>
-      <div class="form-item">
+      <div id="tahBody"></div>
+      <div class="form-item" style="margin-top:8px;">
         <label>处理意见</label>
-        <textarea id="tahOpinion" rows="3" placeholder="请输入处理意见（选填）"></textarea>
+        <textarea id="tahOpinion" rows="2" placeholder="请输入处理意见（选填）"></textarea>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-plain" onclick="closeToolApplyHandle()">取消</button>
       <button class="btn btn-primary" onclick="saveToolApplyHandle()">提交</button>
+    </div>
+  </div>
+</div>
+
+<!-- 工机具台账：二维码 -->
+<div class="modal-mask hidden" id="toolQrModal">
+  <div class="modal" style="width:340px;">
+    <div class="modal-header">
+      机具二维码
+      <span class="modal-close" onclick="closeToolQr()">✕</span>
+    </div>
+    <div class="modal-body" style="text-align:center;">
+      <canvas id="toolQrCanvas" style="width:220px;height:220px;border:1px solid #f0f0f0;border-radius:8px;"></canvas>
+      <div id="toolQrInfo" style="margin-top:14px;font-size:14px;color:#333;line-height:2;"></div>
+    </div>
+    <div class="modal-footer" style="justify-content:center;">
+      <button class="btn btn-plain" onclick="closeToolQr()">关闭</button>
+      <button class="btn btn-primary" onclick="downloadToolQr()">下载二维码</button>
     </div>
   </div>
 </div>
@@ -6908,7 +6925,8 @@ const toolAccounts = {
   ],
   '迅达电梯工程有限公司': [
     { id: 'JJ-2023-031', name: '曳引机测试仪', model: 'YT-3000', factoryNo: 'YY-11028', manufacturer: '苏州电梯检测仪器有限公司', prodDate: '2023-06-25', category: '检测仪器', certNo: 'JD-2023-17082', inspectDate: '2026-04-18', nextInspectDate: '2027-04-18', cycle: '12个月', status: '已通过', certFile: '测试仪校准证书.pdf', photo: '测试仪照片.jpg', remark: '', warnDays: 30 },
-    { id: 'JJ-2024-032', name: '手动葫芦', model: 'HSZ-2T', factoryNo: 'HL-55671', manufacturer: '杭州武林机器有限公司', prodDate: '2024-03-08', category: '起重设备', certNo: 'JD-2024-02390', inspectDate: '2026-05-30', nextInspectDate: '2026-11-20', cycle: '6个月', status: '已通过', certFile: '葫芦检验合格证.pdf', photo: '葫芦照片.jpg', remark: '', warnDays: 30 }
+    { id: 'JJ-2024-032', name: '手动葫芦', model: 'HSZ-2T', factoryNo: 'HL-55671', manufacturer: '杭州武林机器有限公司', prodDate: '2024-03-08', category: '起重设备', certNo: 'JD-2024-02390', inspectDate: '2026-05-30', nextInspectDate: '2026-11-20', cycle: '6个月', status: '已通过', certFile: '葫芦检验合格证.pdf', photo: '葫芦照片.jpg', remark: '', warnDays: 30 },
+    { id: 'JJ-2024-033', name: '限速器测试仪', model: 'SL-200', factoryNo: 'SL-90021', manufacturer: '苏州电梯检测仪器有限公司', prodDate: '2024-08-15', category: '检测仪器', certNo: 'JD-2024-06033', inspectDate: '2026-10-20', nextInspectDate: '2027-10-20', cycle: '12个月', status: '已通过', certFile: '限速器测试仪校准证书.pdf', photo: '限速器测试仪照片.jpg', remark: '工机具申请审批通过进场', warnDays: 30 }
   ],
   '中建机电安装工程有限公司': [
     { id: 'JJ-2023-041', name: '套丝机', model: 'Z1T-R2', factoryNo: 'TS-33147', manufacturer: '杭州宁达电动工具有限公司', prodDate: '2023-07-19', category: '电动工具', certNo: 'JD-2023-19033', inspectDate: '2026-06-08', nextInspectDate: '2027-06-08', cycle: '12个月', status: '已通过', certFile: '套丝机合格证.pdf', photo: '套丝机照片.jpg', remark: '', warnDays: 30 },
@@ -6951,6 +6969,7 @@ function toolRowHtml(t, company) {
       <td class="sticky-col">
         <span class="link" onclick="openToolView('${company}','${t.id}')">查看</span>
         <span class="link" onclick="openToolWarn('${company}','${t.id}')">预警设置</span>
+        <span class="link" onclick="openToolQr('${company}','${t.id}')">二维码</span>
       </td>
     </tr>`;
 }
@@ -7100,16 +7119,33 @@ function saveToolAdd() {
 let toolApplies = [
   { id: 1, applicant: '张伟', company: '宏远建筑有限公司', count: 3, time: '2026-10-28 09:30',
     reason: '城东综合体二期新增焊接作业面，需补充进场机具',
-    tools: ['电焊机 ZX7-400 × 2', '角磨机 GWS 900-100 × 1'],
-    status: '待处理', handler: '', handleTime: '', opinion: '' },
+    machines: [
+      { id: 'JJ-SQ-2026-001', name: '电焊机', model: 'ZX7-400', factoryNo: 'CH-90001', manufacturer: '上海通用电焊机股份有限公司', prodDate: '2025-01-10', category: '焊接设备', certNo: 'JD-2025-10001', inspectDate: '2026-10-20', cycle: '12个月', nextInspectDate: '2027-10-20' },
+      { id: 'JJ-SQ-2026-002', name: '角磨机', model: 'GWS 900-100', factoryNo: 'GM-90002', manufacturer: '博世电动工具（中国）有限公司', prodDate: '2025-03-15', category: '电动工具', certNo: 'JD-2025-10002', inspectDate: '2026-10-20', cycle: '6个月', nextInspectDate: '2027-04-20' },
+      { id: 'JJ-SQ-2026-003', name: '手提切割机', model: 'CM4SB2', factoryNo: 'QG-90003', manufacturer: '牧田（中国）有限公司', prodDate: '2025-06-20', category: '电动工具', certNo: 'JD-2025-10003', inspectDate: '2026-10-18', cycle: '6个月', nextInspectDate: '2027-04-18' }
+    ],
+    nodes: [
+      { node: '部门审核', handler: '李强', time: '2026-10-28 16:00', opinion: '切割机证书附件缺失，退回补充', results: { 'JJ-SQ-2026-001': '通过', 'JJ-SQ-2026-002': '通过', 'JJ-SQ-2026-003': '不通过' } }
+    ],
+    status: '待处理' },
   { id: 2, applicant: '刘洋', company: '安捷消防技术有限公司', count: 2, time: '2026-10-28 14:10',
     reason: '消防设施巡检设备老化，申请更换',
-    tools: ['消防烟枪 YW-09 × 1', '兆欧表 ZC25B-4 × 1'],
-    status: '待处理', handler: '', handleTime: '', opinion: '' },
+    machines: [
+      { id: 'JJ-SQ-2026-011', name: '消防烟枪', model: 'YW-09', factoryNo: 'XY-90011', manufacturer: '北京烟枪消防检测设备有限公司', prodDate: '2025-02-11', category: '检测仪器', certNo: 'JD-2025-10011', inspectDate: '2026-10-25', cycle: '12个月', nextInspectDate: '2027-10-25' },
+      { id: 'JJ-SQ-2026-012', name: '兆欧表', model: 'ZC25B-4', factoryNo: 'ZO-90012', manufacturer: '上海第六电表厂有限公司', prodDate: '2025-04-02', category: '检测仪器', certNo: 'JD-2025-10012', inspectDate: '2026-10-25', cycle: '12个月', nextInspectDate: '2027-10-25' }
+    ],
+    nodes: [],
+    status: '待处理' },
   { id: 3, applicant: '陈静', company: '迅达电梯工程有限公司', count: 1, time: '2026-10-27 10:00',
     reason: '电梯井道检测需要新增仪器',
-    tools: ['曳引机测试仪 YT-3000 × 1'],
-    status: '已通过', handler: '王敏', handleTime: '2026-10-27 15:20', opinion: '同意，进场前完成检定登记' }
+    machines: [
+      { id: 'JJ-2024-033', name: '限速器测试仪', model: 'SL-200', factoryNo: 'SL-90021', manufacturer: '苏州电梯检测仪器有限公司', prodDate: '2024-08-15', category: '检测仪器', certNo: 'JD-2024-06033', inspectDate: '2026-10-20', cycle: '12个月', nextInspectDate: '2027-10-20' }
+    ],
+    nodes: [
+      { node: '部门审核', handler: '李强', time: '2026-10-27 14:30', opinion: '资料齐全，同意', results: { 'JJ-2024-033': '通过' } },
+      { node: '分管领导审批', handler: '王敏', time: '2026-10-27 15:20', opinion: '同意，进场前完成检定登记', results: { 'JJ-2024-033': '通过' } }
+    ],
+    status: '已通过' }
 ];
 let toolOwnerTab = 'account';
 
@@ -7119,6 +7155,29 @@ function setToolOwnerTab(k) {
 }
 
 function toolApplyStatusClass(s) { return { '待处理': 'tag-orange', '已通过': 'tag-green', '已拒绝': 'tag-red' }[s] || 'tag-gray'; }
+
+const TOOL_APPLY_COLS = ['机具编号', '机具名称', '型号', '出厂编号', '生产厂家', '出厂日期', '机具分类', '证书编号', '最新检查日期', '检查周期', '下次检查日期'];
+const TOOL_APPLY_FIELDS = ['id', 'name', 'model', 'factoryNo', 'manufacturer', 'prodDate', 'category', 'certNo', 'inspectDate', 'cycle', 'nextInspectDate'];
+
+function toolApplyMachinesHtml(machines) {
+  return `<div class="table-wrap" style="margin:8px 0;">
+    <table style="min-width:1500px;">
+      <thead><tr>${TOOL_APPLY_COLS.map(c => `<th>${c}</th>`).join('')}</tr></thead>
+      <tbody>${machines.map(m => `<tr>${TOOL_APPLY_FIELDS.map(f => `<td>${m[f] || '—'}</td>`).join('')}</tr>`).join('')}</tbody>
+    </table>
+  </div>`;
+}
+
+function toolApplyNodesHtml(a) {
+  if (!a.nodes.length) return '<div style="color:#999;font-size:12px;padding:6px 0;">暂无处理记录</div>';
+  return a.nodes.map((nd, i) => `
+    <div style="border-left:2px solid ${i === a.nodes.length - 1 ? '#1890ff' : '#d9d9d9'};padding:2px 0 10px 14px;margin-left:6px;position:relative;">
+      <div style="position:absolute;left:-6px;top:6px;width:10px;height:10px;border-radius:50%;background:${i === a.nodes.length - 1 ? '#1890ff' : '#d9d9d9'};"></div>
+      <div style="font-weight:600;font-size:13px;">${nd.node}<span style="font-weight:400;color:#666;font-size:12px;margin-left:10px;">处理人：${nd.handler} ｜ ${nd.time}</span></div>
+      ${nd.opinion ? `<div style="color:#666;font-size:12px;margin-top:2px;">处理意见：${nd.opinion}</div>` : ''}
+      <div style="margin-top:4px;">${a.machines.map(m => `<span class="tag ${nd.results[m.id] === '通过' ? 'tag-green' : 'tag-red'}" style="margin-right:6px;">${m.name}（${m.id}）：${nd.results[m.id] || '未处理'}</span>`).join('')}</div>
+    </div>`).join('');
+}
 
 function renderToolApply() {
   document.getElementById('tbody-toolApply').innerHTML = toolApplies.length ? toolApplies.map(a => `
@@ -7142,36 +7201,137 @@ function openToolApplyView(id) {
     <div class="ig-label">申请工机具数量</div><div>${a.count}</div>
     <div class="ig-label">申请时间</div><div>${a.time}</div>
     <div class="ig-label">申请缘由</div><div>${a.reason}</div>
-    <div class="ig-label">申请机具明细</div><div>${a.tools.join('<br>')}</div>
-    <div class="ig-label">状态</div><div><span class="tag ${toolApplyStatusClass(a.status)}">${a.status}</span></div>
-    <div class="ig-label">处理人</div><div>${a.handler || '—'}</div>
-    <div class="ig-label">处理时间</div><div>${a.handleTime || '—'}</div>
-    <div class="ig-label">处理意见</div><div>${a.opinion || '—'}</div>`;
+    <div class="ig-label">当前状态</div><div><span class="tag ${toolApplyStatusClass(a.status)}">${a.status}</span></div>`;
+  document.getElementById('toolApplyViewBody').innerHTML = `
+    <div style="font-size:13px;font-weight:600;margin:4px 0 2px;">申请机具明细</div>
+    ${toolApplyMachinesHtml(a.machines)}
+    <div style="font-size:13px;font-weight:600;margin:12px 0 6px;">处理节点（${a.nodes.length}）</div>
+    ${toolApplyNodesHtml(a)}`;
   document.getElementById('toolApplyViewModal').classList.remove('hidden');
 }
 function closeToolApplyView() { document.getElementById('toolApplyViewModal').classList.add('hidden'); }
 
 let tahTarget = null;
 function openToolApplyHandle(id) {
-  tahTarget = id;
   const a = toolApplies.find(x => x.id === id);
-  document.getElementById('tahSummary').textContent = a.applicant + '（' + a.company + '）申请 ' + a.count + ' 台工机具';
-  document.getElementById('tahResult').value = '';
+  if (!a) return;
+  tahTarget = id;
+  document.getElementById('tahSummary').textContent = a.applicant + '（' + a.company + '）申请 ' + a.count + ' 台工机具，请逐台选择处理结果';
+  const last = a.nodes.length ? a.nodes[a.nodes.length - 1].results : {};
+  document.getElementById('tahBody').innerHTML = `
+    ${a.nodes.length ? `<div style="font-size:13px;font-weight:600;margin:4px 0 6px;">历史处理节点（${a.nodes.length}）</div>${toolApplyNodesHtml(a)}` : '<div style="color:#999;font-size:12px;padding:4px 0;">该申请尚无处理记录，本次为首个处理节点</div>'}
+    <div style="font-size:13px;font-weight:600;margin:12px 0 6px;">本次处理（${['部门审核', '分管领导审批', '总经理审批'][a.nodes.length] || '第 ' + (a.nodes.length + 1) + ' 级审核'}）</div>
+    <div class="table-wrap" style="max-height:280px;overflow:auto;">
+      <table style="min-width:1600px;">
+        <thead><tr>${TOOL_APPLY_COLS.slice(0, 3).map(c => `<th>${c}</th>`).join('')}<th>处理结果</th></tr></thead>
+        <tbody>${a.machines.map(m => `<tr>
+          <td>${m.id}</td><td>${m.name}</td><td>${m.model}</td>
+          <td><select data-mid="${m.id}" style="width:100px;">
+            <option ${last[m.id] === '通过' ? 'selected' : ''}>通过</option>
+            <option ${last[m.id] === '不通过' ? 'selected' : ''}>不通过</option>
+          </select></td>
+        </tr>`).join('')}</tbody>
+      </table>
+    </div>`;
   document.getElementById('tahOpinion').value = '';
   document.getElementById('toolApplyHandleModal').classList.remove('hidden');
 }
 function closeToolApplyHandle() { document.getElementById('toolApplyHandleModal').classList.add('hidden'); }
 function saveToolApplyHandle() {
   const a = toolApplies.find(x => x.id === tahTarget);
-  const res = document.getElementById('tahResult').value;
-  if (!res) { alert('请选择处理结果'); return; }
-  a.status = res === '通过' ? '已通过' : '已拒绝';
-  a.handler = '王敏';
-  a.handleTime = '2026-10-30 10:00';
-  a.opinion = document.getElementById('tahOpinion').value.trim();
+  if (!a) return;
+  const nodeNames = ['部门审核', '分管领导审批', '总经理审批'];
+  const results = {};
+  let passCount = 0;
+  document.querySelectorAll('#tahBody select[data-mid]').forEach(sel => {
+    results[sel.dataset.mid] = sel.value;
+    if (sel.value === '通过') passCount++;
+  });
+  const node = {
+    node: nodeNames[a.nodes.length] || '第 ' + (a.nodes.length + 1) + ' 级审核',
+    handler: '王敏', time: '2026-10-30 10:00',
+    opinion: document.getElementById('tahOpinion').value.trim(),
+    results
+  };
+  a.nodes.push(node);
+  a.status = passCount === a.machines.length ? '已通过' : '已拒绝';
+  // 本次处理结果为「通过」的机具进入工机具台账
+  let added = 0;
+  a.machines.forEach(m => {
+    if (results[m.id] === '通过' && !toolAccounts[a.company].some(t => t.id === m.id)) {
+      toolAccounts[a.company].push({ ...m, status: '已通过', certFile: '—', photo: '—', remark: '工机具申请审批通过进场', warnDays: 30 });
+      added++;
+    }
+  });
   closeToolApplyHandle();
   renderToolApply();
-  alert('处理完成：该申请已' + a.status.replace('已', ''));
+  renderToolAccount();
+  alert('处理完成：本节点通过 ' + passCount + ' 台 / 不通过 ' + (a.machines.length - passCount) + ' 台' + (added ? '，新增 ' + added + ' 台机具已进入工机具台账' : ''));
+}
+
+// ===== 批量导入 / 批量打印 / 二维码 =====
+function toolBatchImport() {
+  const tbody = document.getElementById('tbody-toolAdd');
+  const before = tbody.querySelectorAll('tr').length;
+  tbody.insertAdjacentHTML('beforeend', toolAddRowHtml());
+  tbody.insertAdjacentHTML('beforeend', toolAddRowHtml());
+  const rows = tbody.querySelectorAll('tr');
+  const fill = (tr, vals) => Object.keys(vals).forEach(f => { const el = tr.querySelector('[data-f="' + f + '"]'); if (el) el.value = vals[f]; });
+  fill(rows[before], { id: 'JJ-DR-2026-001', name: '冲击钻', model: 'GBH 5-40', factoryNo: 'DC-80001', manufacturer: '博世电动工具（中国）有限公司', prodDate: '2025-05-12', category: '电动工具', certNo: 'JD-2025-20001', inspectDate: '2026-10-15', cycle: '12个月', nextInspectDate: '2027-10-15' });
+  fill(rows[before + 1], { id: 'JJ-DR-2026-002', name: '砂轮切割机', model: 'J3G-400', factoryNo: 'SL-80002', manufacturer: '浙江金鼎工具股份有限公司', prodDate: '2025-07-08', category: '电动工具', certNo: 'JD-2025-20002', inspectDate: '2026-10-15', cycle: '6个月', nextInspectDate: '2027-04-15' });
+  alert('批量导入成功：已解析导入模板，新增 2 行机具数据，请核对后提交');
+}
+
+function toolBatchPrint() {
+  const n = currentRole === 'contractor'
+    ? document.querySelectorAll('#tbody-toolCtcAccount tr').length
+    : document.querySelectorAll('#tbody-toolAccount tr').length;
+  alert('已提交批量打印任务，共 ' + n + ' 条台账数据（原型模拟）');
+}
+
+function drawToolQr(canvas, text) {
+  const n = 25, cell = 8;
+  canvas.width = canvas.height = n * cell;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  let h = 2166136261;
+  for (let i = 0; i < text.length; i++) { h ^= text.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+  const rand = () => { h ^= h << 13; h >>>= 0; h ^= h >>> 17; h ^= h << 5; h >>>= 0; return h / 4294967296; };
+  const inFinder = (x, y) => (x < 8 && y < 8) || (x >= n - 8 && y < 8) || (x < 8 && y >= n - 8);
+  ctx.fillStyle = '#000';
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+    if (inFinder(x, y)) continue;
+    if (x === 6 || y === 6) { ctx.fillRect(x * cell, y * cell, cell, cell); continue; }
+    if (rand() < 0.42) ctx.fillRect(x * cell, y * cell, cell, cell);
+  }
+  const finder = (fx, fy) => {
+    ctx.fillStyle = '#000'; ctx.fillRect(fx * cell, fy * cell, 7 * cell, 7 * cell);
+    ctx.fillStyle = '#fff'; ctx.fillRect((fx + 1) * cell, (fy + 1) * cell, 5 * cell, 5 * cell);
+    ctx.fillStyle = '#000'; ctx.fillRect((fx + 2) * cell, (fy + 2) * cell, 3 * cell, 3 * cell);
+  };
+  finder(0, 0); finder(n - 7, 0); finder(0, n - 7);
+}
+
+let toolQrTarget = null;
+function openToolQr(company, id) {
+  const t = (toolAccounts[company] || []).find(x => x.id === id);
+  if (!t) return;
+  toolQrTarget = { company, id };
+  drawToolQr(document.getElementById('toolQrCanvas'), company + '|' + id);
+  document.getElementById('toolQrInfo').innerHTML = `
+    <div>机具名称：${t.name}</div>
+    <div>编号：${t.id}</div>
+    <div>所属承包商：${company}</div>`;
+  document.getElementById('toolQrModal').classList.remove('hidden');
+}
+function closeToolQr() { document.getElementById('toolQrModal').classList.add('hidden'); }
+function downloadToolQr() {
+  const link = document.createElement('a');
+  link.download = '机具二维码_' + toolQrTarget.id + '.png';
+  link.href = document.getElementById('toolQrCanvas').toDataURL('image/png');
+  link.click();
+  alert('二维码已下载（原型模拟）');
 }
 
 // ===== 工机具检查清单配置 =====
